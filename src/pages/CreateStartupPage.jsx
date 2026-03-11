@@ -44,6 +44,7 @@ export default function CreateStartupPage() {
     banner: null,
   })
 
+  const touchStartX = useRef(0)
   const avatarInputRef = useRef(null)
   const bannerInputRef = useRef(null)
 
@@ -109,7 +110,7 @@ export default function CreateStartupPage() {
     <div ref={pageRef} className="min-h-screen bg-[var(--color-bg)]">
       <Nav />
       <main id="main" className="pt-24 pb-16 px-6">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto pb-24 md:pb-0">
           {/* Header */}
           <div className="create-header mb-8 text-center">
             <h1
@@ -142,7 +143,16 @@ export default function CreateStartupPage() {
           </div>
 
           {/* Step content */}
-          <div ref={cardRef} className="create-card bg-white border border-[var(--color-border)] rounded-2xl p-4 sm:p-6 md:p-8 mb-6">
+          <div
+            ref={cardRef}
+            className="create-card bg-white border border-[var(--color-border)] rounded-2xl p-4 sm:p-6 md:p-8 mb-6"
+            onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
+            onTouchEnd={(e) => {
+              const diff = touchStartX.current - e.changedTouches[0].clientX
+              if (diff > 50 && canContinue() && step < 2) next()
+              else if (diff < -50 && step > 0) back()
+            }}
+          >
 
             {/* Step 1: Your Startup */}
             {step === 0 && (
@@ -401,7 +411,7 @@ export default function CreateStartupPage() {
           </div>
 
           {/* Navigation buttons */}
-          <div className="flex items-center gap-3">
+          <div className="fixed bottom-0 left-0 right-0 md:static bg-white border-t border-[var(--color-border)] md:border-0 p-4 md:p-0 z-30 md:bg-transparent flex items-center gap-3">
             {step > 0 && (
               <button type="button"
                 onClick={back}

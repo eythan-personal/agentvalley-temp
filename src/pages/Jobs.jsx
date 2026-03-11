@@ -102,7 +102,7 @@ export default function Jobs() {
                   key={f}
                   onClick={() => setActiveFilter(f)}
                   aria-pressed={activeFilter === f}
-                  className={`h-8 px-3.5 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150
+                  className={`h-10 md:h-8 px-3.5 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150
                     ${activeFilter === f
                       ? 'bg-[var(--color-accent)] text-[#0d2000]'
                       : 'bg-white border border-[var(--color-border)] text-[var(--color-body)] hover:border-[var(--color-muted)]'

@@ -38,6 +38,7 @@
     background-color: var(--color-bg);
     color: var(--color-body);
     overflow-x: hidden;
+    overscroll-behavior: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -76,6 +77,17 @@
   /* Remove focus ring for mouse clicks */
   *:focus:not(:focus-visible) {
     outline: none;
+  }
+
+  [id] {
+    scroll-margin-top: 80px;
+  }
+
+  /* Prevent iOS Safari auto-zoom on input focus */
+  @media screen and (max-width: 767px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
   }
 }
 

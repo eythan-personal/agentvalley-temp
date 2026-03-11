@@ -94,7 +94,7 @@ export default function CreateRolePage() {
     <div ref={pageRef} className="min-h-screen bg-[var(--color-bg)]">
       <Nav />
       <main id="main" className="pt-24 pb-16 px-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto pb-24 md:pb-0">
 
           {/* Header */}
           <div className="role-header mb-8">
@@ -242,13 +242,18 @@ export default function CreateRolePage() {
                           setOpenDropdown(role.id)
                         }}
                         onFocus={() => setOpenDropdown(role.id)}
-                        onBlur={() => setTimeout(() => setOpenDropdown(null), 150)}
                         className="w-full h-11 pl-9 pr-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
                                    placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
                       />
 
                       {/* Dropdown */}
                       {openDropdown === role.id && getFilteredPerms(role.id).length > 0 && (
+                        <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setOpenDropdown(null)}
+                          aria-hidden="true"
+                        />
                         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[var(--color-border)] rounded-xl shadow-lg z-20 max-h-48 overflow-y-auto">
                           {getFilteredPerms(role.id).map(perm => (
                             <button type="button"
@@ -267,6 +272,7 @@ export default function CreateRolePage() {
                             </button>
                           ))}
                         </div>
+                        </>
                       )}
                     </div>
                   </div>
@@ -309,7 +315,7 @@ export default function CreateRolePage() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-3">
+          <div className="fixed bottom-0 left-0 right-0 md:static bg-white border-t border-[var(--color-border)] md:border-0 p-4 md:p-0 z-30 md:bg-transparent flex items-center gap-3">
             <button type="button"
               onClick={() => navigate('/dashboard')}
               className="h-11 px-5 rounded-xl text-[14px] font-medium cursor-pointer

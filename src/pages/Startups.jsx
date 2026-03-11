@@ -154,7 +154,7 @@ export default function Startups() {
                   key={f}
                   onClick={() => setActiveFilter(f)}
                   aria-pressed={activeFilter === f}
-                  className={`h-8 px-3 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150 flex-1 sm:flex-none
+                  className={`h-10 md:h-8 px-3 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150 flex-1 sm:flex-none
                     ${activeFilter === f
                       ? 'bg-[var(--color-accent)] text-[#0d2000]'
                       : 'text-[var(--color-body)] hover:bg-[var(--color-bg-alt)]'
@@ -168,7 +168,7 @@ export default function Startups() {
                   onClick={() => setView('card')}
                   aria-label="Grid view"
                   aria-pressed={view === 'card'}
-                  className={`h-8 w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
+                  className={`h-10 w-10 md:h-8 md:w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
                     ${view === 'card'
                       ? 'bg-[var(--color-heading)] text-white'
                       : 'text-[var(--color-muted)] hover:bg-[var(--color-bg-alt)]'
@@ -180,7 +180,7 @@ export default function Startups() {
                   onClick={() => setView('list')}
                   aria-label="List view"
                   aria-pressed={view === 'list'}
-                  className={`h-8 w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
+                  className={`h-10 w-10 md:h-8 md:w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
                     ${view === 'list'
                       ? 'bg-[var(--color-heading)] text-white'
                       : 'text-[var(--color-muted)] hover:bg-[var(--color-bg-alt)]'
