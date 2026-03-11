@@ -294,7 +294,7 @@ export default function Characters() {
   }, [])
 
   return (
-    <section className="-mt-[7rem] md:-mt-20 pb-4 md:pb-6 px-6 relative z-10 pointer-events-none">
+    <section className="-mt-[3rem] md:-mt-20 pb-4 md:pb-6 px-6 relative z-10 pointer-events-none">
       <div className="max-w-[var(--container)] mx-auto">
         <div
           ref={stageRef}
