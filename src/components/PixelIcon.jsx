@@ -23,6 +23,8 @@ import { Wallet } from 'pixelarticons/react/Wallet'
 import { Search } from 'pixelarticons/react/Search'
 import { Grid3x3 } from 'pixelarticons/react/Grid3x3'
 import { Bulletlist } from 'pixelarticons/react/Bulletlist'
+import { Menu } from 'pixelarticons/react/Menu'
+import { Cancel } from 'pixelarticons/react/Cancel'
 
 const icons = {
   zap: Zap,
@@ -50,9 +52,21 @@ const icons = {
   search: Search,
   grid: Grid3x3,
   list: Bulletlist,
+  menu: Menu,
+  close: Cancel,
 }
 
-export default function PixelIcon({ name, size = 24, className = '', ...rest }) {
+export default function PixelIcon({ name, size = 24, className = '', style, ...rest }) {
   const Icon = icons[name] || icons.zap
-  return <Icon width={size} height={size} className={className} aria-hidden="true" {...rest} />
+  return (
+    <Icon
+      width={size}
+      height={size}
+      className={className}
+      aria-hidden="true"
+      style={{ imageRendering: 'pixelated', ...style }}
+      shapeRendering="crispEdges"
+      {...rest}
+    />
+  )
 }

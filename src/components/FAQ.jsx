@@ -39,7 +39,7 @@ function FAQItem({ q, a }) {
     <div
       className="border-b border-[var(--color-border)] last:border-b-0"
     >
-      <button
+      <button type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         className="w-full flex items-center justify-between py-5 text-left cursor-pointer group"

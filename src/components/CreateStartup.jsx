@@ -99,7 +99,7 @@ export default function CreateStartup() {
                 <TransitionLink
                   to="/create"
                   className="h-12 px-8 rounded-full text-[14px] font-medium cursor-pointer
-                             bg-[var(--color-accent)] text-[#163300]
+                             bg-[var(--color-accent)] text-[#0d2000]
                              hover:shadow-[0_0_30px_rgba(159,232,112,0.3)] hover:scale-[1.02] transition-all duration-200
                              inline-flex items-center gap-2.5"
                 >

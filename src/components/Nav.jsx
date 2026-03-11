@@ -5,9 +5,9 @@ import TransitionLink from './TransitionLink'
 import PixelIcon from './PixelIcon'
 
 const NAV_LINKS = [
-  { to: '/startups', label: 'Startups' },
-  { to: '/jobs', label: 'Jobs' },
-  { to: '/leaderboard', label: 'Leaderboard' },
+  { to: '/startups', label: 'Startups', icon: 'speed' },
+  { to: '/jobs', label: 'Jobs', icon: 'target' },
+  { to: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
 ]
 
 export default function Nav() {
@@ -96,7 +96,7 @@ export default function Nav() {
               <TransitionLink
                 to="/create"
                 className="hidden sm:inline-flex h-9 px-5 rounded-full text-[13px] font-medium cursor-pointer
-                           bg-[var(--color-accent)] text-[#163300]
+                           bg-[var(--color-accent)] text-[#0d2000]
                            hover:shadow-lg transition-all duration-200
                            items-center gap-2"
               >
@@ -116,7 +116,7 @@ export default function Nav() {
                 >
                   Dashboard
                 </TransitionLink>
-                <button
+                <button type="button"
                   onClick={logout}
                   className="text-[13px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer hidden md:block"
                 >
@@ -137,27 +137,14 @@ export default function Nav() {
             )}
 
             {/* Hamburger — visible below md */}
-            <button
+            <button type="button"
               onClick={() => setMenuOpen(prev => !prev)}
               className="md:hidden flex items-center justify-center w-11 h-11 rounded-lg
-                         hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer"
+                         hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer text-[var(--color-heading)]"
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
             >
-              <div className="w-[18px] flex flex-col gap-[4px]">
-                <span
-                  className="block h-[2px] bg-[var(--color-heading)] rounded-full transition-all duration-200 origin-center"
-                  style={menuOpen ? { transform: 'translateY(3px) rotate(45deg)' } : {}}
-                />
-                <span
-                  className="block h-[2px] bg-[var(--color-heading)] rounded-full transition-all duration-200"
-                  style={menuOpen ? { opacity: 0 } : {}}
-                />
-                <span
-                  className="block h-[2px] bg-[var(--color-heading)] rounded-full transition-all duration-200 origin-center"
-                  style={menuOpen ? { transform: 'translateY(-3px) rotate(-45deg)' } : {}}
-                />
-              </div>
+              <PixelIcon name={menuOpen ? 'close' : 'menu'} size={22} />
             </button>
           </div>
         </div>
@@ -179,6 +166,7 @@ export default function Nav() {
                     : 'text-[var(--color-heading)] hover:bg-[var(--color-bg-alt)]'
                 }`}
               >
+                <PixelIcon name={link.icon} size={18} />
                 {link.label}
               </TransitionLink>
             ))}
@@ -190,7 +178,7 @@ export default function Nav() {
               <TransitionLink
                 to="/create"
                 className="flex items-center gap-2 px-3 py-3 rounded-lg text-[14px] font-medium
-                           text-[#163300] hover:bg-[var(--color-accent)]/10 transition-colors"
+                           text-[#0d2000] hover:bg-[var(--color-accent)]/10 transition-colors"
               >
                 <PixelIcon name="zap" size={14} />
                 Create Startup
@@ -207,7 +195,7 @@ export default function Nav() {
                 >
                   Dashboard
                 </TransitionLink>
-                <button
+                <button type="button"
                   onClick={() => { logout(); setMenuOpen(false) }}
                   className="flex items-center justify-center h-11 rounded-full text-[14px] font-medium
                              text-[var(--color-muted)] hover:text-[var(--color-heading)]

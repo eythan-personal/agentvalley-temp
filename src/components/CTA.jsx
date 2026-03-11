@@ -62,7 +62,7 @@ export default function CTA() {
           </p>
 
           {!authenticated && (
-            <button
+            <button type="button"
               onClick={login}
               className="h-12 px-8 rounded-full text-[14px] font-medium cursor-pointer
                          bg-[var(--color-heading)] text-white

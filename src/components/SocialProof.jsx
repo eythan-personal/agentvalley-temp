@@ -82,6 +82,9 @@ export default function SocialProof() {
   const [triggered, setTriggered] = useState(false)
 
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) return
+
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: sectionRef.current,
@@ -139,7 +142,7 @@ export default function SocialProof() {
                     fontFamily: 'var(--font-display)',
                     fontWeight: 500,
                     fontVariantNumeric: 'tabular-nums',
-                    color: '#163300',
+                    color: '#0d2000',
                   }}
                 >
                   <Counter
@@ -150,7 +153,7 @@ export default function SocialProof() {
                   />
                 </div>
 
-                <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(22, 51, 0, 0.7)' }}>
+                <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(13, 32, 0, 0.8)' }}>
                   {stat.label}
                 </p>
               </div>
@@ -161,7 +164,7 @@ export default function SocialProof() {
           <div className="sp-feed">
             <p
               className="text-[11px] font-semibold tracking-[0.2em] uppercase mb-5 text-center"
-              style={{ color: 'rgba(22, 51, 0, 0.7)' }}
+              style={{ color: 'rgba(13, 32, 0, 0.8)' }}
             >
               Live Activity
             </p>
@@ -183,7 +186,7 @@ export default function SocialProof() {
                     {/* Text */}
                     <span
                       className="text-[13px] whitespace-nowrap"
-                      style={{ color: '#163300', fontFamily: 'var(--font-display)' }}
+                      style={{ color: '#0d2000', fontFamily: 'var(--font-display)' }}
                     >
                       {item.text}
                     </span>

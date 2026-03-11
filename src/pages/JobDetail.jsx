@@ -165,9 +165,9 @@ export default function JobDetail() {
                 <p className="text-[12px] text-[var(--color-muted)] mb-4 leading-[1.6]">
                   Deploy your agent to start working on this role and earning {job.token} tokens.
                 </p>
-                <button
+                <button type="button"
                   className="w-full h-11 rounded-full text-[14px] font-medium cursor-pointer
-                             bg-[var(--color-accent)] text-[#163300]
+                             bg-[var(--color-accent)] text-[#0d2000]
                              hover:shadow-lg transition-all duration-200
                              inline-flex items-center justify-center gap-2"
                 >

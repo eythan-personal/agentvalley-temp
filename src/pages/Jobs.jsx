@@ -29,6 +29,10 @@ export default function Jobs() {
   useEffect(() => {
     document.title = 'Agent Jobs — AgentValley'
     window.scrollTo(0, 0)
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) return
+
     const ctx = gsap.context(() => {
       gsap.from('.jobs-header', { y: 30, opacity: 0, duration: 0.5, delay: 0.2 })
 
@@ -62,10 +66,10 @@ export default function Jobs() {
             </div>
 
             {!authenticated && (
-              <button
+              <button type="button"
                 onClick={login}
                 className="h-11 px-6 rounded-full text-[14px] font-medium cursor-pointer
-                           bg-[var(--color-accent)] text-[#163300]
+                           bg-[var(--color-accent)] text-[#0d2000]
                            hover:shadow-lg transition-all duration-200
                            inline-flex items-center gap-2 shrink-0"
               >
@@ -94,13 +98,13 @@ export default function Jobs() {
 
             <div className="flex items-center gap-1.5">
               {filters.map((f) => (
-                <button
+                <button type="button"
                   key={f}
                   onClick={() => setActiveFilter(f)}
                   aria-pressed={activeFilter === f}
                   className={`h-8 px-3.5 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150
                     ${activeFilter === f
-                      ? 'bg-[var(--color-accent)] text-[#163300]'
+                      ? 'bg-[var(--color-accent)] text-[#0d2000]'
                       : 'bg-white border border-[var(--color-border)] text-[var(--color-body)] hover:border-[var(--color-muted)]'
                     }`}
                 >
@@ -111,18 +115,34 @@ export default function Jobs() {
           </div>
 
           {/* Table */}
-          <div className="bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden">
+          <div className="relative bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden">
+            {/* Pixel grid texture overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none opacity-[0.03]"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)
+                `,
+                backgroundSize: '6px 6px',
+              }}
+            />
+
             {/* Header */}
-            <div className="hidden lg:grid grid-cols-[2fr_1fr_130px_90px_70px] gap-4 px-6 py-3 border-b border-[var(--color-border)] text-[11px] font-medium tracking-wide uppercase text-[var(--color-muted)]">
-              <span>Role</span>
-              <span>Vesting</span>
-              <span>Reward</span>
-              <span>Status</span>
-              <span>Posted</span>
+            <div className="relative hidden lg:grid grid-cols-[2fr_1fr_130px_90px_70px] gap-4 px-6 py-3.5 border-b border-[var(--color-border)] bg-[var(--color-bg-alt)]/50">
+              {['Role', 'Vesting', 'Reward', 'Status', 'Posted'].map((label) => (
+                <span
+                  key={label}
+                  className="text-[11px] font-semibold tracking-[0.15em] uppercase text-[var(--color-muted)]"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  {label}
+                </span>
+              ))}
             </div>
 
             {filtered.length === 0 && (
-              <div className="px-6 py-12 text-center text-[14px] text-[var(--color-muted)]">
+              <div className="relative px-6 py-12 text-center text-[14px] text-[var(--color-muted)]">
                 No jobs match your search.
               </div>
             )}
@@ -131,20 +151,30 @@ export default function Jobs() {
               <TransitionLink
                 key={i}
                 to={`/jobs/${job.slug}`}
-                className="jobs-row grid grid-cols-1 lg:grid-cols-[2fr_1fr_130px_90px_70px] gap-3 lg:gap-4 px-5 lg:px-6 py-4 items-center border-b border-[var(--color-border)] last:border-b-0
-                  hover:bg-[var(--color-bg-alt)] transition-colors duration-150 group"
-                style={{ textDecoration: 'none', color: 'inherit', display: 'grid' }}
+                className="jobs-row relative grid grid-cols-1 lg:grid-cols-[2fr_1fr_130px_90px_70px] gap-3 lg:gap-4 px-5 lg:px-6 py-4 items-center border-b border-[var(--color-border)] last:border-b-0
+                  hover:bg-[var(--color-accent-soft)]/40 transition-colors group"
+                style={{ textDecoration: 'none', color: 'inherit', display: 'grid', transitionTimingFunction: 'steps(3)' }}
               >
+                {/* Left accent bar on hover */}
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity" style={{ transitionTimingFunction: 'steps(2)' }} />
+
                 {/* Startup + Role */}
                 <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-[11px] font-bold shrink-0"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-[11px] font-bold shrink-0 relative overflow-hidden"
                     style={{ backgroundColor: job.color }}
                   >
-                    {job.initials}
+                    <div className="absolute inset-0 opacity-[0.12]" style={{
+                      backgroundImage: 'linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)',
+                      backgroundSize: '4px 4px',
+                    }} />
+                    <span className="relative">{job.initials}</span>
                   </div>
                   <div className="min-w-0">
-                    <span className="text-[14px] text-[var(--color-heading)] font-medium truncate block">
+                    <span
+                      className="text-[14px] text-[var(--color-heading)] font-medium truncate block group-hover:text-[var(--color-heading)]"
+                      style={{ fontFamily: 'var(--font-display)' }}
+                    >
                       {job.title}
                     </span>
                     <span className="text-[12px] text-[var(--color-muted)] truncate block">
@@ -154,44 +184,46 @@ export default function Jobs() {
                 </div>
 
                 {/* Vesting */}
-                <span className="text-[12px] text-[var(--color-body)] hidden lg:block truncate">
+                <span className="text-[12px] text-[var(--color-body)] hidden lg:block truncate font-mono">
                   {job.vesting}
                 </span>
 
                 {/* Token reward */}
                 <div className="hidden lg:flex items-center gap-1.5">
-                  <PixelIcon name="coins" size={14} className="text-[var(--color-heading)]" />
-                  <span className="text-[13px] font-mono text-[var(--color-heading)]">{job.reward}</span>
-                  <span className="text-[10px] text-[var(--color-heading)] font-mono">{job.token}</span>
+                  <PixelIcon name="coins" size={14} className="text-[var(--color-accent)]" />
+                  <span className="text-[13px] font-mono font-semibold text-[var(--color-heading)]">{job.reward}</span>
+                  <span className="text-[10px] text-[var(--color-muted)] font-mono">{job.token}</span>
                 </div>
 
                 {/* Urgency */}
                 <div className="hidden lg:block">
-                  <span className={`inline-block text-[11px] font-semibold px-2.5 py-1 rounded-md
+                  <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md
                     ${job.urgency === 'Urgent'
                       ? 'bg-red-50 text-red-600'
                       : 'bg-amber-50 text-amber-600'
                     }`}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: job.urgency === 'Urgent' ? '#dc2626' : '#d97706' }} />
                     {job.urgency}
                   </span>
                 </div>
 
                 {/* Posted */}
-                <span className="text-[12px] text-[var(--color-muted)] hidden lg:block">
+                <span className="text-[12px] text-[var(--color-muted)] hidden lg:block font-mono">
                   {job.posted}
                 </span>
 
                 {/* Mobile meta */}
                 <div className="flex items-center gap-3 lg:hidden text-[12px]">
                   <span className="flex items-center gap-1 text-[var(--color-heading)]">
-                    <PixelIcon name="coins" size={12} />
-                    <span className="font-mono">{job.reward} {job.token}</span>
+                    <PixelIcon name="coins" size={12} className="text-[var(--color-accent)]" />
+                    <span className="font-mono font-semibold">{job.reward} {job.token}</span>
                   </span>
-                  <span className={`px-2 py-0.5 rounded text-[11px] font-semibold
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold
                     ${job.urgency === 'Urgent' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: job.urgency === 'Urgent' ? '#dc2626' : '#d97706' }} />
                     {job.urgency}
                   </span>
-                  <span className="text-[var(--color-muted)]">{job.posted}</span>
+                  <span className="text-[var(--color-muted)] font-mono">{job.posted}</span>
                 </div>
               </TransitionLink>
             ))}

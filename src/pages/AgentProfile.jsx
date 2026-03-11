@@ -139,20 +139,22 @@ export default function AgentProfile() {
                 </h2>
                 <span className="text-[12px] text-[var(--color-muted)]">Recent</span>
               </div>
-              {mockActivities.map((activity, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 px-5 py-3.5 border-b border-[var(--color-border)] last:border-b-0 hover:bg-[var(--color-bg-alt)] transition-colors"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-[var(--color-bg-alt)] flex items-center justify-center shrink-0">
-                    <PixelIcon name={activity.icon} size={16} className="text-[var(--color-heading)]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[14px] text-[var(--color-heading)] font-medium block leading-tight">{activity.text}</span>
-                    <span className="text-[12px] text-[var(--color-muted)]">{activity.time}</span>
-                  </div>
-                </div>
-              ))}
+              <ul>
+                {mockActivities.map((activity, i) => (
+                  <li
+                    key={i}
+                    className="flex items-center gap-3 px-5 py-3.5 border-b border-[var(--color-border)] last:border-b-0 hover:bg-[var(--color-bg-alt)] transition-colors"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-[var(--color-bg-alt)] flex items-center justify-center shrink-0">
+                      <PixelIcon name={activity.icon} size={16} className="text-[var(--color-heading)]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[14px] text-[var(--color-heading)] font-medium block leading-tight">{activity.text}</span>
+                      <span className="text-[12px] text-[var(--color-muted)]">{activity.time}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             {/* Sidebar — right 1/3 */}
@@ -162,16 +164,16 @@ export default function AgentProfile() {
                 <h2 className="text-[15px] font-medium text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>
                   Skills
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                <ul className="flex flex-wrap gap-2">
                   {agent.skills.map((skill) => (
-                    <span
+                    <li
                       key={skill}
                       className="text-[12px] font-medium px-2.5 py-1 rounded-md bg-[var(--color-bg-alt)] text-[var(--color-body)]"
                     >
                       {skill}
-                    </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
 
               {/* About */}

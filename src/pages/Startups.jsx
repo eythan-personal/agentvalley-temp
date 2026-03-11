@@ -64,6 +64,10 @@ export default function Startups() {
   useEffect(() => {
     document.title = 'Startups — AgentValley'
     window.scrollTo(0, 0)
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) return
+
     const ctx = gsap.context(() => {
       gsap.from('.startups-header', { y: 0, opacity: 0, duration: 0.6, delay: 0.1, clearProps: 'all' })
       gsap.from('.startups-filters', { y: 15, opacity: 0, duration: 0.4, delay: 0.3, clearProps: 'all' })
@@ -146,13 +150,13 @@ export default function Startups() {
             </div>
             <div className="flex items-center gap-1 sm:border-l border-[var(--color-border)] sm:pl-2">
               {filters.map((f) => (
-                <button
+                <button type="button"
                   key={f}
                   onClick={() => setActiveFilter(f)}
                   aria-pressed={activeFilter === f}
                   className={`h-8 px-3 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150 flex-1 sm:flex-none
                     ${activeFilter === f
-                      ? 'bg-[var(--color-accent)] text-[#163300]'
+                      ? 'bg-[var(--color-accent)] text-[#0d2000]'
                       : 'text-[var(--color-body)] hover:bg-[var(--color-bg-alt)]'
                     }`}
                 >
@@ -160,7 +164,7 @@ export default function Startups() {
                 </button>
               ))}
               <div className="flex items-center gap-1 border-l border-[var(--color-border)] pl-2 ml-auto sm:ml-0">
-                <button
+                <button type="button"
                   onClick={() => setView('card')}
                   aria-label="Grid view"
                   aria-pressed={view === 'card'}
@@ -172,7 +176,7 @@ export default function Startups() {
                 >
                   <PixelIcon name="grid" size={14} />
                 </button>
-                <button
+                <button type="button"
                   onClick={() => setView('list')}
                   aria-label="List view"
                   aria-pressed={view === 'list'}
@@ -320,34 +324,58 @@ export default function Startups() {
 
           {/* List View */}
           {view === 'list' && filtered.length > 0 && (
-            <div className="bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden">
-              <div className="hidden lg:grid grid-cols-[2fr_70px_90px_110px_90px_100px_80px_90px] gap-3 px-6 py-3 border-b border-[var(--color-border)] text-[11px] font-medium tracking-wide uppercase text-[var(--color-muted)]">
-                <span>Startup</span>
-                <span>Agents</span>
-                <span>Founded</span>
-                <span>Revenue</span>
-                <span>Token</span>
-                <span>MCap</span>
-                <span>24h</span>
-                <span>Status</span>
+            <div className="relative bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden">
+              {/* Pixel grid texture overlay */}
+              <div
+                className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                style={{
+                  backgroundImage: `
+                    linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)
+                  `,
+                  backgroundSize: '6px 6px',
+                }}
+              />
+
+              <div className="relative hidden lg:grid grid-cols-[2fr_70px_90px_110px_90px_100px_80px_90px] gap-3 px-6 py-3.5 border-b border-[var(--color-border)] bg-[var(--color-bg-alt)]/50">
+                {['Startup', 'Agents', 'Founded', 'Revenue', 'Token', 'MCap', '24h', 'Status'].map((label) => (
+                  <span
+                    key={label}
+                    className="text-[11px] font-semibold tracking-[0.15em] uppercase text-[var(--color-muted)]"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    {label}
+                  </span>
+                ))}
               </div>
 
               {filtered.map((s, i) => (
                 <TransitionLink
                   key={i}
                   to={`/startups/${s.slug}`}
-                  className="startups-row grid grid-cols-1 lg:grid-cols-[2fr_70px_90px_110px_90px_100px_80px_90px] gap-2 lg:gap-3 px-5 lg:px-6 py-4 items-center border-b border-[var(--color-border)] last:border-b-0
-                    hover:bg-[var(--color-bg-alt)] transition-colors duration-150 cursor-pointer group"
+                  className="startups-row relative grid grid-cols-1 lg:grid-cols-[2fr_70px_90px_110px_90px_100px_80px_90px] gap-2 lg:gap-3 px-5 lg:px-6 py-4 items-center border-b border-[var(--color-border)] last:border-b-0
+                    hover:bg-[var(--color-accent-soft)]/40 transition-colors cursor-pointer group"
+                  style={{ transitionTimingFunction: 'steps(3)' }}
                 >
+                  {/* Left accent bar on hover */}
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity" style={{ transitionTimingFunction: 'steps(2)' }} />
+
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-[11px] font-bold shrink-0"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-[11px] font-bold shrink-0 relative overflow-hidden"
                       style={{ backgroundColor: s.color }}
                     >
-                      {s.initials}
+                      <div className="absolute inset-0 opacity-[0.12]" style={{
+                        backgroundImage: 'linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)',
+                        backgroundSize: '4px 4px',
+                      }} />
+                      <span className="relative">{s.initials}</span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-[14px] text-[var(--color-heading)] font-medium truncate block">
+                      <span
+                        className="text-[14px] text-[var(--color-heading)] font-medium truncate block"
+                        style={{ fontFamily: 'var(--font-display)' }}
+                      >
                         {s.name}
                       </span>
                       <span className="text-[12px] text-[var(--color-muted)] truncate block">
@@ -356,15 +384,16 @@ export default function Startups() {
                     </div>
                   </div>
 
-                  <span className="text-[13px] text-[var(--color-heading)] font-mono hidden lg:block">
-                    {s.agents}
-                  </span>
+                  <div className="hidden lg:flex items-center gap-1">
+                    <PixelIcon name="robot" size={12} className="text-[var(--color-accent)]" />
+                    <span className="text-[13px] text-[var(--color-heading)] font-mono">{s.agents}</span>
+                  </div>
 
-                  <span className="text-[12px] text-[var(--color-muted)] hidden lg:block">
+                  <span className="text-[12px] text-[var(--color-muted)] hidden lg:block font-mono">
                     {s.founded}
                   </span>
 
-                  <span className="text-[13px] text-[var(--color-heading)] font-mono hidden lg:block">
+                  <span className="text-[13px] text-[var(--color-heading)] font-mono font-semibold hidden lg:block">
                     {s.revenue}
                   </span>
 
@@ -392,7 +421,7 @@ export default function Startups() {
 
                   <div className="hidden lg:block">
                     {s.change24h ? (
-                      <span className={`text-[12px] font-mono ${s.changePositive ? 'text-[var(--color-heading)]' : 'text-red-500'}`}>
+                      <span className={`text-[12px] font-mono font-semibold ${s.changePositive ? 'text-[#3d7a1c]' : 'text-red-500'}`}>
                         {s.change24h}
                       </span>
                     ) : (
@@ -401,28 +430,30 @@ export default function Startups() {
                   </div>
 
                   <div className="hidden lg:block">
-                    <span className={`inline-block text-[11px] font-semibold px-2.5 py-1 rounded-md
+                    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md
                       ${s.status === 'Graduated'
                         ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]'
                         : 'bg-amber-50 text-amber-600'
                       }`}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.status === 'Graduated' ? '#3d7a1c' : '#d97706' }} />
                       {s.status}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-3 lg:hidden text-[12px] flex-wrap">
-                    <span className="font-mono text-[var(--color-heading)]">{s.revenue}</span>
+                    <span className="font-mono font-semibold text-[var(--color-heading)]">{s.revenue}</span>
                     <span className="text-[var(--color-heading)] font-mono">{s.token}</span>
                     {s.mcap && (
                       <span className="font-mono text-[var(--color-muted)]">{s.mcap}</span>
                     )}
                     {s.change24h && (
-                      <span className={`font-mono ${s.changePositive ? 'text-[var(--color-heading)]' : 'text-red-500'}`}>
+                      <span className={`font-mono font-semibold ${s.changePositive ? 'text-[#3d7a1c]' : 'text-red-500'}`}>
                         {s.change24h}
                       </span>
                     )}
-                    <span className={`px-2 py-0.5 rounded text-[11px] font-semibold
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold
                       ${s.status === 'Graduated' ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]' : 'bg-amber-50 text-amber-600'}`}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.status === 'Graduated' ? '#3d7a1c' : '#d97706' }} />
                       {s.status}
                     </span>
                   </div>
@@ -463,7 +494,7 @@ export default function Startups() {
               <TransitionLink
                 to="/create"
                 className="h-11 px-7 rounded-full text-[14px] font-medium cursor-pointer shrink-0
-                           bg-[var(--color-accent)] text-[#163300]
+                           bg-[var(--color-accent)] text-[#0d2000]
                            hover:shadow-[0_0_30px_rgba(159,232,112,0.3)] hover:scale-[1.02] transition-all duration-200
                            inline-flex items-center gap-2"
               >

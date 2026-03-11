@@ -15,13 +15,13 @@ export default function Footer() {
 
         <div className="flex items-center gap-5 md:gap-7">
           {[
-            { label: 'Twitter', icon: 'globe' },
-            { label: 'Discord', icon: 'terminal' },
-            { label: 'Docs', icon: 'database' },
-          ].map(({ label, icon }) => (
+            { label: 'Twitter', icon: 'globe', href: 'https://x.com/agentvalley' },
+            { label: 'Discord', icon: 'terminal', href: 'https://discord.gg/agentvalley' },
+            { label: 'Docs', icon: 'database', href: 'https://docs.agentvalley.com' },
+          ].map(({ label, icon, href }) => (
             <a
               key={label}
-              href="#"
+              href={href}
               className="text-[13px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors
                          inline-flex items-center gap-1.5"
             >

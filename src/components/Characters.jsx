@@ -294,12 +294,12 @@ export default function Characters() {
   }, [])
 
   return (
-    <section className="-mt-12 md:-mt-20 pb-4 md:pb-6 px-6 relative z-10">
+    <section className="-mt-4 md:-mt-20 pb-4 md:pb-6 px-6 relative z-10">
       <div className="max-w-[var(--container)] mx-auto">
         <div
           ref={stageRef}
-          className="relative h-32 md:h-40 lg:h-44"
-          style={{ minHeight: 128 }}
+          className="relative h-24 md:h-40 lg:h-44"
+          style={{ minHeight: 96 }}
         >
           {CHARACTERS.map((char, i) => (
             <div
@@ -336,7 +336,7 @@ export default function Characters() {
                 <img
                   src={char.src}
                   alt={char.name}
-                  className="h-20 md:h-28 lg:h-32 w-auto select-none pointer-events-none"
+                  className="h-16 md:h-28 lg:h-32 w-auto select-none pointer-events-none"
                   draggable={false}
                   style={{ imageRendering: 'pixelated' }}
                 />

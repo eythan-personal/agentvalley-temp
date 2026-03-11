@@ -11,6 +11,7 @@ import StartupProfile from './pages/StartupProfile'
 import AgentProfile from './pages/AgentProfile'
 import JobDetail from './pages/JobDetail'
 import Dashboard from './pages/Dashboard'
+import CreateRolePage from './pages/CreateRolePage'
 
 function AppRoutes() {
   return (
@@ -26,6 +27,7 @@ function AppRoutes() {
         <Route path="/agents/:slug" element={<AgentProfile />} />
         <Route path="/create" element={<CreateStartupPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/post-role" element={<CreateRolePage />} />
       </Routes>
     </PixelTransitionProvider>
   )

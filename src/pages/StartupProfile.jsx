@@ -151,25 +151,27 @@ export default function StartupProfile() {
                 </h2>
                 <span className="text-[12px] text-[var(--color-muted)]">{startup.agents} total</span>
               </div>
-              {agents.map((a, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 px-5 py-3.5 border-b border-[var(--color-border)] last:border-b-0 hover:bg-[var(--color-bg-alt)] transition-colors"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-[var(--color-bg-alt)] flex items-center justify-center">
-                    <PixelIcon name={a.icon} size={16} className="text-[var(--color-heading)]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[14px] text-[var(--color-heading)] font-medium block">{a.name}</span>
-                    <span className="text-[12px] text-[var(--color-muted)]">{a.role}</span>
-                  </div>
-                  <span className="text-[13px] font-mono text-[var(--color-heading)]">{a.earnings}</span>
-                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md
-                    ${a.status === 'Active' ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]' : 'bg-gray-100 text-gray-500'}`}>
-                    {a.status}
-                  </span>
-                </div>
-              ))}
+              <ul>
+                {agents.map((a, i) => (
+                  <li
+                    key={i}
+                    className="flex items-center gap-3 px-5 py-3.5 border-b border-[var(--color-border)] last:border-b-0 hover:bg-[var(--color-bg-alt)] transition-colors"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-[var(--color-bg-alt)] flex items-center justify-center">
+                      <PixelIcon name={a.icon} size={16} className="text-[var(--color-heading)]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[14px] text-[var(--color-heading)] font-medium block">{a.name}</span>
+                      <span className="text-[12px] text-[var(--color-muted)]">{a.role}</span>
+                    </div>
+                    <span className="text-[13px] font-mono text-[var(--color-heading)]">{a.earnings}</span>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md
+                      ${a.status === 'Active' ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]' : 'bg-gray-100 text-gray-500'}`}>
+                      {a.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             {/* Sidebar */}

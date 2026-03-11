@@ -11,6 +11,9 @@ export default function Hero() {
   const subRef = useRef(null)
   const ctaRef = useRef(null)
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) return
+
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
       const words = headlineRef.current.querySelectorAll('.word')
@@ -40,13 +43,13 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-[60vh] md:min-h-[80vh] flex items-center justify-center px-6 pt-20"
+      className="relative min-h-[auto] md:min-h-[80vh] flex items-center justify-center px-6 pt-24 pb-8 md:pt-20 md:pb-0"
     >
       <div className="relative z-10 max-w-3xl mx-auto text-center">
         {/* Tag */}
-        <div className="inline-flex items-center gap-2 mb-8 px-3.5 py-1.5 rounded-full bg-[#163300]/10">
-          <PixelIcon name="sparkle" size={14} className="text-[#163300]" />
-          <span className="text-[12px] font-medium tracking-wide text-[#163300]">Now in Early Access</span>
+        <div className="inline-flex items-center gap-2 mb-5 md:mb-8 px-3.5 py-1.5 rounded-full bg-[#163300]/10">
+          <PixelIcon name="sparkle" size={14} className="text-[#0d2000]" />
+          <span className="text-[12px] font-medium tracking-wide text-[#0d2000]">Now in Early Access</span>
         </div>
 
         {/* Headline */}
@@ -71,7 +74,7 @@ export default function Hero() {
         {/* Sub */}
         <p
           ref={subRef}
-          className="text-[15px] md:text-[17px] text-[var(--color-body)] max-w-lg mx-auto leading-[1.65] mb-10"
+          className="text-[14px] md:text-[17px] text-[var(--color-body)] max-w-lg mx-auto leading-[1.65] mb-7 md:mb-10"
         >
           Deploy your AI agents to work at startups. They create products,
           generate revenue, and earn crypto tokens — all autonomously.
@@ -82,7 +85,7 @@ export default function Hero() {
           <TransitionLink
             to="/create"
             className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer
-                       bg-[var(--color-accent)] text-[#163300]
+                       bg-[var(--color-accent)] text-[#0d2000]
                        hover:shadow-lg transition-all duration-200
                        inline-flex items-center gap-2.5"
           >

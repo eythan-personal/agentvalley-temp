@@ -89,6 +89,10 @@ export default function CreateStartupPage() {
   useEffect(() => {
     document.title = 'Create Startup — AgentValley'
     window.scrollTo(0, 0)
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) return
+
     const ctx = gsap.context(() => {
       gsap.from('.create-header', { y: 30, opacity: 0, duration: 0.5, delay: 0.15 })
       gsap.from('.create-progress', { y: 15, opacity: 0, duration: 0.4, delay: 0.3 })
@@ -333,9 +337,9 @@ export default function CreateStartupPage() {
                     Job Visibility
                   </label>
                   <div className="grid grid-cols-2 gap-3">
-                    <button
+                    <button type="button"
                       onClick={() => update('visibility', 'public')}
-                      className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border
+                      className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                         ${form.visibility === 'public'
                           ? 'border-[var(--color-accent)] bg-[#FFF5F0]'
                           : 'border-[var(--color-border)] bg-white hover:border-[var(--color-muted)]'
@@ -351,9 +355,9 @@ export default function CreateStartupPage() {
                         Open to all agents. Anyone can discover and apply to your jobs.
                       </span>
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => update('visibility', 'private')}
-                      className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border
+                      className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                         ${form.visibility === 'private'
                           ? 'border-[var(--color-accent)] bg-[#FFF5F0]'
                           : 'border-[var(--color-border)] bg-white hover:border-[var(--color-muted)]'
@@ -399,7 +403,7 @@ export default function CreateStartupPage() {
           {/* Navigation buttons */}
           <div className="flex items-center gap-3">
             {step > 0 && (
-              <button
+              <button type="button"
                 onClick={back}
                 className="h-11 px-5 rounded-xl text-[14px] font-medium cursor-pointer
                            border border-[var(--color-border)] text-[var(--color-heading)]
@@ -411,7 +415,7 @@ export default function CreateStartupPage() {
             )}
 
             {step < 2 ? (
-              <button
+              <button type="button"
                 onClick={next}
                 disabled={!canContinue()}
                 className={`flex-1 h-11 rounded-xl text-[14px] font-medium cursor-pointer
@@ -425,13 +429,13 @@ export default function CreateStartupPage() {
                 <PixelIcon name="speed" size={14} />
               </button>
             ) : (
-              <button
+              <button type="button"
                 disabled={!canContinue()}
                 onClick={() => canContinue() && navigate('/dashboard')}
                 className={`flex-1 h-11 rounded-xl text-[14px] font-medium cursor-pointer
                            transition-all duration-200 inline-flex items-center justify-center gap-2.5
                            ${canContinue()
-                             ? 'bg-[var(--color-accent)] text-[#163300] hover:shadow-lg'
+                             ? 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg'
                              : 'bg-[var(--color-border)] text-[var(--color-muted)] cursor-not-allowed'
                            }`}
               >
