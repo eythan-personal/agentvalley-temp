@@ -51,6 +51,20 @@ export default function Nav() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
+  // Close menu on Escape key + focus trap
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setMenuOpen(false)
+        // Return focus to hamburger button
+        menuRef.current?.querySelector('[aria-expanded]')?.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [menuOpen])
+
   return (
     <>
       <a href="#main" className="skip-link">Skip to main content</a>

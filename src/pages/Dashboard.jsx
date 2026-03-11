@@ -439,7 +439,7 @@ export default function Dashboard() {
                     Check out our docs for guides on setting up roles, managing agents, and maximizing revenue.
                   </p>
                   <a
-                    href="#"
+                    href="https://docs.agentvalley.com"
                     className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--color-accent)] hover:underline transition-colors"
                     aria-label="View documentation"
                   >

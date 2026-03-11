@@ -132,10 +132,10 @@ export default function CreateRolePage() {
               </h2>
               <button type="button"
                 onClick={() => { navigator.vibrate?.(10); addRole() }}
-                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--color-accent)]
-                           hover:text-[var(--color-heading)] transition-colors cursor-pointer bg-transparent border-none"
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--color-heading)]
+                           hover:text-[var(--color-accent)] transition-colors cursor-pointer bg-transparent border-none"
               >
-                <span className="text-[16px] leading-none">+</span>
+                <span className="text-[16px] leading-none text-[var(--color-accent)]">+</span>
                 Add Role
               </button>
             </div>
@@ -172,14 +172,16 @@ export default function CreateRolePage() {
 
                   {/* Job Title */}
                   <div className="mb-4">
-                    <label className="block text-[13px] font-semibold text-[var(--color-heading)] mb-1.5">
-                      Job Title
+                    <label htmlFor={`title-${role.id}`} className="block text-[13px] font-semibold text-[var(--color-heading)] mb-1.5">
+                      Job Title <span className="text-red-400">*</span>
                     </label>
                     <input
+                      id={`title-${role.id}`}
                       type="text"
                       placeholder="e.g. Frontend Engineer"
                       value={role.title}
                       onChange={(e) => updateRole(role.id, 'title', e.target.value)}
+                      required
                       className="w-full h-11 px-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
                                  placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
                     />
@@ -187,10 +189,11 @@ export default function CreateRolePage() {
 
                   {/* Job Description */}
                   <div className="mb-4">
-                    <label className="block text-[13px] font-semibold text-[var(--color-heading)] mb-1.5">
+                    <label htmlFor={`desc-${role.id}`} className="block text-[13px] font-semibold text-[var(--color-heading)] mb-1.5">
                       Job Description
                     </label>
                     <textarea
+                      id={`desc-${role.id}`}
                       placeholder="What will this agent do in this role?"
                       value={role.description}
                       onChange={(e) => updateRole(role.id, 'description', e.target.value)}
@@ -202,7 +205,7 @@ export default function CreateRolePage() {
 
                   {/* Required Permissions */}
                   <div className="mb-4">
-                    <label className="block text-[13px] font-semibold text-[var(--color-heading)] mb-1.5">
+                    <label htmlFor={`perms-${role.id}`} className="block text-[13px] font-semibold text-[var(--color-heading)] mb-1.5">
                       Required Permissions
                     </label>
 
@@ -234,6 +237,7 @@ export default function CreateRolePage() {
                         <PixelIcon name="search" size={14} />
                       </span>
                       <input
+                        id={`perms-${role.id}`}
                         type="text"
                         placeholder="Search tools to add..."
                         value={permSearch[role.id] || ''}
@@ -242,6 +246,12 @@ export default function CreateRolePage() {
                           setOpenDropdown(role.id)
                         }}
                         onFocus={() => setOpenDropdown(role.id)}
+                        onKeyDown={(e) => { if (e.key === 'Escape') setOpenDropdown(null) }}
+                        role="combobox"
+                        aria-expanded={openDropdown === role.id && getFilteredPerms(role.id).length > 0}
+                        aria-controls={`perms-list-${role.id}`}
+                        aria-autocomplete="list"
+                        autoComplete="off"
                         className="w-full h-11 pl-9 pr-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
                                    placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
                       />
@@ -254,24 +264,30 @@ export default function CreateRolePage() {
                           onClick={() => setOpenDropdown(null)}
                           aria-hidden="true"
                         />
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[var(--color-border)] rounded-xl shadow-lg z-20 max-h-48 overflow-y-auto">
+                        <ul
+                          id={`perms-list-${role.id}`}
+                          role="listbox"
+                          aria-label="Available permissions"
+                          className="absolute top-full left-0 right-0 mt-1 bg-white border border-[var(--color-border)] rounded-xl shadow-lg z-20 max-h-48 overflow-y-auto list-none p-0 m-0"
+                        >
                           {getFilteredPerms(role.id).map(perm => (
-                            <button type="button"
-                              key={perm}
-                              onMouseDown={(e) => {
-                                e.preventDefault()
-                                togglePermission(role.id, perm)
-                                setPermSearch(prev => ({ ...prev, [role.id]: '' }))
-                              }}
-                              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[var(--color-heading)] font-medium
-                                         hover:bg-[var(--color-accent-soft)] focus-visible:bg-[var(--color-accent-soft)] transition-colors cursor-pointer bg-transparent border-none text-left"
-                              style={{ transitionTimingFunction: 'steps(3)' }}
-                            >
-                              <PixelIcon name="shield" size={14} className="text-[var(--color-muted)]" />
-                              {perm}
-                            </button>
+                            <li key={perm} role="option" aria-selected={false}>
+                              <button type="button"
+                                onMouseDown={(e) => {
+                                  e.preventDefault()
+                                  togglePermission(role.id, perm)
+                                  setPermSearch(prev => ({ ...prev, [role.id]: '' }))
+                                }}
+                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[var(--color-heading)] font-medium
+                                           hover:bg-[var(--color-accent-soft)] focus-visible:bg-[var(--color-accent-soft)] transition-colors cursor-pointer bg-transparent border-none text-left"
+                                style={{ transitionTimingFunction: 'steps(3)' }}
+                              >
+                                <PixelIcon name="shield" size={14} className="text-[var(--color-muted)]" />
+                                {perm}
+                              </button>
+                            </li>
                           ))}
-                        </div>
+                        </ul>
                         </>
                       )}
                     </div>
@@ -279,15 +295,17 @@ export default function CreateRolePage() {
 
                   {/* Token Allocation */}
                   <div>
-                    <label className="block text-[13px] font-semibold text-[var(--color-heading)] mb-1.5">
+                    <label htmlFor={`tokens-${role.id}`} className="block text-[13px] font-semibold text-[var(--color-heading)] mb-1.5">
                       Token Allocation
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-accent)]">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-heading)]">
                         <PixelIcon name="coins" size={14} />
                       </span>
                       <input
+                        id={`tokens-${role.id}`}
                         type="text"
+                        inputMode="numeric"
                         placeholder="e.g. 5,000"
                         value={role.tokenAllocation}
                         onChange={(e) => updateRole(role.id, 'tokenAllocation', e.target.value)}

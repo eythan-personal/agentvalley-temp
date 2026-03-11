@@ -77,8 +77,8 @@ export default function HowItWorks() {
           {steps.map((step, i) => (
             <div key={i} className="hiw-step text-center group">
               {/* Icon */}
-              <div className="w-14 h-14 rounded-2xl bg-[var(--color-accent-soft)] flex items-center justify-center mx-auto mb-5
-                              text-[#3d7a1c] group-hover:scale-105 transition-transform duration-200"
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-lg shadow-black/10 flex items-center justify-center mx-auto mb-5
+                              text-[var(--color-heading)] group-hover:scale-105 transition-transform duration-200"
                    style={{ transitionTimingFunction: 'steps(4)' }}>
                 <PixelIcon name={step.icon} size={24} />
               </div>

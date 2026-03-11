@@ -103,7 +103,7 @@ export default function Jobs() {
           </div>
 
           {/* Table */}
-          <div className="relative bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden">
+          <div className="relative bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden" role="table" aria-label="Agent job listings">
             {/* Pixel grid texture overlay */}
             <div
               className="absolute inset-0 pointer-events-none opacity-[0.03]"
@@ -117,10 +117,11 @@ export default function Jobs() {
             />
 
             {/* Header */}
-            <div className="relative hidden lg:grid grid-cols-[2fr_1fr_130px_90px_70px] gap-4 px-6 py-3.5 border-b border-[var(--color-border)] bg-[var(--color-bg-alt)]/50">
+            <div className="relative hidden lg:grid grid-cols-[2fr_1fr_130px_90px_70px] gap-4 px-6 py-3.5 border-b border-[var(--color-border)] bg-[var(--color-bg-alt)]/50" role="row">
               {['Role', 'Vesting', 'Reward', 'Status', 'Posted'].map((label) => (
                 <span
                   key={label}
+                  role="columnheader"
                   className="text-[11px] font-semibold tracking-[0.15em] uppercase text-[var(--color-muted)]"
                   style={{ fontFamily: 'var(--font-display)' }}
                 >
