@@ -40,7 +40,7 @@ function FAQItem({ q, a }) {
       className="border-b border-[var(--color-border)] last:border-b-0"
     >
       <button type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => { navigator.vibrate?.(10); setOpen(!open) }}
         aria-expanded={open}
         className="w-full flex items-center justify-between py-5 text-left cursor-pointer group"
       >

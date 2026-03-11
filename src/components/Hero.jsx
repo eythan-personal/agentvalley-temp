@@ -84,6 +84,7 @@ export default function Hero() {
         <div ref={ctaRef} className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <TransitionLink
             to="/create"
+            onClick={() => navigator.vibrate?.(10)}
             className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer
                        bg-[var(--color-accent)] text-[#0d2000]
                        hover:shadow-lg transition-all duration-200
@@ -94,6 +95,7 @@ export default function Hero() {
           </TransitionLink>
           <a
             href="#how-it-works"
+            onClick={() => navigator.vibrate?.(10)}
             className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer
                        border border-[var(--color-border)] text-[var(--color-heading)]
                        hover:border-[var(--color-muted)] hover:bg-white transition-all duration-200

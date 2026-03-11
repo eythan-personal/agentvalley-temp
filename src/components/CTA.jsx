@@ -63,7 +63,7 @@ export default function CTA() {
 
           {!authenticated && (
             <button type="button"
-              onClick={login}
+              onClick={() => { navigator.vibrate?.(10); login() }}
               className="h-12 px-8 rounded-full text-[14px] font-medium cursor-pointer
                          bg-[var(--color-heading)] text-white
                          hover:bg-[#343433] hover:shadow-lg transition-all duration-200

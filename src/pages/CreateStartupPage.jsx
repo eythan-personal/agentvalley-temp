@@ -164,7 +164,7 @@ export default function CreateStartupPage() {
                     role="button"
                     tabIndex={0}
                     aria-label="Upload banner image"
-                    onClick={() => bannerInputRef.current?.click()}
+                    onClick={() => { navigator.vibrate?.(10); bannerInputRef.current?.click() }}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bannerInputRef.current?.click() } }}
                     className="w-full h-28 md:h-36 cursor-pointer overflow-hidden group relative rounded-t-2xl"
                     style={{ backgroundColor: form.banner ? undefined : 'var(--color-bg-alt)' }}
@@ -196,7 +196,7 @@ export default function CreateStartupPage() {
                       role="button"
                       tabIndex={0}
                       aria-label="Upload avatar image"
-                      onClick={() => avatarInputRef.current?.click()}
+                      onClick={() => { navigator.vibrate?.(10); avatarInputRef.current?.click() }}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); avatarInputRef.current?.click() } }}
                       className="w-[72px] h-[72px] rounded-2xl cursor-pointer overflow-hidden border-[3px] border-white group relative shadow-sm"
                       style={{ backgroundColor: form.avatar ? undefined : 'var(--color-accent)' }}
@@ -348,7 +348,7 @@ export default function CreateStartupPage() {
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button type="button"
-                      onClick={() => update('visibility', 'public')}
+                      onClick={() => { navigator.vibrate?.(10); update('visibility', 'public') }}
                       className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                         ${form.visibility === 'public'
                           ? 'border-[var(--color-accent)] bg-[#FFF5F0]'
@@ -366,7 +366,7 @@ export default function CreateStartupPage() {
                       </span>
                     </button>
                     <button type="button"
-                      onClick={() => update('visibility', 'private')}
+                      onClick={() => { navigator.vibrate?.(10); update('visibility', 'private') }}
                       className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                         ${form.visibility === 'private'
                           ? 'border-[var(--color-accent)] bg-[#FFF5F0]'
@@ -414,7 +414,7 @@ export default function CreateStartupPage() {
           <div className="fixed bottom-0 left-0 right-0 md:static bg-white border-t border-[var(--color-border)] md:border-0 p-4 md:p-0 z-30 md:bg-transparent flex items-center gap-3">
             {step > 0 && (
               <button type="button"
-                onClick={back}
+                onClick={() => { navigator.vibrate?.(10); back() }}
                 className="h-11 px-5 rounded-xl text-[14px] font-medium cursor-pointer
                            border border-[var(--color-border)] text-[var(--color-heading)]
                            hover:border-[var(--color-muted)] transition-all duration-200
@@ -426,7 +426,7 @@ export default function CreateStartupPage() {
 
             {step < 2 ? (
               <button type="button"
-                onClick={next}
+                onClick={() => { navigator.vibrate?.(10); next() }}
                 disabled={!canContinue()}
                 className={`flex-1 h-11 rounded-xl text-[14px] font-medium cursor-pointer
                            transition-all duration-200 inline-flex items-center justify-center gap-2
@@ -441,7 +441,7 @@ export default function CreateStartupPage() {
             ) : (
               <button type="button"
                 disabled={!canContinue()}
-                onClick={() => canContinue() && navigate('/dashboard')}
+                onClick={() => { navigator.vibrate?.(15); canContinue() && navigate('/dashboard') }}
                 className={`flex-1 h-11 rounded-xl text-[14px] font-medium cursor-pointer
                            transition-all duration-200 inline-flex items-center justify-center gap-2.5
                            ${canContinue()

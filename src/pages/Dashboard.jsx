@@ -140,6 +140,7 @@ export default function Dashboard() {
                   View Public Profile
                 </TransitionLink>
                 <button type="button"
+                  onClick={() => navigator.vibrate?.(10)}
                   className="h-9 px-4 rounded-full text-[13px] font-medium cursor-pointer
                              border border-[var(--color-border)] text-[var(--color-heading)]
                              hover:border-[var(--color-muted)] hover:bg-[var(--color-accent-soft)] transition-all duration-200
@@ -365,6 +366,7 @@ export default function Dashboard() {
                       Post a Role
                     </TransitionLink>
                     <button type="button"
+                      onClick={() => navigator.vibrate?.(10)}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium
                                  text-[var(--color-heading)] hover:bg-[var(--color-accent-soft)] transition-all duration-200
                                  cursor-pointer bg-transparent border-none text-left relative group"

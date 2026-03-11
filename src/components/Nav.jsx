@@ -138,7 +138,7 @@ export default function Nav() {
 
             {/* Hamburger — visible below md */}
             <button type="button"
-              onClick={() => setMenuOpen(prev => !prev)}
+              onClick={() => { navigator.vibrate?.(10); setMenuOpen(prev => !prev) }}
               className="md:hidden flex items-center justify-center w-11 h-11 rounded-lg
                          hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer text-[var(--color-heading)]"
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
@@ -160,6 +160,7 @@ export default function Nav() {
               <TransitionLink
                 key={link.to}
                 to={link.to}
+                onClick={() => navigator.vibrate?.(10)}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-lg text-[14px] font-medium transition-colors min-h-[44px] ${
                   location.pathname === link.to
                     ? 'text-[var(--color-accent)] bg-[var(--color-accent)]/8'
@@ -177,6 +178,7 @@ export default function Nav() {
             {showCreateStartup && (
               <TransitionLink
                 to="/create"
+                onClick={() => navigator.vibrate?.(10)}
                 className="flex items-center gap-2 px-3 py-3 rounded-lg text-[14px] font-medium
                            text-[#0d2000] hover:bg-[var(--color-accent)]/10 transition-colors"
               >
@@ -189,6 +191,7 @@ export default function Nav() {
               <>
                 <TransitionLink
                   to="/dashboard"
+                  onClick={() => navigator.vibrate?.(10)}
                   className="flex items-center justify-center h-11 rounded-full text-[14px] font-medium
                              bg-[var(--color-heading)] text-white
                              hover:bg-[#343433] transition-colors mt-1"
@@ -196,7 +199,7 @@ export default function Nav() {
                   Dashboard
                 </TransitionLink>
                 <button type="button"
-                  onClick={() => { logout(); setMenuOpen(false) }}
+                  onClick={() => { navigator.vibrate?.(10); logout(); setMenuOpen(false) }}
                   className="flex items-center justify-center h-11 rounded-full text-[14px] font-medium
                              text-[var(--color-muted)] hover:text-[var(--color-heading)]
                              border border-[var(--color-border)] transition-colors cursor-pointer mt-1"
@@ -207,6 +210,7 @@ export default function Nav() {
             ) : (
               <TransitionLink
                 to="/dashboard"
+                onClick={() => navigator.vibrate?.(10)}
                 className="flex items-center justify-center gap-2 h-11 rounded-full text-[14px] font-medium
                            bg-[var(--color-heading)] text-white
                            hover:bg-[#343433] transition-colors mt-1"

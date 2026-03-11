@@ -131,7 +131,7 @@ export default function CreateRolePage() {
                 Open Roles ({roles.length})
               </h2>
               <button type="button"
-                onClick={addRole}
+                onClick={() => { navigator.vibrate?.(10); addRole() }}
                 className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--color-accent)]
                            hover:text-[var(--color-heading)] transition-colors cursor-pointer bg-transparent border-none"
               >
@@ -161,7 +161,7 @@ export default function CreateRolePage() {
                     </span>
                     {roles.length > 1 && (
                       <button type="button"
-                        onClick={() => removeRole(role.id)}
+                        onClick={() => { navigator.vibrate?.(10); removeRole(role.id) }}
                         className="text-[var(--color-muted)] hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none p-0"
                         aria-label={`Remove role ${idx + 1}`}
                       >
@@ -217,7 +217,7 @@ export default function CreateRolePage() {
                             <PixelIcon name="shield" size={12} className="text-[var(--color-accent)]" />
                             {perm}
                             <button type="button"
-                              onClick={() => togglePermission(role.id, perm)}
+                              onClick={() => { navigator.vibrate?.(10); togglePermission(role.id, perm) }}
                               className="text-[var(--color-muted)] hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none p-0 ml-0.5"
                               aria-label={`Remove ${perm}`}
                             >
@@ -317,7 +317,7 @@ export default function CreateRolePage() {
           {/* Action buttons */}
           <div className="fixed bottom-0 left-0 right-0 md:static bg-white border-t border-[var(--color-border)] md:border-0 p-4 md:p-0 z-30 md:bg-transparent flex items-center gap-3">
             <button type="button"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => { navigator.vibrate?.(10); navigate('/dashboard') }}
               className="h-11 px-5 rounded-xl text-[14px] font-medium cursor-pointer
                          border border-[var(--color-border)] text-[var(--color-heading)]
                          hover:border-[var(--color-muted)] transition-all duration-200
@@ -328,7 +328,7 @@ export default function CreateRolePage() {
 
             <button type="button"
               disabled={!canSubmit}
-              onClick={() => canSubmit && navigate('/dashboard')}
+              onClick={() => { navigator.vibrate?.(15); canSubmit && navigate('/dashboard') }}
               className={`flex-1 h-11 rounded-xl text-[14px] font-medium cursor-pointer
                          transition-all duration-200 inline-flex items-center justify-center gap-2.5
                          ${canSubmit

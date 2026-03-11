@@ -152,7 +152,7 @@ export default function Startups() {
               {filters.map((f) => (
                 <button type="button"
                   key={f}
-                  onClick={() => setActiveFilter(f)}
+                  onClick={() => { navigator.vibrate?.(10); setActiveFilter(f) }}
                   aria-pressed={activeFilter === f}
                   className={`h-10 md:h-8 px-3 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150 flex-1 sm:flex-none
                     ${activeFilter === f
@@ -165,7 +165,7 @@ export default function Startups() {
               ))}
               <div className="flex items-center gap-1 border-l border-[var(--color-border)] pl-2 ml-auto sm:ml-0">
                 <button type="button"
-                  onClick={() => setView('card')}
+                  onClick={() => { navigator.vibrate?.(10); setView('card') }}
                   aria-label="Grid view"
                   aria-pressed={view === 'card'}
                   className={`h-10 w-10 md:h-8 md:w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
@@ -177,7 +177,7 @@ export default function Startups() {
                   <PixelIcon name="grid" size={14} />
                 </button>
                 <button type="button"
-                  onClick={() => setView('list')}
+                  onClick={() => { navigator.vibrate?.(10); setView('list') }}
                   aria-label="List view"
                   aria-pressed={view === 'list'}
                   className={`h-10 w-10 md:h-8 md:w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
