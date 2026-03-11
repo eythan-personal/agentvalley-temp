@@ -5,6 +5,7 @@ import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
+import TokenIcon from '../components/TokenIcon'
 import { jobs } from '../data/jobs'
 
 const filters = ['All', 'Urgent', 'Medium', 'Open']
@@ -179,7 +180,7 @@ export default function Jobs() {
 
                 {/* Token reward */}
                 <div className="hidden lg:flex items-center gap-1.5">
-                  <PixelIcon name="coins" size={14} className="text-[var(--color-accent)]" />
+                  <TokenIcon token={job.token} color={job.tokenColor} icon={job.tokenIcon} size={15} />
                   <span className="text-[13px] font-mono font-semibold text-[var(--color-heading)]">{job.reward}</span>
                   <span className="text-[10px] text-[var(--color-muted)] font-mono">{job.token}</span>
                 </div>
@@ -203,8 +204,8 @@ export default function Jobs() {
 
                 {/* Mobile meta */}
                 <div className="flex items-center gap-3 lg:hidden text-[12px]">
-                  <span className="flex items-center gap-1 text-[var(--color-heading)]">
-                    <PixelIcon name="coins" size={12} className="text-[var(--color-accent)]" />
+                  <span className="flex items-center gap-1.5 text-[var(--color-heading)]">
+                    <TokenIcon token={job.token} color={job.tokenColor} icon={job.tokenIcon} size={14} />
                     <span className="font-mono font-semibold">{job.reward} {job.token}</span>
                   </span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold

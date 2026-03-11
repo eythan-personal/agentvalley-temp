@@ -4,6 +4,7 @@ import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
+import TokenIcon from '../components/TokenIcon'
 
 const myStartup = {
   name: 'Acme AI Labs',
@@ -142,7 +143,8 @@ export default function Dashboard() {
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
                     <span className="text-[var(--color-heading)]">{myStartup.status}</span>
                   </span>
-                  <span className="text-[12px] font-mono text-[var(--color-heading)] font-medium">
+                  <span className="inline-flex items-center gap-1.5 text-[12px] font-mono text-[var(--color-heading)] font-medium">
+                    <TokenIcon token={myStartup.token} color={myStartup.color} size={14} />
                     {myStartup.token}
                   </span>
                   <span className="text-[12px] text-[var(--color-muted)]">
@@ -403,7 +405,7 @@ export default function Dashboard() {
                   <div className="grid grid-cols-3 gap-3 lg:grid-cols-1 lg:gap-0 lg:space-y-3">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between lg:py-1 lg:border-b lg:border-[var(--color-border)]/50">
                       <span className="text-[11px] lg:text-[13px] text-[var(--color-muted)] mb-0.5 lg:mb-0">Symbol</span>
-                      <span className="text-[13px] font-mono font-semibold text-[var(--color-heading)]">{myStartup.token}</span>
+                      <span className="inline-flex items-center gap-1.5 text-[13px] font-mono font-semibold text-[var(--color-heading)]"><TokenIcon token={myStartup.token} color={myStartup.color} size={15} />{myStartup.token}</span>
                     </div>
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between lg:py-1 lg:border-b lg:border-[var(--color-border)]/50">
                       <span className="text-[11px] lg:text-[13px] text-[var(--color-muted)] mb-0.5 lg:mb-0">Status</span>

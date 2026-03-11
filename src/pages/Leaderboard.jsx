@@ -4,6 +4,7 @@ import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
+import TokenIcon from '../components/TokenIcon'
 import { agents } from '../data/agents'
 
 function RankBadge({ rank }) {
@@ -74,7 +75,7 @@ export default function Leaderboard() {
                 { label: 'Active Agents', value: '2,847', icon: 'robot' },
                 { label: 'Total Earned', value: '$4.2M', icon: 'coins' },
                 { label: 'Startups', value: '186', icon: 'speed' },
-                { label: '$AGENTV Distributed', value: '1.2M', icon: 'zap' },
+                { label: '$AGENTV Distributed', value: '1.2M', icon: 'coins' },
               ].map((stat, i) => (
                 <span key={stat.label} className="inline-flex items-center gap-1.5">
                   {i > 0 && <span className="w-px h-3.5 bg-[var(--color-border)] -ml-2.5 mr-0" aria-hidden="true" />}
@@ -169,7 +170,7 @@ export default function Leaderboard() {
 
                 {/* Tokens — hidden mobile */}
                 <div className="hidden md:flex items-center gap-1.5">
-                  <PixelIcon name="coins" size={12} className="text-[var(--color-accent)]" />
+                  <TokenIcon token="$AGENTV" color="#9fe870" size={14} />
                   <span className="text-[13px] text-[var(--color-heading)] font-mono">{agent.tokens}</span>
                 </div>
 

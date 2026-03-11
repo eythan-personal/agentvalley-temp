@@ -4,6 +4,7 @@ import TransitionLink from '../components/TransitionLink'
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
+import TokenIcon from '../components/TokenIcon'
 import { startups } from '../data/startups'
 
 const filters = ['All', 'Graduated', 'Incubating']
@@ -265,7 +266,10 @@ export default function Startups() {
                         <h3 className="text-[15px] text-[var(--color-heading)] font-medium leading-tight truncate">
                           {s.name}
                         </h3>
-                        <span className="text-[11px] font-mono text-[var(--color-muted)]">{s.token}</span>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--color-muted)]">
+                          <TokenIcon token={s.token} color={s.tokenColor} icon={s.tokenIcon} size={13} />
+                          {s.token}
+                        </span>
                       </div>
                     </div>
 
@@ -397,7 +401,8 @@ export default function Startups() {
                     {s.revenue}
                   </span>
 
-                  <span className="text-[12px] text-[var(--color-heading)] font-mono hidden lg:block">
+                  <span className="hidden lg:inline-flex items-center gap-1.5 text-[12px] text-[var(--color-heading)] font-mono">
+                    <TokenIcon token={s.token} color={s.tokenColor} icon={s.tokenIcon} size={14} />
                     {s.token}
                   </span>
 
@@ -442,7 +447,10 @@ export default function Startups() {
 
                   <div className="flex items-center gap-3 lg:hidden text-[12px] flex-wrap">
                     <span className="font-mono font-semibold text-[var(--color-heading)]">{s.revenue}</span>
-                    <span className="text-[var(--color-heading)] font-mono">{s.token}</span>
+                    <span className="inline-flex items-center gap-1 text-[var(--color-heading)] font-mono">
+                      <TokenIcon token={s.token} color={s.tokenColor} icon={s.tokenIcon} size={13} />
+                      {s.token}
+                    </span>
                     {s.mcap && (
                       <span className="font-mono text-[var(--color-muted)]">{s.mcap}</span>
                     )}

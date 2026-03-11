@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import Nav from '../components/Nav'
 import PixelIcon from '../components/PixelIcon'
+import TokenIcon from '../components/TokenIcon'
 
 const categories = [
   'Creative', 'Engineering', 'Marketing', 'Finance', 'Security',
@@ -36,7 +37,9 @@ export default function CreateStartupPage() {
     description: '',
     category: '',
     color: '#9fe870',
+    hasToken: false,
     tokenName: '',
+    tokenIcon: null,
     website: '',
     vesting: '',
     visibility: 'public',
@@ -47,6 +50,7 @@ export default function CreateStartupPage() {
   const touchStartX = useRef(0)
   const avatarInputRef = useRef(null)
   const bannerInputRef = useRef(null)
+  const tokenIconInputRef = useRef(null)
 
   const update = (field, value) => setForm((prev) => ({ ...prev, [field]: value }))
 
@@ -59,7 +63,7 @@ export default function CreateStartupPage() {
 
   const canContinue = () => {
     if (step === 0) return form.name.trim() !== '' && form.description.trim() !== '' && form.category !== ''
-    if (step === 1) return form.tokenName.trim() !== '' && form.vesting !== ''
+    if (step === 1) return !form.hasToken || (form.tokenName.trim() !== '' && form.vesting !== '')
     return true
   }
 
@@ -288,54 +292,116 @@ export default function CreateStartupPage() {
             {/* Step 2: Token & Website */}
             {step === 1 && (
               <div>
-                <div className="mb-5">
-                  <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
-                    Token Name
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-muted)] font-mono">$</span>
-                    <input
-                      type="text"
-                      placeholder="ACME"
-                      value={form.tokenName}
-                      onChange={(e) => update('tokenName', e.target.value.toUpperCase())}
-                      autoFocus
-                      className="w-full h-11 pl-8 pr-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)] font-mono
-                                 placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors uppercase"
-                    />
+                {/* Token toggle */}
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <span className="text-[14px] font-medium text-[var(--color-heading)] inline-flex items-center gap-1.5" style={{ fontFamily: 'var(--font-display)' }}>
+                      <PixelIcon name="coins" size={15} className="text-[var(--color-accent)]" />
+                      Launch a Token
+                    </span>
+                    <span className="block text-[12px] text-[var(--color-muted)]">
+                      Create a token for your startup with revenue buyback
+                    </span>
                   </div>
-                </div>
-
-                <div className="mb-5">
-                  <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
-                    Vesting Schedule
-                  </label>
-                  <select
-                    value={form.vesting}
-                    onChange={(e) => update('vesting', e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
-                               outline-none focus:border-[var(--color-accent)] transition-colors appearance-none cursor-pointer"
-                    style={{ backgroundImage: selectArrow, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form.hasToken}
+                    onClick={() => { navigator.vibrate?.(10); update('hasToken', !form.hasToken) }}
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer shrink-0 ml-4
+                      ${form.hasToken ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'}`}
                   >
-                    <option value="" disabled>How patient are your token holders?</option>
-                    {vestingOptions.map((v) => (
-                      <option key={v} value={v}>{v}</option>
-                    ))}
-                  </select>
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200
+                        ${form.hasToken ? 'translate-x-5' : 'translate-x-0'}`}
+                    />
+                  </button>
                 </div>
 
-                {/* Info card */}
-                <div className="rounded-xl bg-[#EEF2FF] border border-[#DDE4FF] px-5 py-4">
-                  <div className="flex items-start gap-3">
-                    <span className="text-[#3784F4] mt-0.5"><PixelIcon name="repeat" size={16} /></span>
-                    <div>
-                      <span className="text-[13px] font-medium text-[var(--color-heading)] block mb-0.5">100% Revenue Buyback</span>
+                {form.hasToken ? (
+                  <>
+                    {/* Token icon + name row */}
+                    <div className="mb-5">
+                      <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
+                        Token Name
+                      </label>
+                      <div className="flex items-center gap-3">
+                        {/* Token icon upload */}
+                        <input type="file" accept="image/*" ref={tokenIconInputRef} onChange={handleFileUpload('tokenIcon')} className="hidden" />
+                        <button
+                          type="button"
+                          onClick={() => { navigator.vibrate?.(10); tokenIconInputRef.current?.click() }}
+                          className="w-11 h-11 rounded-full shrink-0 cursor-pointer overflow-hidden border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors relative group"
+                          aria-label="Upload token icon"
+                        >
+                          {form.tokenIcon ? (
+                            <img src={form.tokenIcon} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <TokenIcon token={form.tokenName ? `$${form.tokenName}` : '$'} color={form.color} size={44} />
+                          )}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                              <PixelIcon name="target" size={14} />
+                            </span>
+                          </div>
+                        </button>
+                        <div className="relative flex-1">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-muted)] font-mono">$</span>
+                          <input
+                            type="text"
+                            placeholder="ACME"
+                            value={form.tokenName}
+                            onChange={(e) => update('tokenName', e.target.value.toUpperCase())}
+                            autoFocus
+                            className="w-full h-11 pl-8 pr-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)] font-mono
+                                       placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors uppercase"
+                          />
+                        </div>
+                      </div>
+                      <span className="text-[11px] text-[var(--color-muted)] mt-1.5 block">Click the icon to upload a custom token image</span>
+                    </div>
+
+                    <div className="mb-5">
+                      <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
+                        Vesting Schedule
+                      </label>
+                      <select
+                        value={form.vesting}
+                        onChange={(e) => update('vesting', e.target.value)}
+                        className="w-full h-11 px-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
+                                   outline-none focus:border-[var(--color-accent)] transition-colors appearance-none cursor-pointer"
+                        style={{ backgroundImage: selectArrow, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
+                      >
+                        <option value="" disabled>How patient are your token holders?</option>
+                        {vestingOptions.map((v) => (
+                          <option key={v} value={v}>{v}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Info card */}
+                    <div className="rounded-xl bg-[#EEF2FF] border border-[#DDE4FF] px-5 py-4">
+                      <div className="flex items-start gap-3">
+                        <span className="text-[#3784F4] mt-0.5"><PixelIcon name="repeat" size={16} /></span>
+                        <div>
+                          <span className="text-[13px] font-medium text-[var(--color-heading)] block mb-0.5">100% Revenue Buyback</span>
+                          <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
+                            All revenue will buy back {form.tokenName ? `$${form.tokenName}` : 'your'} tokens from the open market, increasing value for all holders.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-border)] px-5 py-4">
+                    <div className="flex items-start gap-3">
+                      <span className="text-[var(--color-muted)] mt-0.5"><PixelIcon name="coins" size={16} /></span>
                       <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
-                        All revenue will buy back {form.tokenName ? `$${form.tokenName}` : 'your'} tokens from the open market, increasing value for all holders.
+                        You can always create a token later from your dashboard. Your startup will still be able to hire agents and operate without one.
                       </span>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -351,7 +417,7 @@ export default function CreateStartupPage() {
                       onClick={() => { navigator.vibrate?.(10); update('visibility', 'public') }}
                       className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                         ${form.visibility === 'public'
-                          ? 'border-[var(--color-accent)] bg-[#FFF5F0]'
+                          ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]'
                           : 'border-[var(--color-border)] bg-white hover:border-[var(--color-muted)]'
                         }`}
                     >
@@ -369,7 +435,7 @@ export default function CreateStartupPage() {
                       onClick={() => { navigator.vibrate?.(10); update('visibility', 'private') }}
                       className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                         ${form.visibility === 'private'
-                          ? 'border-[var(--color-accent)] bg-[#FFF5F0]'
+                          ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]'
                           : 'border-[var(--color-border)] bg-white hover:border-[var(--color-muted)]'
                         }`}
                     >
@@ -388,23 +454,27 @@ export default function CreateStartupPage() {
 
                 {/* Info cards */}
                 <div className="space-y-3 mb-2">
-                  <div className="rounded-xl bg-[#FFF8E1] border border-[#FFF0B3] px-5 py-3.5">
-                    <div className="flex items-start gap-3">
-                      <span className="text-[var(--color-accent)] mt-0.5"><PixelIcon name="coins" size={15} /></span>
-                      <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
-                        Creating a startup costs <strong>500 $PROMPT</strong>. This covers token deployment and bonding curve setup.
-                      </span>
-                    </div>
-                  </div>
+                  {form.hasToken && (
+                    <>
+                      <div className="rounded-xl bg-[#FFF8E1] border border-[#FFF0B3] px-5 py-3.5">
+                        <div className="flex items-start gap-3">
+                          <span className="text-[var(--color-accent)] mt-0.5"><PixelIcon name="coins" size={15} /></span>
+                          <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
+                            Creating a startup with a token costs <strong>500 $PROMPT</strong>. This covers token deployment and bonding curve setup.
+                          </span>
+                        </div>
+                      </div>
 
-                  <div className="rounded-xl bg-[#F0F0FF] border border-[#E0E0FF] px-5 py-3.5">
-                    <div className="flex items-start gap-3">
-                      <span className="text-[#7C3AED] mt-0.5"><PixelIcon name="chart" size={15} /></span>
-                      <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
-                        Upon graduation ($100K bonding curve), <strong>3% of token supply</strong> goes to AgentValley as a platform fee.
-                      </span>
-                    </div>
-                  </div>
+                      <div className="rounded-xl bg-[#F0F0FF] border border-[#E0E0FF] px-5 py-3.5">
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#7C3AED] mt-0.5"><PixelIcon name="chart" size={15} /></span>
+                          <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
+                            Upon graduation ($100K bonding curve), <strong>3% of token supply</strong> goes to AgentValley as a platform fee.
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -450,7 +520,7 @@ export default function CreateStartupPage() {
                            }`}
               >
                 <PixelIcon name="power" size={16} />
-                Create Startup · 500 $PROMPT
+                {form.hasToken ? 'Create Startup · 500 $PROMPT' : 'Create Startup'}
               </button>
             )}
           </div>

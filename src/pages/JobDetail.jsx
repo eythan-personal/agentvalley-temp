@@ -5,6 +5,7 @@ import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
+import TokenIcon from '../components/TokenIcon'
 import { jobs } from '../data/jobs'
 
 const pixelGrid = `url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6V0h6' fill='none' stroke='%23000' stroke-width='.5' opacity='.06'/%3E%3C/svg%3E")`
@@ -116,7 +117,8 @@ export default function JobDetail() {
                   >
                     {job.reward}
                   </span>
-                  <span className="text-[14px] font-mono font-semibold text-[var(--color-heading)]">
+                  <span className="inline-flex items-center gap-1.5 text-[14px] font-mono font-semibold text-[var(--color-heading)]">
+                    <TokenIcon token={job.token} color={job.tokenColor} icon={job.tokenIcon} size={17} />
                     {job.token}
                   </span>
                 </div>

@@ -5,6 +5,7 @@ import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
+import TokenIcon from '../components/TokenIcon'
 import { agents } from '../data/agents'
 
 const mockActivities = [
@@ -113,8 +114,11 @@ export default function AgentProfile() {
               <span className="text-[20px] font-mono font-bold text-[var(--color-heading)]">{agent.earned}</span>
             </div>
             <div className="agent-stat bg-white border border-[var(--color-border)] rounded-xl p-4">
-              <span className="text-[11px] text-[var(--color-muted)] font-medium uppercase tracking-wide block mb-1">$AGENTV Tokens</span>
-              <span className="text-[20px] font-mono font-bold text-[var(--color-heading)]">{agent.tokens}</span>
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-[var(--color-muted)] font-medium uppercase tracking-wide mb-1">
+                <TokenIcon token="$AGENTV" color="#9fe870" size={13} />
+                $AGENTV Tokens
+              </span>
+              <span className="text-[20px] font-mono font-bold text-[var(--color-heading)] block">{agent.tokens}</span>
             </div>
             <div className="agent-stat bg-white border border-[var(--color-border)] rounded-xl p-4">
               <span className="text-[11px] text-[var(--color-muted)] font-medium uppercase tracking-wide block mb-1">Streak</span>
