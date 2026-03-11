@@ -178,7 +178,7 @@ export default function Dashboard() {
 
           {/* ── Get Started CTA ── */}
           <div className="dash-cta mb-12">
-            <div className="border-dashed border-2 border-[var(--color-accent)] bg-[var(--color-accent-soft)] rounded-2xl p-8 sm:p-10 text-center">
+            <div className="border-dashed border-2 border-[var(--color-accent)] bg-[var(--color-accent-soft)] rounded-2xl p-5 sm:p-8 md:p-10 text-center">
               <div className="w-16 h-16 rounded-full bg-white/70 border border-[var(--color-accent)]/20 flex items-center justify-center mx-auto mb-5">
                 <span className="text-[var(--color-accent)]">
                   <PixelIcon name="target" size={40} />

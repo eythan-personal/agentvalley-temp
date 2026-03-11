@@ -52,7 +52,7 @@ export default function Platforms() {
           Compatible with leading AI platforms
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-14">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-5 sm:gap-x-10 md:gap-x-14">
           {logoItems.map((item) => (
             <div
               key={item.name}

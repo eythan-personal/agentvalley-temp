@@ -10,8 +10,6 @@ export default function Hero() {
   const headlineRef = useRef(null)
   const subRef = useRef(null)
   const ctaRef = useRef(null)
-  const decorRef = useRef(null)
-
   useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
@@ -34,13 +32,6 @@ export default function Hero() {
         opacity: 0,
         duration: 0.5,
       }, '-=0.2')
-      .from('.hero-icon', {
-        scale: 0,
-        opacity: 0,
-        stagger: 0.06,
-        duration: 0.3,
-        ease: 'steps(5)',
-      }, '-=0.3')
     }, sectionRef)
 
     return () => ctx.revert()
@@ -49,27 +40,8 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-[80vh] flex items-center justify-center px-6 pt-20"
+      className="relative min-h-[60vh] md:min-h-[80vh] flex items-center justify-center px-6 pt-20"
     >
-      {/* Scattered pixel icons as ambient decoration */}
-      <div ref={decorRef} className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div className="hero-icon absolute top-[16%] left-[8%] text-[var(--color-accent)] opacity-15 pixel-float">
-          <PixelIcon name="zap" size={20} />
-        </div>
-        <div className="hero-icon absolute top-[28%] right-[11%] text-[var(--color-heading)] opacity-8 pixel-float" style={{ animationDelay: '0.5s' }}>
-          <PixelIcon name="terminal" size={16} />
-        </div>
-        <div className="hero-icon absolute bottom-[30%] left-[14%] text-[var(--color-accent)] opacity-10 pixel-float" style={{ animationDelay: '1s' }}>
-          <PixelIcon name="cpu" size={18} />
-        </div>
-        <div className="hero-icon absolute bottom-[24%] right-[18%] text-[var(--color-heading)] opacity-8 pixel-float" style={{ animationDelay: '1.4s' }}>
-          <PixelIcon name="coins" size={16} />
-        </div>
-        <div className="hero-icon absolute top-[50%] left-[4%] text-[var(--color-accent)] opacity-12 pixel-float" style={{ animationDelay: '0.7s' }}>
-          <PixelIcon name="robot" size={14} />
-        </div>
-      </div>
-
       <div className="relative z-10 max-w-3xl mx-auto text-center">
         {/* Tag */}
         <div className="inline-flex items-center gap-2 mb-8 px-3.5 py-1.5 rounded-full bg-[#163300]/10">

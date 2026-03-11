@@ -129,7 +129,7 @@ export default function Startups() {
           </div>
 
           {/* Search bar with filters and view toggle */}
-          <div className="startups-filters bg-white rounded-2xl p-2 shadow-lg shadow-black/10 flex items-center gap-2">
+          <div className="startups-filters bg-white rounded-2xl p-2 shadow-lg shadow-black/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <div className="relative flex-1">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-muted)]">
                 <PixelIcon name="search" size={16} />
@@ -144,13 +144,13 @@ export default function Startups() {
                            placeholder-[var(--color-muted)] outline-none"
               />
             </div>
-            <div className="flex items-center gap-1 border-l border-[var(--color-border)] pl-2">
+            <div className="flex items-center gap-1 sm:border-l border-[var(--color-border)] sm:pl-2">
               {filters.map((f) => (
                 <button
                   key={f}
                   onClick={() => setActiveFilter(f)}
                   aria-pressed={activeFilter === f}
-                  className={`h-8 px-3 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150
+                  className={`h-8 px-3 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150 flex-1 sm:flex-none
                     ${activeFilter === f
                       ? 'bg-[var(--color-accent)] text-[#163300]'
                       : 'text-[var(--color-body)] hover:bg-[var(--color-bg-alt)]'
@@ -159,32 +159,32 @@ export default function Startups() {
                   {f}
                 </button>
               ))}
-            </div>
-            <div className="flex items-center gap-1 border-l border-[var(--color-border)] pl-2">
-              <button
-                onClick={() => setView('card')}
-                aria-label="Grid view"
-                aria-pressed={view === 'card'}
-                className={`h-8 w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
-                  ${view === 'card'
-                    ? 'bg-[var(--color-heading)] text-white'
-                    : 'text-[var(--color-muted)] hover:bg-[var(--color-bg-alt)]'
-                  }`}
-              >
-                <PixelIcon name="grid" size={14} />
-              </button>
-              <button
-                onClick={() => setView('list')}
-                aria-label="List view"
-                aria-pressed={view === 'list'}
-                className={`h-8 w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
-                  ${view === 'list'
-                    ? 'bg-[var(--color-heading)] text-white'
-                    : 'text-[var(--color-muted)] hover:bg-[var(--color-bg-alt)]'
-                  }`}
-              >
-                <PixelIcon name="list" size={14} />
-              </button>
+              <div className="flex items-center gap-1 border-l border-[var(--color-border)] pl-2 ml-auto sm:ml-0">
+                <button
+                  onClick={() => setView('card')}
+                  aria-label="Grid view"
+                  aria-pressed={view === 'card'}
+                  className={`h-8 w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
+                    ${view === 'card'
+                      ? 'bg-[var(--color-heading)] text-white'
+                      : 'text-[var(--color-muted)] hover:bg-[var(--color-bg-alt)]'
+                    }`}
+                >
+                  <PixelIcon name="grid" size={14} />
+                </button>
+                <button
+                  onClick={() => setView('list')}
+                  aria-label="List view"
+                  aria-pressed={view === 'list'}
+                  className={`h-8 w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150
+                    ${view === 'list'
+                      ? 'bg-[var(--color-heading)] text-white'
+                      : 'text-[var(--color-muted)] hover:bg-[var(--color-bg-alt)]'
+                    }`}
+                >
+                  <PixelIcon name="list" size={14} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -448,7 +448,7 @@ export default function Startups() {
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full opacity-[0.06]"
               style={{ background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)' }}
             />
-            <div className="relative z-10 py-12 px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="relative z-10 py-10 px-6 md:py-12 md:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
                 <h3
                   className="text-[clamp(1.2rem,3vw,1.6rem)] text-white tracking-[-0.01em] leading-[1.15] mb-2"

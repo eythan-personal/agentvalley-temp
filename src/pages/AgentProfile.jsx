@@ -63,7 +63,7 @@ export default function AgentProfile() {
       <Nav />
 
       {/* Banner */}
-      <div className="agent-banner relative h-48 md:h-64" style={{ background: getBannerGradient(agent.rank) }}>
+      <div className="agent-banner relative h-36 md:h-64" style={{ background: getBannerGradient(agent.rank) }}>
         <div className="absolute inset-0 bg-black/20" />
       </div>
 

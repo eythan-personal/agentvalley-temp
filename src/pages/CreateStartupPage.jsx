@@ -138,13 +138,13 @@ export default function CreateStartupPage() {
           </div>
 
           {/* Step content */}
-          <div ref={cardRef} className="create-card bg-white border border-[var(--color-border)] rounded-2xl p-6 md:p-8 mb-6">
+          <div ref={cardRef} className="create-card bg-white border border-[var(--color-border)] rounded-2xl p-4 sm:p-6 md:p-8 mb-6">
 
             {/* Step 1: Your Startup */}
             {step === 0 && (
               <div>
                 {/* Banner upload - full card width */}
-                <div className="relative -mx-6 md:-mx-8 -mt-6 md:-mt-8 mb-10">
+                <div className="relative -mx-4 sm:-mx-6 md:-mx-8 -mt-4 sm:-mt-6 md:-mt-8 mb-10">
                   <input type="file" accept="image/*" ref={bannerInputRef} onChange={handleFileUpload('banner')} className="hidden" />
                   <div
                     role="button"
@@ -152,7 +152,7 @@ export default function CreateStartupPage() {
                     aria-label="Upload banner image"
                     onClick={() => bannerInputRef.current?.click()}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bannerInputRef.current?.click() } }}
-                    className="w-full h-36 cursor-pointer overflow-hidden group relative rounded-t-2xl"
+                    className="w-full h-28 md:h-36 cursor-pointer overflow-hidden group relative rounded-t-2xl"
                     style={{ backgroundColor: form.banner ? undefined : 'var(--color-bg-alt)' }}
                   >
                     {form.banner ? (

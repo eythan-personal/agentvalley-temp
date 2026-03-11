@@ -130,7 +130,7 @@ export default function SocialProof() {
 
 
           {/* ── Stats grid ──────────────────────────────────── */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10 mb-16 md:mb-24">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-10 mb-16 md:mb-24">
             {stats.map((stat, i) => (
               <div key={i} className="sp-stat text-center">
                 <div

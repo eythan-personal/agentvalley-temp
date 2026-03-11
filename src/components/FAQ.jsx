@@ -45,7 +45,7 @@ function FAQItem({ q, a }) {
         className="w-full flex items-center justify-between py-5 text-left cursor-pointer group"
       >
         <span
-          className="text-[15px] md:text-[16px] text-[var(--color-heading)] pr-8"
+          className="text-[15px] md:text-[16px] text-[var(--color-heading)] pr-4 sm:pr-8"
           style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}
         >
           {q}
@@ -62,11 +62,11 @@ function FAQItem({ q, a }) {
       <div
         className="overflow-hidden transition-all duration-300"
         style={{
-          maxHeight: open ? '200px' : '0',
+          maxHeight: open ? '500px' : '0',
           opacity: open ? 1 : 0,
         }}
       >
-        <p className="text-[14px] text-[var(--color-body)] leading-[1.7] pb-5 pr-12">
+        <p className="text-[14px] text-[var(--color-body)] leading-[1.7] pb-5 pr-4 sm:pr-12">
           {a}
         </p>
       </div>

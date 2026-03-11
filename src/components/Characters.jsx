@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 
 import char1 from '../assets/characters/character_1.png'
 import char2 from '../assets/characters/character_2.png'
@@ -17,10 +17,9 @@ const CHARACTERS = [
 const GREETINGS = ['gm!', 'hey!', 'sup?', 'wagmi', 'lfg!', ':)', 'yo!', 'hi!', 'based', 'nice']
 const WAVE_MESSAGES = ['👋', 'hello!', 'hey there!', 'gm!', '✌️']
 
-// States: idle, walking, waving (at viewer), greeting (another character)
 const STATES = { IDLE: 'idle', WALKING: 'walking', WAVING: 'waving', GREETING: 'greeting' }
 
-const CHAR_WIDTH = 56 // approximate px width of a character at rendered size
+const CHAR_WIDTH = 56
 const STAGE_PADDING = 40
 
 function randomBetween(min, max) {
@@ -36,29 +35,33 @@ function createCharacterState(index, stageWidth) {
   return {
     x: STAGE_PADDING + spacing * index + spacing / 2,
     targetX: null,
-    facing: Math.random() > 0.5 ? 1 : -1, // 1 = right, -1 = left
+    facing: Math.random() > 0.5 ? 1 : -1,
     state: STATES.IDLE,
     stateTimer: randomBetween(1500, 4000),
     bobPhase: Math.random() * Math.PI * 2,
     bubble: null,
     bubbleTimer: 0,
     greetPartner: null,
-    walkSpeed: randomBetween(0.4, 0.8), // px per frame (~60fps)
+    walkSpeed: randomBetween(0.4, 0.8),
     stepPhase: 0,
   }
 }
 
 export default function Characters() {
   const stageRef = useRef(null)
+  // One ref per character wrapper div, one per bubble div, one per sprite div, one per shadow div
+  const wrapperRefs = useRef([])
+  const bubbleRefs = useRef([])
+  const spriteRefs = useRef([])
+  const shadowRefs = useRef([])
   const charsRef = useRef([])
   const animRef = useRef(null)
-  const [renderTick, setRenderTick] = useState(0)
   const stageWidthRef = useRef(800)
 
-  // Initialize character states
   useEffect(() => {
     const stageEl = stageRef.current
     if (!stageEl) return
+
     stageWidthRef.current = stageEl.offsetWidth
     charsRef.current = CHARACTERS.map((_, i) =>
       createCharacterState(i, stageWidthRef.current)
@@ -78,26 +81,24 @@ export default function Characters() {
     }
 
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
-  // Main simulation loop
-  useEffect(() => {
+    // --- Simulation + DOM update loop ---
     let lastTime = performance.now()
 
     function tick(now) {
-      const dt = Math.min(now - lastTime, 50) // cap delta to avoid jumps
+      const dt = Math.min(now - lastTime, 50)
       lastTime = now
 
       const chars = charsRef.current
       const stageW = stageWidthRef.current
+
       if (chars.length === 0) {
         animRef.current = requestAnimationFrame(tick)
         return
       }
 
+      // Update simulation
       chars.forEach((c, i) => {
-        // Update bob phase (continuous gentle float)
         c.bobPhase += dt * 0.003
         c.stepPhase += dt * 0.015
 
@@ -109,33 +110,27 @@ export default function Characters() {
           }
         }
 
-        // State timer
         c.stateTimer -= dt
 
         switch (c.state) {
           case STATES.IDLE: {
             if (c.stateTimer <= 0) {
-              // Decide next action
               const roll = Math.random()
               if (roll < 0.55) {
-                // Walk somewhere
                 c.state = STATES.WALKING
                 c.targetX = randomBetween(STAGE_PADDING + 20, stageW - STAGE_PADDING - 20)
                 c.facing = c.targetX > c.x ? 1 : -1
-                c.stateTimer = 15000 // max walk time safety
+                c.stateTimer = 15000
               } else if (roll < 0.78) {
-                // Wave at viewer
                 c.state = STATES.WAVING
                 c.stateTimer = randomBetween(1800, 3000)
                 c.bubble = pickRandom(WAVE_MESSAGES)
                 c.bubbleTimer = c.stateTimer - 200
               } else {
-                // Try to greet nearest character
                 let nearest = null
                 let nearestDist = Infinity
                 chars.forEach((other, j) => {
-                  if (j === i) return
-                  if (other.state === STATES.GREETING) return
+                  if (j === i || other.state === STATES.GREETING) return
                   const dist = Math.abs(other.x - c.x)
                   if (dist < nearestDist) {
                     nearestDist = dist
@@ -143,7 +138,6 @@ export default function Characters() {
                   }
                 })
                 if (nearest !== null && nearestDist < 200) {
-                  // Walk toward them to greet
                   const other = chars[nearest]
                   c.state = STATES.WALKING
                   c.greetPartner = nearest
@@ -152,7 +146,6 @@ export default function Characters() {
                   c.facing = c.x < other.x ? 1 : -1
                   c.stateTimer = 10000
                 } else {
-                  // Just idle longer
                   c.stateTimer = randomBetween(1500, 3500)
                 }
               }
@@ -171,12 +164,10 @@ export default function Characters() {
             const absDist = Math.abs(dist)
 
             if (absDist < 3) {
-              // Arrived
               c.x = c.targetX
               c.targetX = null
 
               if (c.greetPartner != null) {
-                // Initiate greeting
                 const partner = chars[c.greetPartner]
                 if (partner && partner.state !== STATES.GREETING) {
                   c.state = STATES.GREETING
@@ -188,11 +179,11 @@ export default function Characters() {
                   partner.state = STATES.GREETING
                   partner.stateTimer = c.stateTimer
                   partner.facing = partner.x < c.x ? 1 : -1
-                  // Partner responds with slight delay via bubble
+                  const partnerTimer = c.stateTimer
                   setTimeout(() => {
                     if (partner.state === STATES.GREETING) {
                       partner.bubble = pickRandom(GREETINGS)
-                      partner.bubbleTimer = c.stateTimer - 800
+                      partner.bubbleTimer = partnerTimer - 800
                     }
                   }, 500)
                 } else {
@@ -205,12 +196,10 @@ export default function Characters() {
                 c.stateTimer = randomBetween(2000, 5000)
               }
             } else {
-              // Move toward target
               const dir = dist > 0 ? 1 : -1
               c.facing = dir
-              const speed = c.walkSpeed * (dt / 16) // normalize to ~60fps
+              const speed = c.walkSpeed * (dt / 16)
               c.x += dir * Math.min(speed, absDist)
-              // Clamp to stage
               c.x = Math.max(STAGE_PADDING, Math.min(stageW - STAGE_PADDING, c.x))
             }
 
@@ -241,17 +230,68 @@ export default function Characters() {
         }
       })
 
-      setRenderTick(t => t + 1)
+      // --- Direct DOM updates (no React re-render) ---
+      chars.forEach((c, i) => {
+        const wrapper = wrapperRefs.current[i]
+        const bubbleEl = bubbleRefs.current[i]
+        const spriteEl = spriteRefs.current[i]
+        const shadowEl = shadowRefs.current[i]
+        if (!wrapper) return
+
+        // Position
+        wrapper.style.left = `${c.x}px`
+
+        // Bob calculations
+        const idleBob = Math.sin(c.bobPhase) * 3
+        const walkBob = c.state === STATES.WALKING ? Math.abs(Math.sin(c.stepPhase)) * 5 : 0
+        const waveBounce = c.state === STATES.WAVING ? Math.sin(c.bobPhase * 3) * 4 : 0
+        const greetBounce = c.state === STATES.GREETING ? Math.sin(c.bobPhase * 4) * 3 : 0
+        const bobY = idleBob + walkBob + waveBounce + greetBounce
+
+        const tilt = c.state === STATES.WALKING ? Math.sin(c.stepPhase) * 3 * c.facing : 0
+        const waveRock = c.state === STATES.WAVING ? Math.sin(c.bobPhase * 5) * 6 : 0
+        const greetRock = c.state === STATES.GREETING ? Math.sin(c.bobPhase * 4) * 4 : 0
+
+        // Sprite transform
+        if (spriteEl) {
+          spriteEl.style.transform = `translateY(${-bobY}px) scaleX(${c.facing}) rotate(${tilt + waveRock + greetRock}deg)`
+        }
+
+        // Shadow
+        if (shadowEl) {
+          shadowEl.style.transform = `scaleX(${1 - Math.abs(bobY) * 0.015})`
+          shadowEl.style.opacity = `${0.4 + Math.abs(bobY) * 0.02}`
+        }
+
+        // Bubble
+        if (bubbleEl) {
+          if (c.bubble) {
+            if (bubbleEl.style.display === 'none' || bubbleEl.dataset.text !== c.bubble) {
+              bubbleEl.dataset.text = c.bubble
+              bubbleEl.querySelector('.bubble-text').textContent = c.bubble
+              bubbleEl.style.display = ''
+              // Re-trigger animation
+              bubbleEl.classList.remove('animate-bubble-in')
+              void bubbleEl.offsetWidth // force reflow
+              bubbleEl.classList.add('animate-bubble-in')
+            }
+          } else {
+            bubbleEl.style.display = 'none'
+            bubbleEl.dataset.text = ''
+          }
+        }
+      })
+
       animRef.current = requestAnimationFrame(tick)
     }
 
     animRef.current = requestAnimationFrame(tick)
+
     return () => {
+      window.removeEventListener('resize', handleResize)
       if (animRef.current) cancelAnimationFrame(animRef.current)
     }
   }, [])
-
-  const chars = charsRef.current
 
   return (
     <section className="-mt-12 md:-mt-20 pb-4 md:pb-6 px-6 relative z-10">
@@ -261,98 +301,55 @@ export default function Characters() {
           className="relative h-32 md:h-40 lg:h-44"
           style={{ minHeight: 128 }}
         >
-          {CHARACTERS.map((char, i) => {
-            const c = chars[i]
-            if (!c) return null
-
-            // Bob amount differs by state
-            const idleBob = Math.sin(c.bobPhase) * 3
-            const walkBob = c.state === STATES.WALKING
-              ? Math.abs(Math.sin(c.stepPhase)) * 5
-              : 0
-            const waveBounce = c.state === STATES.WAVING
-              ? Math.sin(c.bobPhase * 3) * 4
-              : 0
-            const greetBounce = c.state === STATES.GREETING
-              ? Math.sin(c.bobPhase * 4) * 3
-              : 0
-
-            const bobY = idleBob + walkBob + waveBounce + greetBounce
-
-            // Walk tilt
-            const tilt = c.state === STATES.WALKING
-              ? Math.sin(c.stepPhase) * 3 * c.facing
-              : 0
-
-            // Wave rock
-            const waveRock = c.state === STATES.WAVING
-              ? Math.sin(c.bobPhase * 5) * 6
-              : 0
-
-            const greetRock = c.state === STATES.GREETING
-              ? Math.sin(c.bobPhase * 4) * 4
-              : 0
-
-            return (
+          {CHARACTERS.map((char, i) => (
+            <div
+              key={i}
+              ref={el => (wrapperRefs.current[i] = el)}
+              className="absolute bottom-0 flex flex-col items-center"
+              style={{
+                transform: 'translateX(-50%)',
+                willChange: 'left',
+              }}
+            >
+              {/* Speech bubble */}
               <div
-                key={i}
-                className="absolute bottom-0 flex flex-col items-center"
-                style={{
-                  left: c.x,
-                  transform: `translateX(-50%)`,
-                  transition: 'none',
-                  willChange: 'left',
-                }}
+                ref={el => (bubbleRefs.current[i] = el)}
+                className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap
+                           px-2.5 py-1 rounded-lg text-[11px] font-semibold
+                           bg-white text-[var(--color-heading)] shadow-sm border border-[var(--color-border)]"
+                style={{ display: 'none', fontFamily: 'var(--font-body)' }}
+                data-text=""
               >
-                {/* Speech bubble */}
-                {c.bubble && (
-                  <div
-                    className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap
-                               px-2.5 py-1 rounded-lg text-[11px] font-semibold
-                               bg-white text-[var(--color-heading)] shadow-sm border border-[var(--color-border)]
-                               animate-bubble-in"
-                    style={{ fontFamily: 'var(--font-body)' }}
-                  >
-                    {c.bubble}
-                    {/* Bubble tail */}
-                    <div
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2
-                                 bg-white border-r border-b border-[var(--color-border)]
-                                 rotate-45"
-                    />
-                  </div>
-                )}
-
-                {/* Character */}
+                <span className="bubble-text"></span>
                 <div
-                  style={{
-                    transform: `translateY(${-bobY}px) scaleX(${c.facing}) rotate(${tilt + waveRock + greetRock}deg)`,
-                    imageRendering: 'pixelated',
-                    transition: 'transform 0.05s steps(2)',
-                  }}
-                >
-                  <img
-                    src={char.src}
-                    alt={char.name}
-                    className="h-20 md:h-28 lg:h-32 w-auto select-none pointer-events-none"
-                    draggable={false}
-                    style={{ imageRendering: 'pixelated' }}
-                  />
-                </div>
-
-                {/* Shadow */}
-                <div
-                  className="mt-0.5 rounded-full bg-black/8"
-                  style={{
-                    width: 36,
-                    height: 6,
-                    transform: `scaleX(${1 - Math.abs(bobY) * 0.015})`,
-                    opacity: 0.4 + Math.abs(bobY) * 0.02,
-                  }}
+                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2
+                             bg-white border-r border-b border-[var(--color-border)]
+                             rotate-45"
                 />
               </div>
-            )
-          })}
+
+              {/* Character sprite */}
+              <div
+                ref={el => (spriteRefs.current[i] = el)}
+                style={{ imageRendering: 'pixelated' }}
+              >
+                <img
+                  src={char.src}
+                  alt={char.name}
+                  className="h-20 md:h-28 lg:h-32 w-auto select-none pointer-events-none"
+                  draggable={false}
+                  style={{ imageRendering: 'pixelated' }}
+                />
+              </div>
+
+              {/* Shadow */}
+              <div
+                ref={el => (shadowRefs.current[i] = el)}
+                className="mt-0.5 rounded-full bg-black/8"
+                style={{ width: 36, height: 6 }}
+              />
+            </div>
+          ))}
         </div>
       </div>
     </section>

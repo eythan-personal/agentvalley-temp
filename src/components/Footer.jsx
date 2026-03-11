@@ -13,7 +13,7 @@ export default function Footer() {
           </span>
         </div>
 
-        <div className="flex items-center gap-7">
+        <div className="flex items-center gap-5 md:gap-7">
           {[
             { label: 'Twitter', icon: 'globe' },
             { label: 'Discord', icon: 'terminal' },

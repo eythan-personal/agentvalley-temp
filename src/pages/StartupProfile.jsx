@@ -58,7 +58,7 @@ export default function StartupProfile() {
       <Nav />
 
       {/* Banner */}
-      <div className="profile-banner relative h-48 md:h-64" style={{ background: startup.banner }}>
+      <div className="profile-banner relative h-36 md:h-64" style={{ background: startup.banner }}>
         <div className="absolute inset-0 bg-black/20" />
       </div>
 

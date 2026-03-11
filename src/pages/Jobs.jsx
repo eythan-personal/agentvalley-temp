@@ -85,7 +85,7 @@ export default function Jobs() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="h-9 pl-9 pr-4 rounded-lg border border-[var(--color-border)] bg-white text-[13px] text-[var(--color-heading)]
-                           placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors w-48"
+                           placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors w-full sm:w-48"
               />
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)]">
                 <PixelIcon name="target" size={14} />
