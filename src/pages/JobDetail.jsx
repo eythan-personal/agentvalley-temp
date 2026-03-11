@@ -5,7 +5,6 @@ import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
-import StatCard from '../components/StatCard'
 import { jobs } from '../data/jobs'
 
 const pixelGrid = `url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6V0h6' fill='none' stroke='%23000' stroke-width='.5' opacity='.06'/%3E%3C/svg%3E")`
@@ -35,8 +34,7 @@ export default function JobDetail() {
 
     const ctx = gsap.context(() => {
       gsap.from('.job-header', { y: 30, opacity: 0, duration: 0.5, delay: 0.2, clearProps: 'all' })
-      gsap.from('.job-stat', { y: 15, opacity: 0, stagger: 0.06, duration: 0.4, delay: 0.35, clearProps: 'all' })
-      gsap.from('.job-section', { y: 20, opacity: 0, stagger: 0.1, duration: 0.5, delay: 0.5, clearProps: 'all' })
+      gsap.from('.job-section', { y: 20, opacity: 0, stagger: 0.1, duration: 0.5, delay: 0.4, clearProps: 'all' })
     }, pageRef)
     return () => ctx.revert()
   }, [job])
@@ -75,54 +73,57 @@ export default function JobDetail() {
             Back to Jobs
           </TransitionLink>
 
-          {/* Job header */}
+          {/* Job header — unified listing block */}
           <div className="job-header mb-8">
-            <div className="flex items-start gap-4">
-              <div
-                className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-white text-[16px] font-bold shrink-0 overflow-hidden"
-                style={{ backgroundColor: job.color, fontFamily: 'var(--font-display)' }}
-              >
-                {job.initials}
-                <PixelGridOverlay opacity="0.08" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h1
-                  className="text-[clamp(1.4rem,3vw,2rem)] text-[var(--color-heading)] tracking-[-0.02em] leading-[1.1] mb-1"
-                  style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
+              {/* Left: identity */}
+              <div className="flex items-start gap-4 min-w-0">
+                <div
+                  className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-white text-[16px] font-bold shrink-0 overflow-hidden"
+                  style={{ backgroundColor: job.color, fontFamily: 'var(--font-display)' }}
                 >
-                  {job.title}
-                </h1>
-                <div className="flex flex-wrap items-center gap-3 text-[13px]">
-                  <span className="text-[var(--color-body)]">{job.startup}</span>
-                  <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-md
-                    ${job.urgency === 'Urgent'
-                      ? 'bg-red-50 text-red-600'
-                      : 'bg-amber-50 text-amber-600'
-                    }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${job.urgency === 'Urgent' ? 'bg-red-500' : 'bg-amber-400'}`} />
-                    {job.urgency}
-                  </span>
-                  <span className="text-[var(--color-muted)]">Posted {job.posted}</span>
+                  {job.initials}
+                  <PixelGridOverlay opacity="0.08" />
+                </div>
+                <div className="min-w-0">
+                  <h1
+                    className="text-[clamp(1.4rem,3vw,2rem)] text-[var(--color-heading)] tracking-[-0.02em] leading-[1.1] mb-1"
+                    style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}
+                  >
+                    {job.title}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-3 text-[13px]">
+                    <span className="text-[var(--color-body)]">{job.startup}</span>
+                    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-md
+                      ${job.urgency === 'Urgent'
+                        ? 'bg-red-50 text-red-600'
+                        : 'bg-amber-50 text-amber-600'
+                      }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${job.urgency === 'Urgent' ? 'bg-red-500' : 'bg-amber-400'}`} />
+                      {job.urgency}
+                    </span>
+                    <span className="text-[var(--color-muted)]">Posted {job.posted}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Stats row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="job-stat">
-              <StatCard label="Token Reward" icon="coins" accent>
-                <div className="flex items-center gap-2">
-                  <span className="text-[clamp(1.4rem,3vw,1.75rem)] leading-none tracking-tight text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-accent)' }}>{job.reward}</span>
-                  <span className="text-[13px] font-mono font-semibold text-[var(--color-heading)]">{job.token}</span>
+              {/* Right: token reward — the "price tag" */}
+              <div className="sm:text-right shrink-0 flex sm:flex-col items-baseline sm:items-end gap-2 sm:gap-0">
+                <div className="flex items-baseline gap-1.5">
+                  <span
+                    className="text-[clamp(1.6rem,4vw,2.2rem)] leading-none tracking-tight text-[var(--color-heading)]"
+                    style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
+                  >
+                    {job.reward}
+                  </span>
+                  <span className="text-[14px] font-mono font-semibold text-[var(--color-heading)]">
+                    {job.token}
+                  </span>
                 </div>
-              </StatCard>
-            </div>
-            <div className="job-stat">
-              <StatCard label="Vesting Schedule" value={job.vesting} icon="repeat" />
-            </div>
-            <div className="job-stat">
-              <StatCard label="Tools" value={job.tools.join(', ')} icon="terminal" />
+                <span className="text-[12px] text-[var(--color-muted)] font-mono sm:mt-1">
+                  {job.vesting}
+                </span>
+              </div>
             </div>
           </div>
 

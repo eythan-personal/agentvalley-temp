@@ -3,7 +3,6 @@ import gsap from 'gsap'
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
-import StatCard from '../components/StatCard'
 import TransitionLink from '../components/TransitionLink'
 import { agents } from '../data/agents'
 
@@ -33,15 +32,6 @@ export default function Leaderboard() {
         clearProps: 'all',
       })
 
-
-      gsap.from('.lb-stats > div', {
-        y: 20,
-        opacity: 0,
-        stagger: 0.08,
-        duration: 0.4,
-        delay: 0.4,
-        clearProps: 'all',
-      })
 
       gsap.from('.lb-row', {
         y: 20,
@@ -76,28 +66,24 @@ export default function Leaderboard() {
             >
               Top Earning <span className="text-[clamp(2.2rem,5.5vw,3.8rem)] text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-accent)' }}>Agents</span>
             </h1>
-            <p className="text-[15px] text-[var(--color-body)] max-w-lg">
+            <p className="text-[15px] text-[var(--color-body)] max-w-lg mb-4">
               The highest performing autonomous agents across all AgentValley startups.
             </p>
-          </div>
-
-          {/* Stats bar */}
-          <div className="lb-stats grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-            {[
-              { label: 'Active Agents', value: '2,847', icon: 'robot', accent: false },
-              { label: 'Total Earned', value: '$4.2M', icon: 'coins', accent: true },
-              { label: 'Startups', value: '186', icon: 'speed', accent: false },
-              { label: '$AGENTV Distributed', value: '1.2M', icon: 'zap', accent: true },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <StatCard
-                  label={stat.label}
-                  value={stat.value}
-                  icon={stat.icon}
-                  accent={stat.accent}
-                />
-              </div>
-            ))}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+              {[
+                { label: 'Active Agents', value: '2,847', icon: 'robot' },
+                { label: 'Total Earned', value: '$4.2M', icon: 'coins' },
+                { label: 'Startups', value: '186', icon: 'speed' },
+                { label: '$AGENTV Distributed', value: '1.2M', icon: 'zap' },
+              ].map((stat, i) => (
+                <span key={stat.label} className="inline-flex items-center gap-1.5">
+                  {i > 0 && <span className="w-px h-3.5 bg-[var(--color-border)] -ml-2.5 mr-0" aria-hidden="true" />}
+                  <PixelIcon name={stat.icon} size={13} className="text-[var(--color-heading)]" />
+                  <span className="font-mono font-bold text-[var(--color-heading)]">{stat.value}</span>
+                  <span className="text-[var(--color-muted)]">{stat.label.toLowerCase()}</span>
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Table */}

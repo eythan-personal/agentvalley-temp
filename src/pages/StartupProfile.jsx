@@ -5,7 +5,6 @@ import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
-import StatCard from '../components/StatCard'
 import { startups } from '../data/startups'
 
 const mockAgents = [
@@ -44,8 +43,7 @@ export default function StartupProfile() {
     const ctx = gsap.context(() => {
       gsap.from('.profile-banner', { opacity: 0, duration: 0.6, delay: 0.1 })
       gsap.from('.profile-info', { y: 20, opacity: 0, duration: 0.5, delay: 0.25, clearProps: 'all' })
-      gsap.from('.profile-stat', { y: 15, opacity: 0, stagger: 0.06, duration: 0.4, delay: 0.35, clearProps: 'all' })
-      gsap.from('.profile-section', { y: 20, opacity: 0, stagger: 0.1, duration: 0.5, delay: 0.5, clearProps: 'all' })
+      gsap.from('.profile-section', { y: 20, opacity: 0, stagger: 0.1, duration: 0.5, delay: 0.4, clearProps: 'all' })
     }, pageRef)
     return () => ctx.revert()
   }, [startup])
@@ -99,7 +97,7 @@ export default function StartupProfile() {
               <PixelGridOverlay opacity="0.08" />
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-4">
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-1">
                   <h1
@@ -122,50 +120,64 @@ export default function StartupProfile() {
                 </p>
               </div>
 
-              <span className="text-[14px] font-mono font-semibold text-[var(--color-heading)] shrink-0 pt-1">
-                {startup.token}
-              </span>
+              {/* Revenue — prominent "price tag" */}
+              <div className="sm:text-right shrink-0">
+                <div className="flex items-baseline gap-1.5">
+                  <span
+                    className="text-[clamp(1.6rem,4vw,2.2rem)] leading-none tracking-tight text-[var(--color-heading)]"
+                    style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
+                  >
+                    {startup.revenue}
+                  </span>
+                  <span className="text-[13px] font-mono font-semibold text-[var(--color-heading)]">
+                    {startup.token}
+                  </span>
+                </div>
+                {startup.change24h && (
+                  <span className={`text-[12px] font-mono font-semibold sm:mt-0.5 inline-block ${startup.changePositive ? 'text-[#3d7a1c]' : 'text-red-500'}`}>
+                    {startup.change24h}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Stats grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            <div className="profile-stat">
-              <StatCard label="Revenue" value={startup.revenue} icon="coins" accent />
-            </div>
-            <div className="profile-stat">
-              <StatCard label="Agents" value={String(startup.agents)} icon="robot" />
-            </div>
-            <div className="profile-stat">
-              <StatCard
-                label={startup.mcap ? 'Market Cap' : 'Progress'}
-                icon="chart-bar"
-                value={startup.mcap || null}
-              >
-                {!startup.mcap && (
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 h-2 rounded-full bg-[var(--color-bg-alt)] overflow-hidden border border-[var(--color-border)]">
+            {/* Inline metadata strip */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+              <span className="inline-flex items-center gap-1.5">
+                <PixelIcon name="robot" size={13} className="text-[var(--color-heading)]" />
+                <span className="font-mono font-bold text-[var(--color-heading)]">{startup.agents}</span>
+                <span className="text-[var(--color-muted)]">agents</span>
+              </span>
+              <span className="w-px h-3.5 bg-[var(--color-border)]" aria-hidden="true" />
+              {startup.mcap ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <PixelIcon name="chart-bar" size={13} className="text-[var(--color-heading)]" />
+                  <span className="font-mono font-bold text-[var(--color-heading)]">{startup.mcap}</span>
+                  <span className="text-[var(--color-muted)]">market cap</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <PixelIcon name="chart-bar" size={13} className="text-[var(--color-heading)]" />
+                  <span className="text-[var(--color-muted)]">progress</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-16 h-1.5 rounded-full bg-[var(--color-bg-alt)] overflow-hidden border border-[var(--color-border)]">
                       <div
                         className="h-full"
                         style={{
                           width: `${startup.progress}%`,
-                          background: 'repeating-linear-gradient(90deg, var(--color-accent) 0px, var(--color-accent) 4px, rgba(0,0,0,0.08) 4px, rgba(0,0,0,0.08) 5px)',
+                          background: 'repeating-linear-gradient(90deg, var(--color-accent) 0px, var(--color-accent) 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px)',
                         }}
                       />
                     </div>
-                    <span className="text-[14px] font-mono font-bold text-[var(--color-heading)]">{startup.progress}%</span>
+                    <span className="font-mono font-bold text-[var(--color-heading)] text-[12px]">{startup.progress}%</span>
                   </div>
-                )}
-              </StatCard>
-            </div>
-            <div className="profile-stat">
-              <StatCard
-                label={startup.change24h ? '24h Change' : 'Founded'}
-                value={startup.change24h || startup.founded}
-                icon={startup.change24h ? 'speed' : 'sparkle'}
-                accent={!!startup.change24h}
-                negative={startup.change24h && !startup.changePositive}
-              />
+                </span>
+              )}
+              <span className="w-px h-3.5 bg-[var(--color-border)]" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1.5">
+                <PixelIcon name="sparkle" size={13} className="text-[var(--color-heading)]" />
+                <span className="text-[var(--color-muted)]">Founded {startup.founded}</span>
+              </span>
             </div>
           </div>
 
