@@ -43,7 +43,7 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-[calc(100svh-6rem)] md:min-h-[80vh] flex items-center justify-center px-6 pt-24 pb-8 md:pt-20 md:pb-0"
+      className="relative min-h-[calc(100svh-7rem)] md:min-h-[80vh] flex items-start md:items-center justify-center px-6 pt-28 pb-8 md:pt-20 md:pb-0"
     >
       <div className="relative z-10 max-w-3xl mx-auto text-center">
         {/* Tag */}
