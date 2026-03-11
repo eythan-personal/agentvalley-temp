@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
+import StatCard from '../components/StatCard'
 import TransitionLink from '../components/TransitionLink'
 import { agents } from '../data/agents'
 
@@ -88,53 +89,13 @@ export default function Leaderboard() {
               { label: 'Startups', value: '186', icon: 'speed', accent: false },
               { label: '$AGENTV Distributed', value: '1.2M', icon: 'zap', accent: true },
             ].map((stat) => (
-              <div
-                key={stat.label}
-                className={`relative rounded-xl p-4 flex items-start gap-3 overflow-hidden border transition-all duration-200 group
-                  ${stat.accent
-                    ? 'bg-[var(--color-accent-soft)] border-[var(--color-accent)]/20 hover:border-[var(--color-accent)]/40'
-                    : 'bg-white border-[var(--color-border)] hover:border-[var(--color-accent)]/30'
-                  }`}
-                style={{ transitionTimingFunction: 'steps(3)' }}
-              >
-                {/* Pixel grid texture */}
-                <div
-                  className="absolute inset-0 pointer-events-none opacity-[0.03]"
-                  style={{
-                    backgroundImage: `
-                      linear-gradient(rgba(0,0,0,0.08) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(0,0,0,0.08) 1px, transparent 1px)
-                    `,
-                    backgroundSize: '6px 6px',
-                  }}
-                  aria-hidden="true"
+              <div key={stat.label}>
+                <StatCard
+                  label={stat.label}
+                  value={stat.value}
+                  icon={stat.icon}
+                  accent={stat.accent}
                 />
-                <div
-                  className={`relative z-[1] w-11 h-11 rounded-xl flex items-center justify-center shrink-0
-                    ${stat.accent
-                      ? 'bg-[var(--color-accent)]/15'
-                      : 'bg-[var(--color-heading)]/5 group-hover:bg-[var(--color-accent)]/10'
-                    }`}
-                  style={{ transition: 'background 0.2s steps(3)', imageRendering: 'pixelated' }}
-                >
-                  <PixelIcon
-                    name={stat.icon}
-                    size={22}
-                    className={stat.accent ? 'text-[var(--color-accent)]' : 'text-[var(--color-heading)] group-hover:text-[var(--color-accent)]'}
-                    style={{ transition: 'color 0.2s steps(3)' }}
-                  />
-                </div>
-                <div className="relative z-[1]">
-                  <span className="text-[11px] font-medium tracking-wide uppercase text-[var(--color-muted)] block mb-1">
-                    {stat.label}
-                  </span>
-                  <span
-                    className="text-[22px] text-[var(--color-heading)] tracking-tight font-mono"
-                    style={{ fontWeight: 700 }}
-                  >
-                    {stat.value}
-                  </span>
-                </div>
               </div>
             ))}
           </div>

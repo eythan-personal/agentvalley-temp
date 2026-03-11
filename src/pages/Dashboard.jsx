@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
+import StatCard from '../components/StatCard'
 import TransitionLink from '../components/TransitionLink'
 
 const myStartup = {
@@ -182,27 +183,13 @@ export default function Dashboard() {
           {/* ── Stats Row ── */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
             {stats.map((s) => (
-              <div
-                key={s.label}
-                className="dash-stat relative bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5 overflow-hidden
-                           hover:border-[var(--color-accent)]/40 transition-all duration-200 group"
-                style={{ transitionTimingFunction: 'steps(3)' }}
-              >
-                <PixelGridOverlay />
-                <div className="relative z-[1]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[var(--color-accent)] group-hover:scale-110 transition-transform duration-200" style={{ transitionTimingFunction: 'steps(3)' }}>
-                      <PixelIcon name={s.icon} size={18} />
-                    </span>
-                    <span className="text-[12px] text-[var(--color-muted)] font-medium">{s.label}</span>
-                  </div>
-                  <span
-                    className="text-[24px] text-[var(--color-heading)] tracking-tight font-mono"
-                    style={{ fontWeight: 700 }}
-                  >
-                    {s.value}
-                  </span>
-                </div>
+              <div key={s.label} className="dash-stat">
+                <StatCard
+                  label={s.label}
+                  value={s.value}
+                  icon={s.icon}
+                  accent={s.label === 'Revenue'}
+                />
               </div>
             ))}
           </div>

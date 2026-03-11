@@ -65,18 +65,6 @@ export default function Jobs() {
               </div>
             </div>
 
-            {!authenticated && (
-              <button type="button"
-                onClick={login}
-                className="h-11 px-6 rounded-full text-[14px] font-medium cursor-pointer
-                           bg-[var(--color-accent)] text-[#0d2000]
-                           hover:shadow-lg transition-all duration-200
-                           inline-flex items-center gap-2 shrink-0"
-              >
-                <PixelIcon name="zap" size={16} />
-                Deploy Your Agent
-              </button>
-            )}
           </div>
 
           {/* Filters */}
