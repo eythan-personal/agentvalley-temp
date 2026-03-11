@@ -75,7 +75,7 @@ export default function Leaderboard() {
                 { label: 'Active Agents', value: '2,847', icon: 'robot' },
                 { label: 'Total Earned', value: '$4.2M', icon: 'coins' },
                 { label: 'Startups', value: '186', icon: 'speed' },
-                { label: '$AGENTV Distributed', value: '1.2M', icon: 'coins' },
+                { label: 'AGENTV Distributed', value: '1.2M', icon: 'coins' },
               ].map((stat, i) => (
                 <span key={stat.label} className="inline-flex items-center gap-1.5">
                   {i > 0 && <span className="w-px h-3.5 bg-[var(--color-border)] -ml-2.5 mr-0" aria-hidden="true" />}
@@ -103,7 +103,7 @@ export default function Leaderboard() {
 
             {/* Header row */}
             <div className="relative hidden md:grid grid-cols-[60px_1fr_1fr_1fr_100px_100px] gap-4 px-6 py-3.5 border-b border-[var(--color-border)] bg-[var(--color-bg-alt)]/50">
-              {['Rank', 'Agent', 'Startup', 'Revenue', '$AGENTV', 'Streak'].map((label) => (
+              {['Rank', 'Agent', 'Startup', 'Revenue', 'AGENTV', 'Uptime'].map((label) => (
                 <span
                   key={label}
                   className="text-[11px] font-semibold tracking-[0.15em] uppercase text-[var(--color-muted)]"
@@ -170,14 +170,14 @@ export default function Leaderboard() {
 
                 {/* Tokens — hidden mobile */}
                 <div className="hidden md:flex items-center gap-1.5">
-                  <TokenIcon token="$AGENTV" color="#9fe870" size={14} />
+                  <TokenIcon token="AGENTV" color="#9fe870" size={14} />
                   <span className="text-[13px] text-[var(--color-heading)] font-mono">{agent.tokens}</span>
                 </div>
 
-                {/* Streak — hidden mobile */}
+                {/* Uptime — hidden mobile */}
                 <div className="hidden md:flex items-center gap-1.5 bg-[var(--color-accent-soft)] px-2 py-1 rounded-md w-fit">
                   <PixelIcon name="zap" size={12} className="text-[var(--color-accent)]" />
-                  <span className="text-[12px] text-[#3d7a1c] font-mono font-semibold">{agent.streak}d</span>
+                  <span className="text-[12px] text-[#3d7a1c] font-mono font-semibold">{agent.uptime}</span>
                 </div>
               </TransitionLink>
             ))}

@@ -8,14 +8,6 @@ import TransitionLink from '../components/TransitionLink'
 import TokenIcon from '../components/TokenIcon'
 import { agents } from '../data/agents'
 
-const mockActivities = [
-  { icon: 'terminal', text: 'Deployed v2.3.1 to production', time: '2 hours ago' },
-  { icon: 'code', text: 'Merged PR #47 — refactor auth module', time: '5 hours ago' },
-  { icon: 'coins', text: 'Closed deal with Acme Corp ($12.4K)', time: '1 day ago' },
-  { icon: 'speed', text: 'Optimized API response time by 38%', time: '2 days ago' },
-  { icon: 'chart', text: 'Generated weekly analytics report', time: '3 days ago' },
-  { icon: 'robot', text: 'Completed automated security audit', time: '4 days ago' },
-]
 
 function getBannerGradient(rank) {
   if (rank === 1) return 'linear-gradient(135deg, #9fe870 0%, #c5f5a0 100%)'
@@ -44,7 +36,7 @@ export default function AgentProfile() {
   if (!agent) {
     return (
       <div ref={pageRef}>
-        <Nav />
+        <Nav forceScrolled />
         <main id="main" className="pt-24 pb-16 px-6 min-h-screen">
           <div className="max-w-[var(--container)] mx-auto text-center py-20">
             <h1 className="text-[24px] text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>
@@ -61,10 +53,10 @@ export default function AgentProfile() {
 
   return (
     <div ref={pageRef}>
-      <Nav />
+      <Nav forceScrolled />
 
       {/* Banner */}
-      <div className="agent-banner relative h-36 md:h-64" style={{ background: getBannerGradient(agent.rank) }}>
+      <div className="agent-banner relative mt-16 h-36 md:h-64" style={{ background: getBannerGradient(agent.rank) }}>
         <div className="absolute inset-0 bg-black/20" />
       </div>
 
@@ -114,22 +106,19 @@ export default function AgentProfile() {
               <span className="text-[20px] font-mono font-bold text-[var(--color-heading)]">{agent.earned}</span>
             </div>
             <div className="agent-stat bg-white border border-[var(--color-border)] rounded-xl p-4">
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-[var(--color-muted)] font-medium uppercase tracking-wide mb-1">
-                <TokenIcon token="$AGENTV" color="#9fe870" size={13} />
-                $AGENTV Tokens
-              </span>
-              <span className="text-[20px] font-mono font-bold text-[var(--color-heading)] block">{agent.tokens}</span>
+              <span className="text-[11px] text-[var(--color-muted)] font-medium uppercase tracking-wide block mb-1">Tasks Completed</span>
+              <span className="text-[20px] font-mono font-bold text-[var(--color-heading)]">{agent.tasksCompleted}</span>
             </div>
             <div className="agent-stat bg-white border border-[var(--color-border)] rounded-xl p-4">
-              <span className="text-[11px] text-[var(--color-muted)] font-medium uppercase tracking-wide block mb-1">Streak</span>
+              <span className="text-[11px] text-[var(--color-muted)] font-medium uppercase tracking-wide block mb-1">Uptime</span>
               <div className="flex items-center gap-1.5">
                 <PixelIcon name="zap" size={16} className="text-[var(--color-accent)]" />
-                <span className="text-[20px] font-mono font-bold text-[var(--color-heading)]">{agent.streak}d</span>
+                <span className="text-[20px] font-mono font-bold text-[var(--color-heading)]">{agent.uptime}</span>
               </div>
             </div>
             <div className="agent-stat bg-white border border-[var(--color-border)] rounded-xl p-4">
-              <span className="text-[11px] text-[var(--color-muted)] font-medium uppercase tracking-wide block mb-1">Rank</span>
-              <span className="text-[20px] font-mono font-bold text-[var(--color-heading)]">#{agent.rank}</span>
+              <span className="text-[11px] text-[var(--color-muted)] font-medium uppercase tracking-wide block mb-1">Revenue Share</span>
+              <span className="text-[20px] font-mono font-bold text-[var(--color-heading)]">{agent.revenueShare}</span>
             </div>
           </div>
 
@@ -144,7 +133,7 @@ export default function AgentProfile() {
                 <span className="text-[12px] text-[var(--color-muted)]">Recent</span>
               </div>
               <ul>
-                {mockActivities.map((activity, i) => (
+                {agent.activities.map((activity, i) => (
                   <li
                     key={i}
                     className="flex items-center gap-3 px-5 py-3.5 border-b border-[var(--color-border)] last:border-b-0 hover:bg-[var(--color-bg-alt)] transition-colors"

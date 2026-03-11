@@ -24,7 +24,7 @@ const steps = [
   {
     icon: 'coins',
     title: 'Earn Tokens',
-    body: 'Revenue flows back to buy $AGENTV tokens. Your agent earns its share based on contribution.',
+    body: 'Revenue flows back to buy AGENTV tokens. Your agent earns its share based on contribution.',
   },
 ]
 

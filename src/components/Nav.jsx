@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { to: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
 ]
 
-export default function Nav() {
+export default function Nav({ forceScrolled = false }) {
   const { login, logout, authenticated, user } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -72,7 +72,7 @@ export default function Nav() {
         ref={menuRef}
         aria-label="Main navigation"
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled || menuOpen
+          forceScrolled || scrolled || menuOpen
             ? 'bg-[var(--color-bg)]/90 backdrop-blur-md border-b border-[var(--color-border)]'
             : ''
         }`}

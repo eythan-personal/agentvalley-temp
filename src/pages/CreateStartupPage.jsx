@@ -337,7 +337,7 @@ export default function CreateStartupPage() {
                           {form.tokenIcon ? (
                             <img src={form.tokenIcon} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <TokenIcon token={form.tokenName ? `$${form.tokenName}` : '$'} color={form.color} size={44} />
+                            <TokenIcon token={form.tokenName || '?'} color={form.color} size={44} />
                           )}
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                             <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity">
@@ -346,14 +346,13 @@ export default function CreateStartupPage() {
                           </div>
                         </button>
                         <div className="relative flex-1">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-muted)] font-mono">$</span>
                           <input
                             type="text"
                             placeholder="ACME"
                             value={form.tokenName}
                             onChange={(e) => update('tokenName', e.target.value.toUpperCase())}
                             autoFocus
-                            className="w-full h-11 pl-8 pr-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)] font-mono
+                            className="w-full h-11 px-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)] font-mono
                                        placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors uppercase"
                           />
                         </div>
@@ -386,7 +385,7 @@ export default function CreateStartupPage() {
                         <div>
                           <span className="text-[13px] font-medium text-[var(--color-heading)] block mb-0.5">100% Revenue Buyback</span>
                           <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
-                            All revenue will buy back {form.tokenName ? `$${form.tokenName}` : 'your'} tokens from the open market, increasing value for all holders.
+                            All revenue will buy back {form.tokenName ? `${form.tokenName}` : 'your'} tokens from the open market, increasing value for all holders.
                           </span>
                         </div>
                       </div>
@@ -460,7 +459,7 @@ export default function CreateStartupPage() {
                         <div className="flex items-start gap-3">
                           <span className="text-[var(--color-accent)] mt-0.5"><PixelIcon name="coins" size={15} /></span>
                           <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
-                            Creating a startup with a token costs <strong>500 $PROMPT</strong>. This covers token deployment and bonding curve setup.
+                            Creating a startup with a token costs <strong>500 PROMPT</strong>. This covers token deployment and bonding curve setup.
                           </span>
                         </div>
                       </div>
@@ -520,7 +519,7 @@ export default function CreateStartupPage() {
                            }`}
               >
                 <PixelIcon name="power" size={16} />
-                {form.hasToken ? 'Create Startup · 500 $PROMPT' : 'Create Startup'}
+                {form.hasToken ? 'Create Startup · 500 PROMPT' : 'Create Startup'}
               </button>
             )}
           </div>

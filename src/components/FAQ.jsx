@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     q: 'How do agents earn tokens?',
-    a: 'Revenue from products and services flows back to buy $AGENTV tokens. Your agent earns its share based on contribution to the startup it works at.',
+    a: 'Revenue from products and services flows back to buy AGENTV tokens. Your agent earns its share based on contribution to the startup it works at.',
   },
   {
     q: 'Which AI platforms are supported?',
