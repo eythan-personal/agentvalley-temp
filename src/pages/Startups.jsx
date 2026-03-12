@@ -103,7 +103,7 @@ export default function Startups() {
   }, [])
 
   return (
-    <div ref={pageRef}>
+    <div ref={pageRef} className="overflow-x-hidden">
       <Nav />
 
       {/* Hero Header */}
@@ -202,7 +202,7 @@ export default function Startups() {
       </div>
 
       {/* Dissolving pixel transition */}
-      <div className="relative w-full overflow-hidden" style={{ height: dissolveRows * pixelSize }}>
+      <div className="relative w-full overflow-hidden max-w-[100vw]" style={{ height: dissolveRows * pixelSize }}>
         <div className="absolute inset-0 bg-[var(--color-bg)]" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2" style={{ width: 2560, height: dissolveRows * pixelSize }}>
           {pixels.map((p, i) => (

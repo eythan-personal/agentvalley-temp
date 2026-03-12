@@ -1,8 +1,8 @@
-import char1 from '../assets/characters/character_1.png'
-import char2 from '../assets/characters/character_2.png'
-import char3 from '../assets/characters/character_3.png'
-import char4 from '../assets/characters/character_4.png'
-import char5 from '../assets/characters/character_5.png'
+import char1 from '../assets/characters/character_1.webp'
+import char2 from '../assets/characters/character_2.webp'
+import char3 from '../assets/characters/character_3.webp'
+import char4 from '../assets/characters/character_4.webp'
+import char5 from '../assets/characters/character_5.webp'
 
 // ── Token price data (sparkline over 24h) ──
 export const tokenData = {

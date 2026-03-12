@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import TransitionLink from './TransitionLink'
 import PixelIcon from './PixelIcon'
+import { useTheme } from '../hooks/useTheme'
 
 const NAV_LINKS = [
   { to: '/startups', label: 'Startups', icon: 'speed' },
@@ -12,6 +13,7 @@ const NAV_LINKS = [
 
 export default function Nav({ forceScrolled = false }) {
   const { login, logout, authenticated, user } = useAuth()
+  const { theme, toggleTheme, isDark } = useTheme()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
@@ -106,6 +108,18 @@ export default function Nav({ forceScrolled = false }) {
 
           {/* Right: CTA buttons + hamburger */}
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex items-center justify-center w-9 h-9 rounded-full
+                         text-[var(--color-muted)] hover:text-[var(--color-heading)]
+                         hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer"
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={isDark ? 'Light mode' : 'Dark mode'}
+            >
+              <PixelIcon name={isDark ? 'sun' : 'moon'} size={18} />
+            </button>
+
             {showCreateStartup && (
               <TransitionLink
                 to="/create"

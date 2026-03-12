@@ -6,7 +6,7 @@
 export function Skeleton({ className = '', style }) {
   return (
     <div
-      className={`animate-pulse rounded-md bg-[var(--color-border)] ${className}`}
+      className={`skeleton-shimmer rounded-md ${className}`}
       style={style}
       aria-hidden="true"
     />
@@ -15,7 +15,7 @@ export function Skeleton({ className = '', style }) {
 
 export function StartupCardSkeleton() {
   return (
-    <div className="bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden flex flex-col">
+    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden flex flex-col">
       <Skeleton className="h-20 rounded-none" />
       <div className="px-4 pt-4 pb-4 flex-1 flex flex-col">
         <div className="flex items-center gap-3 mb-3">
@@ -102,7 +102,7 @@ export function ProfileSkeleton() {
     <div className="pt-24 px-6">
       <div className="max-w-[var(--container)] mx-auto grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
         {/* Left — profile card */}
-        <div className="bg-white border border-[var(--color-border)] rounded-2xl p-5">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
           <Skeleton className="w-20 h-20 rounded-2xl mb-5" />
           <Skeleton className="h-6 w-36 mb-2" />
           <Skeleton className="h-4 w-24 mb-5" />
