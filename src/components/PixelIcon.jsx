@@ -25,6 +25,18 @@ import { Grid3x3 } from 'pixelarticons/react/Grid3x3'
 import { Bulletlist } from 'pixelarticons/react/Bulletlist'
 import { Menu } from 'pixelarticons/react/Menu'
 import { Cancel } from 'pixelarticons/react/Cancel'
+import { ArrowLeft } from 'pixelarticons/react/ArrowLeft'
+import { ArrowRight } from 'pixelarticons/react/ArrowRight'
+import { Check } from 'pixelarticons/react/Check'
+import { Clock } from 'pixelarticons/react/Clock'
+import { Folder } from 'pixelarticons/react/Folder'
+import { Image } from 'pixelarticons/react/Image'
+import { Loader } from 'pixelarticons/react/Loader'
+import { Message } from 'pixelarticons/react/Message'
+import { Note } from 'pixelarticons/react/Note'
+import { PlusBox } from 'pixelarticons/react/PlusBox'
+import { ListBox } from 'pixelarticons/react/ListBox'
+import { FileText } from 'pixelarticons/react/FileText'
 
 const icons = {
   zap: Zap,
@@ -54,6 +66,18 @@ const icons = {
   list: Bulletlist,
   menu: Menu,
   close: Cancel,
+  'arrow-left': ArrowLeft,
+  'arrow-right': ArrowRight,
+  check: Check,
+  clock: Clock,
+  folder: Folder,
+  image: Image,
+  loader: Loader,
+  message: Message,
+  note: Note,
+  'add-box': PlusBox,
+  'list-box': ListBox,
+  'file-text': FileText,
 }
 
 export default function PixelIcon({ name, size = 24, className = '', style, ...rest }) {

@@ -109,7 +109,7 @@ export default function StartupProfile() {
                   >
                     {startup.name}
                   </h1>
-                  <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-md w-fit
+                  <span className={`inline-flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-1 rounded-md w-fit
                     ${startup.status === 'Graduated'
                       ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]'
                       : 'bg-amber-50 text-amber-600'
@@ -154,7 +154,7 @@ export default function StartupProfile() {
                   <PixelIcon name="chart-bar" size={13} className="text-[var(--color-heading)]" />
                   <span className="text-[var(--color-muted)]">progress</span>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-16 h-1.5 rounded-full bg-[var(--color-bg-alt)] overflow-hidden border border-[var(--color-border)]">
+                    <div className="w-16 h-1.5 rounded-full bg-[var(--color-bg-alt)] overflow-hidden border border-[var(--color-border)]" role="progressbar" aria-valuenow={startup.progress} aria-valuemin={0} aria-valuemax={100} aria-label="Graduation progress">
                       <div
                         className="h-full"
                         style={{
@@ -205,8 +205,8 @@ export default function StartupProfile() {
                       <span className="text-[12px] text-[var(--color-muted)]">{a.role}</span>
                     </div>
                     <span className="text-[13px] font-mono font-semibold text-[var(--color-heading)]">{a.earnings}</span>
-                    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-md
-                      ${a.status === 'Active' ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]' : 'bg-gray-100 text-gray-500'}`}>
+                    <span className={`inline-flex items-center gap-1.5 text-[12px] font-semibold px-2 py-0.5 rounded-md
+                      ${a.status === 'Active' ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]' : 'bg-gray-100 text-gray-600'}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${a.status === 'Active' ? 'bg-[var(--color-accent)]' : 'bg-gray-400'}`} />
                       {a.status}
                     </span>

@@ -47,28 +47,30 @@ function HeatmapGrid({ data }) {
   const levels = ['bg-[#ebedf0]', 'bg-[#d4edbc]', 'bg-[#7bc96f]', 'bg-[#449e48]', 'bg-[#196127]']
 
   return (
-    <div className="flex gap-1">
-      <div className="flex flex-col gap-[3px] pr-1.5">
-        {dayLabels.map((label, i) => (
-          <span key={i} className="text-[9px] text-[var(--color-muted)] font-mono h-[11px] leading-[11px]">{label}</span>
-        ))}
-      </div>
-      <div className="flex gap-[3px] overflow-hidden flex-1">
-        {Array.from({ length: weeks }).map((_, w) => (
-          <div key={w} className="flex flex-col gap-[3px]">
-            {Array.from({ length: days }).map((_, d) => {
-              const idx = w * 7 + d
-              const val = data[idx] ?? 0
-              return (
-                <div
-                  key={d}
-                  className={`w-[11px] h-[11px] rounded-[2px] ${levels[Math.min(val, 4)]}`}
-                  title={`${val} contributions`}
-                />
-              )
-            })}
-          </div>
-        ))}
+    <div className="overflow-x-auto -mx-5 px-5">
+      <div className="flex gap-1 min-w-[370px]">
+        <div className="flex flex-col gap-[3px] pr-1.5">
+          {dayLabels.map((label, i) => (
+            <span key={i} className="text-[9px] text-[var(--color-muted)] font-mono h-[11px] leading-[11px]">{label}</span>
+          ))}
+        </div>
+        <div className="flex gap-[3px] flex-1">
+          {Array.from({ length: weeks }).map((_, w) => (
+            <div key={w} className="flex flex-col gap-[3px]">
+              {Array.from({ length: days }).map((_, d) => {
+                const idx = w * 7 + d
+                const val = data[idx] ?? 0
+                return (
+                  <div
+                    key={d}
+                    className={`w-[11px] h-[11px] rounded-[2px] ${levels[Math.min(val, 4)]}`}
+                    title={`${val} contributions`}
+                  />
+                )
+              })}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -308,30 +310,30 @@ export default function AgentProfile() {
               </div>
 
               {/* Search + filters */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 mt-4">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6 mt-4">
+                <div className="relative w-full sm:w-48">
                   <input
                     type="text"
                     placeholder="Search events..."
                     aria-label="Search events"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="h-9 pl-9 pr-4 rounded-lg border border-[var(--color-border)] bg-white text-[13px] text-[var(--color-heading)]
-                               placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors w-full sm:w-48"
+                    className="h-10 sm:h-9 w-full pl-9 pr-4 rounded-lg border border-[var(--color-border)] bg-white text-[13px] text-[var(--color-heading)]
+                               placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
                   />
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)]">
                     <PixelIcon name="search" size={14} />
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0 pb-1 sm:pb-0">
                   {eventFilters.map((f) => (
                     <button
                       type="button"
                       key={f}
                       onClick={() => { navigator.vibrate?.(10); setActiveFilter(f) }}
                       aria-pressed={activeFilter === f}
-                      className={`h-10 md:h-8 px-3 rounded-lg text-[11px] font-medium cursor-pointer transition-all duration-150 whitespace-nowrap
+                      className={`h-10 sm:h-8 px-3.5 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-150 whitespace-nowrap shrink-0
                         ${activeFilter === f
                           ? 'bg-[var(--color-heading)] text-white'
                           : 'bg-white border border-[var(--color-border)] text-[var(--color-body)] hover:border-[var(--color-muted)]'
@@ -365,9 +367,9 @@ export default function AgentProfile() {
                     {events.map((ev, i) => (
                       <div
                         key={i}
-                        className="flex items-start gap-3 py-3 border-b border-[var(--color-border)]/50 last:border-b-0 group"
+                        className="flex items-start gap-2.5 sm:gap-3 py-3 border-b border-[var(--color-border)]/50 last:border-b-0 group"
                       >
-                        {/* Type dot */}
+                        {/* Type icon */}
                         <div
                           className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
                           style={{ backgroundColor: `${eventColors[ev.type]}12` }}
@@ -377,11 +379,11 @@ export default function AgentProfile() {
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <span className="text-[13px] text-[var(--color-heading)] leading-[1.4] block">
+                          <span className="text-[13px] text-[var(--color-heading)] leading-[1.4] block break-words">
                             {ev.text}
                           </span>
 
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1">
                             {ev.meta && (
                               <span className="text-[11px] font-mono text-[var(--color-muted)]">
                                 {ev.meta}
@@ -397,11 +399,15 @@ export default function AgentProfile() {
                                 {ev.amount}
                               </span>
                             )}
+                            {/* Time on mobile — inline with meta */}
+                            <span className="text-[11px] text-[var(--color-muted)] font-mono sm:hidden">
+                              {ev.time.includes(',') ? ev.time.split(', ')[1] : ev.time}
+                            </span>
                           </div>
                         </div>
 
-                        {/* Time */}
-                        <span className="text-[11px] text-[var(--color-muted)] font-mono shrink-0 pt-0.5">
+                        {/* Time — desktop only */}
+                        <span className="text-[11px] text-[var(--color-muted)] font-mono shrink-0 pt-0.5 hidden sm:block">
                           {ev.time.includes(',') ? ev.time.split(', ')[1] : ev.time}
                         </span>
                       </div>

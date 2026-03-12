@@ -93,7 +93,7 @@ export default function TokenModal({ startup, onClose }) {
         <div className="px-6 pb-5 space-y-5">
           {/* Pay with */}
           <div>
-            <span className="block text-[11px] font-semibold tracking-[0.12em] uppercase text-[var(--color-muted)] mb-2">
+            <span className="block text-[12px] font-semibold tracking-[0.12em] uppercase text-[var(--color-muted)] mb-2">
               Pay with
             </span>
             <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-border)]">
@@ -105,7 +105,7 @@ export default function TokenModal({ startup, onClose }) {
 
           {/* Amount */}
           <div>
-            <span className="block text-[11px] font-semibold tracking-[0.12em] uppercase text-[var(--color-muted)] mb-2">
+            <span className="block text-[12px] font-semibold tracking-[0.12em] uppercase text-[var(--color-muted)] mb-2">
               Amount of {startup.token}
             </span>
             <div className="relative">
@@ -120,7 +120,7 @@ export default function TokenModal({ startup, onClose }) {
                 onChange={(e) => setAmount(e.target.value)}
                 autoFocus
                 className="w-full h-12 pl-10 pr-4 rounded-xl border border-[var(--color-border)] bg-white text-[16px] font-mono text-[var(--color-heading)]
-                           placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+                           placeholder-[var(--color-muted)] outline-none focus:outline-2 focus:outline-[var(--color-accent)] focus:border-[var(--color-accent)] transition-colors"
                 aria-label={`Amount of ${startup.token} to ${isGraduated ? 'buy' : 'invest'}`}
               />
             </div>
@@ -147,7 +147,7 @@ export default function TokenModal({ startup, onClose }) {
             className={`flex-1 h-11 rounded-xl text-[14px] font-semibold transition-all duration-200 inline-flex items-center justify-center gap-2 cursor-pointer
               ${amount && parseFloat(amount) > 0
                 ? 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg hover:shadow-[var(--color-accent)]/20'
-                : 'bg-[var(--color-border)] text-[var(--color-muted)] cursor-not-allowed'
+                : 'bg-[#d4d2d0] text-[#6b6865] cursor-not-allowed'
               }`}
           >
             Confirm {isGraduated ? 'Purchase' : 'Investment'}

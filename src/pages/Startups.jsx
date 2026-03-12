@@ -260,11 +260,12 @@ export default function Startups() {
                       }}
                     />
                     <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md backdrop-blur-sm
+                      <span className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-md backdrop-blur-sm
                         ${s.status === 'Graduated'
                           ? 'bg-white/20 text-white'
                           : 'bg-white/20 text-white'
                         }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${s.status === 'Graduated' ? 'bg-[var(--color-accent)]' : 'bg-amber-400'}`} />
                         {s.status}
                       </span>
                     </div>
@@ -283,7 +284,7 @@ export default function Startups() {
                         <h3 className="text-[15px] text-[var(--color-heading)] font-medium leading-none truncate">
                           {s.name}
                         </h3>
-                        <span className="flex items-center gap-2 text-[11px] text-[var(--color-muted)] leading-none mt-1">
+                        <span className="flex items-center gap-2 text-[12px] text-[var(--color-muted)] leading-none mt-1">
                           <span className="flex items-center gap-1">
                             <PixelIcon name="robot" size={11} className="text-[var(--color-heading)]" />
                             {s.agents}
@@ -303,10 +304,10 @@ export default function Startups() {
                         <TokenIcon token={s.token} color={s.tokenColor} icon={s.tokenIcon} size={22} />
                         <span className="text-[12px] font-mono font-semibold text-[var(--color-heading)]">{s.token}</span>
                         {s.price && (
-                          <span className="text-[11px] font-mono text-[var(--color-muted)]">{s.price}</span>
+                          <span className="text-[12px] font-mono text-[var(--color-muted)]">{s.price}</span>
                         )}
                         {s.change24h && (
-                          <span className={`text-[11px] font-mono font-semibold ${s.changePositive ? 'text-[#3d7a1c]' : 'text-red-500'}`}>
+                          <span className={`text-[12px] font-mono font-semibold ${s.changePositive ? 'text-[#3d7a1c]' : 'text-red-500'}`}>
                             {s.change24h}
                           </span>
                         )}
@@ -320,13 +321,13 @@ export default function Startups() {
                                 style={{ width: `${s.progress}%` }}
                               />
                             </div>
-                            <span className="text-[10px] font-mono text-[var(--color-muted)]">{s.progress}%</span>
+                            <span className="text-[12px] font-mono text-[var(--color-muted)]">{s.progress}%</span>
                           </div>
                         )}
                         <button
                           type="button"
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigator.vibrate?.(10); setModalStartup(s) }}
-                          className="h-7 px-3 rounded-lg text-[11px] font-medium cursor-pointer
+                          className="h-7 px-3 rounded-lg text-[12px] font-medium cursor-pointer
                                      border border-[var(--color-border)] text-[var(--color-body)]
                                      hover:border-[var(--color-accent)] hover:text-[var(--color-heading)] transition-all duration-150
                                      inline-flex items-center"
@@ -360,7 +361,7 @@ export default function Startups() {
                 {['Startup', 'Revenue', 'Token', 'Price', 'MCap', '24h', 'Status', ''].map((label) => (
                   <span
                     key={label}
-                    className="text-[11px] font-semibold tracking-[0.15em] uppercase text-[var(--color-muted)]"
+                    className="text-[12px] font-semibold tracking-[0.15em] uppercase text-[var(--color-muted)]"
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
                     {label}
@@ -421,7 +422,7 @@ export default function Startups() {
                       <span className="text-[13px] text-[var(--color-heading)] font-mono">{s.mcap}</span>
                     ) : (
                       <div>
-                        <span className="text-[11px] text-[var(--color-muted)] font-mono block mb-1">
+                        <span className="text-[12px] text-[var(--color-muted)] font-mono block mb-1">
                           {s.progress}K / 100K
                         </span>
                         <div className="w-full h-1.5 rounded-full bg-[var(--color-bg-alt)] overflow-hidden">
@@ -445,11 +446,12 @@ export default function Startups() {
                   </div>
 
                   <div className="hidden lg:block">
-                    <span className={`inline-flex items-center text-[13px] font-semibold px-2.5 py-1 rounded-md
+                    <span className={`inline-flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-1 rounded-md
                       ${s.status === 'Graduated'
                         ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]'
                         : 'bg-amber-50 text-amber-600'
                       }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${s.status === 'Graduated' ? 'bg-[var(--color-accent)]' : 'bg-amber-400'}`} />
                       {s.status}
                     </span>
                   </div>
@@ -485,15 +487,15 @@ export default function Startups() {
                         {s.change24h}
                       </span>
                     )}
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[12px] font-semibold
                       ${s.status === 'Graduated' ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]' : 'bg-amber-50 text-amber-600'}`}>
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.status === 'Graduated' ? '#3d7a1c' : '#d97706' }} />
+                      <span className={`w-1.5 h-1.5 rounded-full ${s.status === 'Graduated' ? 'bg-[var(--color-accent)]' : 'bg-amber-400'}`} />
                       {s.status}
                     </span>
                     <button
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigator.vibrate?.(10); setModalStartup(s) }}
-                      className="h-7 px-3 rounded-lg text-[11px] font-medium cursor-pointer
+                      className="h-7 px-3 rounded-lg text-[12px] font-medium cursor-pointer
                                  border border-[var(--color-border)] text-[var(--color-body)]
                                  hover:border-[var(--color-accent)] hover:text-[var(--color-heading)] transition-all duration-150
                                  inline-flex items-center ml-auto"
@@ -531,7 +533,7 @@ export default function Startups() {
                 >
                   Build a startup with <span className="text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-accent)' }}>zero employees.</span>
                 </h3>
-                <p className="text-[14px] text-white/45 max-w-md leading-[1.6]">
+                <p className="text-[14px] text-white/65 max-w-md leading-[1.6]">
                   Launch an autonomous company powered entirely by AI agents. They build, sell, and earn — you orchestrate.
                 </p>
               </div>

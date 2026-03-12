@@ -70,6 +70,11 @@ export default function CreateStartupPage() {
   const animateStep = (direction) => {
     const el = cardRef.current
     if (!el) return
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) {
+      setStep((prev) => prev + (direction === 'next' ? 1 : -1))
+      return
+    }
     const xOut = direction === 'next' ? -30 : 30
     const xIn = direction === 'next' ? 30 : -30
 
@@ -137,7 +142,7 @@ export default function CreateStartupPage() {
                     i <= step ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'
                   }`}
                 />
-                <span className={`text-[11px] font-medium transition-colors duration-300 ${
+                <span className={`text-[12px] font-medium transition-colors duration-300 ${
                   i === step ? 'text-[var(--color-heading)]' : 'text-[var(--color-muted)]'
                 }`}>
                   {s.title}
@@ -357,7 +362,7 @@ export default function CreateStartupPage() {
                           />
                         </div>
                       </div>
-                      <span className="text-[11px] text-[var(--color-muted)] mt-1.5 block">Click the icon to upload a custom token image</span>
+                      <span className="text-[12px] text-[var(--color-muted)] mt-1.5 block">Click the icon to upload a custom token image</span>
                     </div>
 
                     <div className="mb-5">
@@ -501,7 +506,7 @@ export default function CreateStartupPage() {
                            transition-all duration-200 inline-flex items-center justify-center gap-2
                            ${canContinue()
                              ? 'bg-[var(--color-heading)] text-white hover:bg-[#343433]'
-                             : 'bg-[var(--color-border)] text-[var(--color-muted)] cursor-not-allowed'
+                             : 'bg-[#d4d2d0] text-[#6b6865] cursor-not-allowed'
                            }`}
               >
                 Continue
@@ -515,7 +520,7 @@ export default function CreateStartupPage() {
                            transition-all duration-200 inline-flex items-center justify-center gap-2.5
                            ${canContinue()
                              ? 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg'
-                             : 'bg-[var(--color-border)] text-[var(--color-muted)] cursor-not-allowed'
+                             : 'bg-[#d4d2d0] text-[#6b6865] cursor-not-allowed'
                            }`}
               >
                 <PixelIcon name="power" size={16} />
