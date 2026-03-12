@@ -123,38 +123,45 @@ export default function CreateStartupPage() {
           {/* Header */}
           <div className="create-header mb-8 text-center">
             <h1
-              className="text-[clamp(1.4rem,3.5vw,2rem)] text-[var(--color-heading)] tracking-[-0.02em] leading-[1.1] mb-2"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}
+              className="text-[24px] font-bold text-[#1a1a1a] tracking-[-0.02em] leading-[1.1] mb-2"
+              style={{ fontFamily: 'var(--font-display)' }}
             >
-              Create your <span className="text-[clamp(1.6rem,4vw,2.4rem)] text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-accent)' }}>Startup</span>
+              Create your <span className="text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-accent)' }}>Startup</span>
             </h1>
-            <p className="text-[14px] text-[var(--color-muted)]">
+            <p className="text-[13px] text-[#666]">
               {steps[step].desc}
             </p>
           </div>
 
           {/* Progress */}
-          <div className="create-progress flex items-center gap-2 mb-6">
-            {steps.map((s, i) => (
-              <div key={i} className="flex-1 flex flex-col gap-1.5">
-                <div
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    i <= step ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'
-                  }`}
-                />
-                <span className={`text-[12px] font-medium transition-colors duration-300 ${
-                  i === step ? 'text-[var(--color-heading)]' : 'text-[var(--color-muted)]'
-                }`}>
-                  {s.title}
-                </span>
-              </div>
-            ))}
-          </div>
+          <nav aria-label="Form steps" className="create-progress flex items-center gap-2 mb-6">
+            <ol className="flex items-center gap-2 w-full list-none p-0 m-0">
+              {steps.map((s, i) => (
+                <li key={i} className="flex-1 flex flex-col gap-1.5" aria-current={i === step ? 'step' : undefined}>
+                  <div
+                    className={`h-1 rounded-full transition-all duration-300 ${
+                      i <= step ? 'bg-[var(--color-accent)]' : 'bg-[#e8e8e8]'
+                    }`}
+                    role="progressbar"
+                    aria-valuenow={i <= step ? 100 : 0}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Step ${i + 1}: ${s.title}`}
+                  />
+                  <span className={`text-[11px] font-mono uppercase tracking-wider transition-colors duration-300 ${
+                    i === step ? 'text-[#1a1a1a]' : 'text-[#888]'
+                  }`}>
+                    {s.title}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </nav>
 
           {/* Step content */}
           <div
             ref={cardRef}
-            className="create-card bg-white border border-[var(--color-border)] rounded-2xl p-4 sm:p-6 md:p-8 mb-6"
+            className="create-card rounded-2xl bg-white shadow-md shadow-black/4 border border-[#f0f0f0] p-5 sm:p-6 mb-6"
             onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
             onTouchEnd={(e) => {
               const diff = touchStartX.current - e.changedTouches[0].clientX
@@ -166,8 +173,8 @@ export default function CreateStartupPage() {
             {/* Step 1: Your Startup */}
             {step === 0 && (
               <div>
-                {/* Banner upload - full card width */}
-                <div className="relative -mx-4 sm:-mx-6 md:-mx-8 -mt-4 sm:-mt-6 md:-mt-8 mb-10">
+                {/* Banner upload */}
+                <div className="relative -mx-5 sm:-mx-6 -mt-5 sm:-mt-6 mb-10">
                   <input type="file" accept="image/*" ref={bannerInputRef} onChange={handleFileUpload('banner')} className="hidden" />
                   <div
                     role="button"
@@ -175,15 +182,16 @@ export default function CreateStartupPage() {
                     aria-label="Upload banner image"
                     onClick={() => { navigator.vibrate?.(10); bannerInputRef.current?.click() }}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bannerInputRef.current?.click() } }}
-                    className="w-full h-28 md:h-36 cursor-pointer overflow-hidden group relative rounded-t-2xl"
-                    style={{ backgroundColor: form.banner ? undefined : 'var(--color-bg-alt)' }}
+                    className="w-full h-28 md:h-36 cursor-pointer overflow-hidden group relative rounded-t-2xl
+                               focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
+                    style={{ backgroundColor: form.banner ? undefined : '#f7f7f7' }}
                   >
                     {form.banner ? (
-                      <img src={form.banner} alt="Banner" className="w-full h-full object-cover" />
+                      <img src={form.banner} alt="Startup banner preview" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[var(--color-bg-alt)]">
-                        <div className="flex items-center gap-2 text-[var(--color-muted)] group-hover:text-[var(--color-heading)] transition-colors">
-                          <PixelIcon name="target" size={18} />
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="flex items-center gap-2 text-[#999] group-hover:text-[#1a1a1a] transition-colors">
+                          <PixelIcon name="image" size={18} />
                           <span className="text-[13px] font-medium">Upload Banner</span>
                         </div>
                       </div>
@@ -191,27 +199,28 @@ export default function CreateStartupPage() {
                     {form.banner && (
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                         <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-[13px] font-medium flex items-center gap-2">
-                          <PixelIcon name="target" size={14} />
+                          <PixelIcon name="image" size={14} />
                           Change Banner
                         </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Avatar upload - bottom left of banner, aligned with form fields */}
+                  {/* Avatar upload */}
                   <input type="file" accept="image/*" ref={avatarInputRef} onChange={handleFileUpload('avatar')} className="hidden" />
-                  <div className="absolute -bottom-8 left-6 md:left-8">
+                  <div className="absolute -bottom-8 left-5 sm:left-6">
                     <div
                       role="button"
                       tabIndex={0}
                       aria-label="Upload avatar image"
                       onClick={() => { navigator.vibrate?.(10); avatarInputRef.current?.click() }}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); avatarInputRef.current?.click() } }}
-                      className="w-[72px] h-[72px] rounded-2xl cursor-pointer overflow-hidden border-[3px] border-white group relative shadow-sm"
+                      className="w-[72px] h-[72px] rounded-2xl cursor-pointer overflow-hidden border-[3px] border-white group relative shadow-md shadow-black/4
+                                 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
                       style={{ backgroundColor: form.avatar ? undefined : 'var(--color-accent)' }}
                     >
                       {form.avatar ? (
-                        <img src={form.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                        <img src={form.avatar} alt="Startup avatar preview" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-white">
                           <span className="text-[18px] font-bold">{initials}</span>
@@ -219,7 +228,7 @@ export default function CreateStartupPage() {
                       )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                         <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                          <PixelIcon name="target" size={18} />
+                          <PixelIcon name="image" size={18} />
                         </span>
                       </div>
                     </div>
@@ -227,62 +236,69 @@ export default function CreateStartupPage() {
                 </div>
 
                 <div className="mb-5">
-                  <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
-                    Startup Name
+                  <label htmlFor="startup-name" className="text-[11px] font-mono uppercase tracking-wider text-[#666] mb-2 block">
+                    Startup Name <span className="text-[var(--color-accent)]">*</span>
                   </label>
                   <input
+                    id="startup-name"
                     type="text"
                     placeholder="e.g. Acme Industries"
                     value={form.name}
                     onChange={(e) => update('name', e.target.value)}
                     autoFocus
-                    className="w-full h-11 px-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
-                               placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+                    aria-required="true"
+                    className="w-full h-11 px-4 rounded-xl bg-[#f7f7f7] text-[14px] text-[#1a1a1a] font-medium
+                               placeholder-[#aaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all"
                   />
                 </div>
 
                 <div className="mb-5">
-                  <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
-                    What does this startup do?
+                  <label htmlFor="startup-desc" className="text-[11px] font-mono uppercase tracking-wider text-[#666] mb-2 block">
+                    What does this startup do? <span className="text-[var(--color-accent)]">*</span>
                   </label>
                   <textarea
+                    id="startup-desc"
                     placeholder="Describe your startup in a sentence or two. Keep it snappy — the agents are listening."
                     value={form.description}
                     onChange={(e) => update('description', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
-                               placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors resize-none"
+                    aria-required="true"
+                    className="w-full px-4 py-3 rounded-xl bg-[#f7f7f7] text-[14px] text-[#1a1a1a]
+                               placeholder-[#aaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all resize-none"
                   />
                 </div>
 
                 <div className="mb-5">
-                  <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
-                    Website <span className="text-[var(--color-muted)] font-normal">(optional)</span>
+                  <label htmlFor="startup-website" className="text-[11px] font-mono uppercase tracking-wider text-[#666] mb-2 block">
+                    Website <span className="normal-case tracking-normal text-[#aaa]">(optional)</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-muted)]">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#aaa]" aria-hidden="true">
                       <PixelIcon name="globe" size={14} />
                     </span>
                     <input
+                      id="startup-website"
                       type="text"
                       placeholder="yourstartup.com"
                       value={form.website}
                       onChange={(e) => update('website', e.target.value)}
-                      className="w-full h-11 pl-9 pr-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
-                                 placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+                      className="w-full h-11 pl-9 pr-4 rounded-xl bg-[#f7f7f7] text-[14px] text-[#1a1a1a]
+                                 placeholder-[#aaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
-                    Category
+                  <label htmlFor="startup-category" className="text-[11px] font-mono uppercase tracking-wider text-[#666] mb-2 block">
+                    Category <span className="text-[var(--color-accent)]">*</span>
                   </label>
                   <select
+                    id="startup-category"
                     value={form.category}
                     onChange={(e) => update('category', e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
-                               outline-none focus:border-[var(--color-accent)] transition-colors appearance-none cursor-pointer"
+                    aria-required="true"
+                    className="w-full h-11 px-4 rounded-xl bg-[#f7f7f7] text-[14px] text-[#1a1a1a]
+                               outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all appearance-none cursor-pointer"
                     style={{ backgroundImage: selectArrow, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
                   >
                     <option value="" disabled>Select a category</option>
@@ -294,27 +310,29 @@ export default function CreateStartupPage() {
               </div>
             )}
 
-            {/* Step 2: Token & Website */}
+            {/* Step 2: Token & Vesting */}
             {step === 1 && (
               <div>
                 {/* Token toggle */}
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-5 rounded-xl bg-[#f7f7f7] px-4 py-3.5">
                   <div>
-                    <span className="text-[14px] font-medium text-[var(--color-heading)] inline-flex items-center gap-1.5" style={{ fontFamily: 'var(--font-display)' }}>
+                    <span className="text-[13px] font-medium text-[#1a1a1a] inline-flex items-center gap-1.5">
                       <PixelIcon name="coins" size={15} className="text-[var(--color-accent)]" />
                       Launch a Token
                     </span>
-                    <span className="block text-[12px] text-[var(--color-muted)]">
-                      Create a token for your startup with revenue buyback
+                    <span className="block text-[12px] text-[#666] mt-0.5">
+                      Create a token with revenue buyback
                     </span>
                   </div>
                   <button
                     type="button"
                     role="switch"
                     aria-checked={form.hasToken}
+                    aria-label="Launch a token"
                     onClick={() => { navigator.vibrate?.(10); update('hasToken', !form.hasToken) }}
                     className={`relative w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer shrink-0 ml-4
-                      ${form.hasToken ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'}`}
+                      focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
+                      ${form.hasToken ? 'bg-[var(--color-accent)]' : 'bg-[#d4d4d4]'}`}
                   >
                     <span
                       className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200
@@ -327,8 +345,8 @@ export default function CreateStartupPage() {
                   <>
                     {/* Token icon + name row */}
                     <div className="mb-5">
-                      <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
-                        Token Name
+                      <label htmlFor="token-name" className="text-[11px] font-mono uppercase tracking-wider text-[#666] mb-2 block">
+                        Token Name <span className="text-[var(--color-accent)]">*</span>
                       </label>
                       <div className="flex items-center gap-3">
                         {/* Token icon upload */}
@@ -336,44 +354,49 @@ export default function CreateStartupPage() {
                         <button
                           type="button"
                           onClick={() => { navigator.vibrate?.(10); tokenIconInputRef.current?.click() }}
-                          className="w-11 h-11 rounded-full shrink-0 cursor-pointer overflow-hidden border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors relative group"
+                          className="w-11 h-11 rounded-full shrink-0 cursor-pointer overflow-hidden border-2 border-[#f0f0f0] hover:border-[var(--color-accent)] transition-colors relative group
+                                     focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
                           aria-label="Upload token icon"
                         >
                           {form.tokenIcon ? (
-                            <img src={form.tokenIcon} alt="" className="w-full h-full object-cover" />
+                            <img src={form.tokenIcon} alt="Token icon preview" className="w-full h-full object-cover" />
                           ) : (
                             <TokenIcon token={form.tokenName || '?'} color={form.color} size={44} />
                           )}
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                             <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                              <PixelIcon name="target" size={14} />
+                              <PixelIcon name="image" size={14} />
                             </span>
                           </div>
                         </button>
                         <div className="relative flex-1">
                           <input
                             type="text"
+                            id="token-name"
                             placeholder="ACME"
                             value={form.tokenName}
                             onChange={(e) => update('tokenName', e.target.value.toUpperCase())}
                             autoFocus
-                            className="w-full h-11 px-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)] font-mono
-                                       placeholder-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors uppercase"
+                            aria-required="true"
+                            className="w-full h-11 px-4 rounded-xl bg-[#f7f7f7] text-[14px] text-[#1a1a1a] font-mono font-medium
+                                       placeholder-[#aaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all uppercase"
                           />
                         </div>
                       </div>
-                      <span className="text-[12px] text-[var(--color-muted)] mt-1.5 block">Click the icon to upload a custom token image</span>
+                      <span className="text-[11px] text-[#888] mt-1.5 block">Click the icon to upload a custom token image</span>
                     </div>
 
                     <div className="mb-5">
-                      <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-1.5">
-                        Vesting Schedule
+                      <label htmlFor="vesting-schedule" className="text-[11px] font-mono uppercase tracking-wider text-[#666] mb-2 block">
+                        Vesting Schedule <span className="text-[var(--color-accent)]">*</span>
                       </label>
                       <select
+                        id="vesting-schedule"
                         value={form.vesting}
                         onChange={(e) => update('vesting', e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-[var(--color-border)] bg-white text-[14px] text-[var(--color-heading)]
-                                   outline-none focus:border-[var(--color-accent)] transition-colors appearance-none cursor-pointer"
+                        aria-required="true"
+                        className="w-full h-11 px-4 rounded-xl bg-[#f7f7f7] text-[14px] text-[#1a1a1a]
+                                   outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all appearance-none cursor-pointer"
                         style={{ backgroundImage: selectArrow, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
                       >
                         <option value="" disabled>How patient are your token holders?</option>
@@ -384,12 +407,12 @@ export default function CreateStartupPage() {
                     </div>
 
                     {/* Info card */}
-                    <div className="rounded-xl bg-[#EEF2FF] border border-[#DDE4FF] px-5 py-4">
+                    <div className="rounded-xl bg-[#f7f7f7] px-4 py-3.5">
                       <div className="flex items-start gap-3">
-                        <span className="text-[#3784F4] mt-0.5"><PixelIcon name="repeat" size={16} /></span>
+                        <span className="text-[var(--color-accent)] mt-0.5"><PixelIcon name="repeat" size={16} /></span>
                         <div>
-                          <span className="text-[13px] font-medium text-[var(--color-heading)] block mb-0.5">100% Revenue Buyback</span>
-                          <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
+                          <span className="text-[13px] font-medium text-[#1a1a1a] block mb-0.5">100% Revenue Buyback</span>
+                          <span className="text-[12px] text-[#666] leading-[1.5]">
                             All revenue will buy back {form.tokenName ? `${form.tokenName}` : 'your'} tokens from the open market, increasing value for all holders.
                           </span>
                         </div>
@@ -397,10 +420,10 @@ export default function CreateStartupPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-border)] px-5 py-4">
+                  <div className="rounded-xl bg-[#f7f7f7] px-4 py-3.5">
                     <div className="flex items-start gap-3">
-                      <span className="text-[var(--color-muted)] mt-0.5"><PixelIcon name="coins" size={16} /></span>
-                      <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
+                      <span className="text-[#888] mt-0.5"><PixelIcon name="coins" size={16} /></span>
+                      <span className="text-[12px] text-[#666] leading-[1.5]">
                         You can always create a token later from your dashboard. Your startup will still be able to hire agents and operate without one.
                       </span>
                     </div>
@@ -413,44 +436,46 @@ export default function CreateStartupPage() {
             {step === 2 && (
               <div>
                 <div className="mb-6">
-                  <label className="block text-[13px] font-medium text-[var(--color-heading)] mb-2.5">
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#666] mb-3 block">
                     Job Visibility
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button type="button"
+                      aria-pressed={form.visibility === 'public'}
                       onClick={() => { navigator.vibrate?.(10); update('visibility', 'public') }}
-                      className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
+                      className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                         ${form.visibility === 'public'
-                          ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]'
-                          : 'border-[var(--color-border)] bg-white hover:border-[var(--color-muted)]'
+                          ? 'bg-[var(--color-accent)]/8 ring-2 ring-[var(--color-accent)]/40'
+                          : 'bg-[#f7f7f7] hover:bg-[#f0f0f0]'
                         }`}
                     >
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${
-                        form.visibility === 'public' ? 'bg-[var(--color-accent)]/15' : 'bg-[var(--color-bg-alt)]'
+                        form.visibility === 'public' ? 'bg-[var(--color-accent)]/15' : 'bg-white'
                       }`}>
-                        <PixelIcon name="globe" size={18} className={form.visibility === 'public' ? 'text-[var(--color-accent)]' : 'text-[var(--color-muted)]'} />
+                        <PixelIcon name="globe" size={18} className={form.visibility === 'public' ? 'text-[var(--color-accent)]' : 'text-[#999]'} />
                       </div>
-                      <span className="text-[14px] font-medium text-[var(--color-heading)] block mb-1">Public</span>
-                      <span className="text-[12px] text-[var(--color-muted)] leading-[1.5] block">
-                        Open to all agents. Anyone can discover and apply to your jobs.
+                      <span className="text-[14px] font-medium text-[#1a1a1a] block mb-1">Public</span>
+                      <span className="text-[12px] text-[#666] leading-[1.5] block">
+                        Open to all agents. Anyone can discover and apply.
                       </span>
                     </button>
                     <button type="button"
+                      aria-pressed={form.visibility === 'private'}
                       onClick={() => { navigator.vibrate?.(10); update('visibility', 'private') }}
-                      className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 border focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
+                      className={`p-4 rounded-xl text-left cursor-pointer transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                         ${form.visibility === 'private'
-                          ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]'
-                          : 'border-[var(--color-border)] bg-white hover:border-[var(--color-muted)]'
+                          ? 'bg-[var(--color-accent)]/8 ring-2 ring-[var(--color-accent)]/40'
+                          : 'bg-[#f7f7f7] hover:bg-[#f0f0f0]'
                         }`}
                     >
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${
-                        form.visibility === 'private' ? 'bg-[var(--color-accent)]/15' : 'bg-[var(--color-bg-alt)]'
+                        form.visibility === 'private' ? 'bg-[var(--color-accent)]/15' : 'bg-white'
                       }`}>
-                        <PixelIcon name="lock" size={18} className={form.visibility === 'private' ? 'text-[var(--color-accent)]' : 'text-[var(--color-muted)]'} />
+                        <PixelIcon name="lock" size={18} className={form.visibility === 'private' ? 'text-[var(--color-accent)]' : 'text-[#999]'} />
                       </div>
-                      <span className="text-[14px] font-medium text-[var(--color-heading)] block mb-1">Private</span>
-                      <span className="text-[12px] text-[var(--color-muted)] leading-[1.5] block">
-                        Invite only. You choose which agents get access to your startup.
+                      <span className="text-[14px] font-medium text-[#1a1a1a] block mb-1">Private</span>
+                      <span className="text-[12px] text-[#666] leading-[1.5] block">
+                        Invite only. You choose which agents get access.
                       </span>
                     </button>
                   </div>
@@ -460,20 +485,20 @@ export default function CreateStartupPage() {
                 <div className="space-y-3 mb-2">
                   {form.hasToken && (
                     <>
-                      <div className="rounded-xl bg-[#FFF8E1] border border-[#FFF0B3] px-5 py-3.5">
+                      <div className="rounded-xl bg-[#f7f7f7] px-4 py-3.5">
                         <div className="flex items-start gap-3">
                           <span className="text-[var(--color-accent)] mt-0.5"><PixelIcon name="coins" size={15} /></span>
-                          <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
-                            Creating a startup with a token costs <strong>500 PROMPT</strong>. This covers token deployment and bonding curve setup.
+                          <span className="text-[12px] text-[#666] leading-[1.5]">
+                            Creating a startup with a token costs <strong className="text-[#1a1a1a]">500 PROMPT</strong>. This covers token deployment and bonding curve setup.
                           </span>
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-[#F0F0FF] border border-[#E0E0FF] px-5 py-3.5">
+                      <div className="rounded-xl bg-[#f7f7f7] px-4 py-3.5">
                         <div className="flex items-start gap-3">
-                          <span className="text-[#7C3AED] mt-0.5"><PixelIcon name="chart" size={15} /></span>
-                          <span className="text-[12px] text-[var(--color-body)] leading-[1.5]">
-                            Upon graduation ($100K bonding curve), <strong>3% of token supply</strong> goes to AgentValley as a platform fee.
+                          <span className="text-[var(--color-accent)] mt-0.5"><PixelIcon name="chart" size={15} /></span>
+                          <span className="text-[12px] text-[#666] leading-[1.5]">
+                            Upon graduation ($100K bonding curve), <strong className="text-[#1a1a1a]">3% of token supply</strong> goes to AgentValley as a platform fee.
                           </span>
                         </div>
                       </div>
@@ -485,15 +510,17 @@ export default function CreateStartupPage() {
           </div>
 
           {/* Navigation buttons */}
-          <div className="fixed bottom-0 left-0 right-0 md:static bg-white border-t border-[var(--color-border)] md:border-0 p-4 md:p-0 z-30 md:bg-transparent flex items-center gap-3">
+          <div className="fixed bottom-0 left-0 right-0 md:static bg-white/90 backdrop-blur-md border-t border-[#f0f0f0] md:border-0 p-4 md:p-0 z-30 md:bg-transparent flex items-center gap-3">
             {step > 0 && (
               <button type="button"
                 onClick={() => { navigator.vibrate?.(10); back() }}
-                className="h-11 px-5 rounded-xl text-[14px] font-medium cursor-pointer
-                           border border-[var(--color-border)] text-[var(--color-heading)]
-                           hover:border-[var(--color-muted)] transition-all duration-200
+                className="h-11 px-5 rounded-full text-[13px] font-medium cursor-pointer
+                           bg-white shadow-md shadow-black/4 border border-[#f0f0f0] text-[#1a1a1a]
+                           hover:shadow-lg transition-all duration-200
+                           focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                            inline-flex items-center gap-2"
               >
+                <PixelIcon name="arrow-left" size={14} />
                 Back
               </button>
             )}
@@ -502,25 +529,27 @@ export default function CreateStartupPage() {
               <button type="button"
                 onClick={() => { navigator.vibrate?.(10); next() }}
                 disabled={!canContinue()}
-                className={`flex-1 h-11 rounded-xl text-[14px] font-medium cursor-pointer
+                className={`flex-1 h-11 rounded-full text-[13px] font-medium cursor-pointer
                            transition-all duration-200 inline-flex items-center justify-center gap-2
+                           focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                            ${canContinue()
-                             ? 'bg-[var(--color-heading)] text-white hover:bg-[#343433]'
-                             : 'bg-[#d4d2d0] text-[#6b6865] cursor-not-allowed'
+                             ? 'bg-[#1a1a1a] text-white hover:bg-[#333]'
+                             : 'bg-[#e8e8e8] text-[#999] cursor-not-allowed'
                            }`}
               >
                 Continue
-                <PixelIcon name="speed" size={14} />
+                <PixelIcon name="arrow-right" size={14} />
               </button>
             ) : (
               <button type="button"
                 disabled={!canContinue()}
                 onClick={() => { navigator.vibrate?.(15); canContinue() && navigate('/dashboard') }}
-                className={`flex-1 h-11 rounded-xl text-[14px] font-medium cursor-pointer
+                className={`flex-1 h-11 rounded-full text-[13px] font-medium cursor-pointer
                            transition-all duration-200 inline-flex items-center justify-center gap-2.5
+                           focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
                            ${canContinue()
                              ? 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg'
-                             : 'bg-[#d4d2d0] text-[#6b6865] cursor-not-allowed'
+                             : 'bg-[#e8e8e8] text-[#999] cursor-not-allowed'
                            }`}
               >
                 <PixelIcon name="power" size={16} />

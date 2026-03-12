@@ -133,6 +133,17 @@ export default function Nav({ forceScrolled = false }) {
               </TransitionLink>
             )}
 
+            <TransitionLink
+              to="/workshop"
+              className="hidden sm:inline-flex h-9 px-5 rounded-full text-[13px] font-medium
+                         border border-[var(--color-border)] text-[var(--color-heading)]
+                         hover:bg-[var(--color-bg-alt)] transition-colors
+                         items-center gap-2"
+            >
+              <PixelIcon name="robot" size={14} />
+              Workshop
+            </TransitionLink>
+
             {authenticated ? (
               <>
                 <TransitionLink
@@ -214,6 +225,17 @@ export default function Nav({ forceScrolled = false }) {
                 Create Startup
               </TransitionLink>
             )}
+
+            <TransitionLink
+              to="/workshop"
+              onClick={() => navigator.vibrate?.(10)}
+              className="flex items-center justify-center gap-2 h-11 rounded-full text-[14px] font-medium
+                         border border-[var(--color-border)] text-[var(--color-heading)]
+                         hover:bg-[var(--color-bg-alt)] transition-colors mt-1"
+            >
+              <PixelIcon name="robot" size={14} />
+              Workshop
+            </TransitionLink>
 
             {authenticated ? (
               <>

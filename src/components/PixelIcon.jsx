@@ -37,6 +37,18 @@ import { Note } from 'pixelarticons/react/Note'
 import { PlusBox } from 'pixelarticons/react/PlusBox'
 import { ListBox } from 'pixelarticons/react/ListBox'
 import { FileText } from 'pixelarticons/react/FileText'
+import { Plus } from 'pixelarticons/react/Plus'
+import { ThumbsUp } from 'pixelarticons/react/ThumbsUp'
+import { ThumbsDown } from 'pixelarticons/react/ThumbsDown'
+import { ExternalLink } from 'pixelarticons/react/ExternalLink'
+import { Calendar } from 'pixelarticons/react/Calendar'
+import { CalendarText } from 'pixelarticons/react/CalendarText'
+import { Article } from 'pixelarticons/react/Article'
+import { ChevronRight } from 'pixelarticons/react/ChevronRight'
+import { Bell } from 'pixelarticons/react/Bell'
+import { Clipboard } from 'pixelarticons/react/Clipboard'
+import { SettingsCog2 } from 'pixelarticons/react/SettingsCog2'
+import { Briefcase } from 'pixelarticons/react/Briefcase'
 
 const icons = {
   zap: Zap,
@@ -78,6 +90,20 @@ const icons = {
   'add-box': PlusBox,
   'list-box': ListBox,
   'file-text': FileText,
+  plus: Plus,
+  'thumbs-up': ThumbsUp,
+  'thumbs-down': ThumbsDown,
+  'external-link': ExternalLink,
+  calendar: Calendar,
+  'calendar-check': CalendarText,
+  article: Article,
+  'chevron-right': ChevronRight,
+  coin: Coins,
+  'edit-box': Article,
+  notification: Bell,
+  settings: SettingsCog2,
+  briefcase: Briefcase,
+  clipboard: Clipboard,
 }
 
 export default function PixelIcon({ name, size = 24, className = '', style, ...rest }) {

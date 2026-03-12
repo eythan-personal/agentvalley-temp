@@ -21,27 +21,74 @@ export const tokenData = {
 
 // ── Objectives ──
 export const objectives = [
-  { id: 'obj-1', title: 'Launch marketing website v2', status: 'in-progress', progress: 68, tasksTotal: 8, tasksComplete: 5 },
-  { id: 'obj-2', title: 'Animated explainer video — Episode 1', status: 'in-progress', progress: 42, tasksTotal: 14, tasksComplete: 6 },
-  { id: 'obj-3', title: 'Q1 content calendar execution', status: 'in-progress', progress: 85, tasksTotal: 12, tasksComplete: 10 },
-  { id: 'obj-4', title: 'Security audit & SOC2 prep', status: 'pending', progress: 0, tasksTotal: 6, tasksComplete: 0 },
+  { id: 'obj-1', title: 'Launch marketing website v2', description: 'Complete redesign of the marketing site with new hero section, pricing page variants, and SEO optimization across all pages.', status: 'completed', progress: 100, tasksTotal: 8, tasksComplete: 8, startDate: 'Mar 10', estCompletion: 'Mar 14' },
+  { id: 'obj-3', title: 'Q1 content calendar execution', description: 'Execute the full Q1 content plan: blog posts, social media graphics, and community updates across all channels.', status: 'completed', progress: 100, tasksTotal: 12, tasksComplete: 12, startDate: 'Mar 1', estCompletion: 'Mar 13' },
+  { id: 'obj-5', title: 'Brand identity & style guide', description: 'Define the visual identity system — logo usage, color palette, typography rules, and component patterns for consistent branding.', status: 'completed', progress: 100, tasksTotal: 6, tasksComplete: 6, startDate: 'Feb 20', estCompletion: 'Mar 2' },
+  { id: 'obj-2', title: 'Animated explainer video — Episode 1', description: 'Produce a 90-second animated explainer covering AgentValley\'s core value prop — from script to final render with voiceover.', status: 'in-progress', progress: 42, tasksTotal: 14, tasksComplete: 6, startDate: 'Mar 11', estCompletion: 'Mar 18' },
+  { id: 'obj-4', title: 'Security audit & SOC2 prep', description: 'Run full dependency audit, patch vulnerabilities, and generate compliance reports for SOC2 evidence collection.', status: 'queued', progress: 0, tasksTotal: 4, tasksComplete: 0, startDate: 'Mar 19', estCompletion: 'Mar 24' },
 ]
 
 // ── Tasks ──
 export const tasks = [
-  { id: 21, title: 'Script Writing for Animated Video', objective: 'Animated explainer video — Episode 1', status: 'Completed', agent: { name: 'SynthMind', avatar: char3 }, dependencies: [], created: '3/11/2026', duration: '13m' },
-  { id: 22, title: 'Character and Scene Design', objective: 'Animated explainer video — Episode 1', status: 'Completed', agent: { name: 'PixelSage', avatar: char4 }, dependencies: ['#21'], created: '3/11/2026', duration: '1h 30m' },
-  { id: 23, title: 'Storyboard Creation', objective: 'Animated explainer video — Episode 1', status: 'Assigned', agent: { name: 'PixelSage', avatar: char4 }, dependencies: ['#21', '#22'], created: '3/11/2026', duration: '1h 55m' },
-  { id: 24, title: 'Voiceover Script Preparation', objective: 'Animated explainer video — Episode 1', status: 'Completed', agent: { name: 'SynthMind', avatar: char3 }, dependencies: ['#21'], created: '3/11/2026', duration: '20m' },
-  { id: 25, title: 'Homepage hero section redesign', objective: 'Launch marketing website v2', status: 'Completed', agent: { name: 'VectorX', avatar: char2 }, dependencies: [], created: '3/10/2026', duration: '2h 10m' },
-  { id: 26, title: 'SEO meta tags & sitemap', objective: 'Launch marketing website v2', status: 'Assigned', agent: { name: 'SynthMind', avatar: char3 }, dependencies: ['#25'], created: '3/10/2026', duration: null },
-  { id: 27, title: 'Blog post: "Why AI Agents?"', objective: 'Q1 content calendar execution', status: 'Completed', agent: { name: 'SynthMind', avatar: char3 }, dependencies: [], created: '3/10/2026', duration: '45m' },
-  { id: 28, title: 'Social media graphics batch', objective: 'Q1 content calendar execution', status: 'Completed', agent: { name: 'PixelSage', avatar: char4 }, dependencies: [], created: '3/10/2026', duration: '1h 15m' },
-  { id: 29, title: 'Voiceover Generation', objective: 'Animated explainer video — Episode 1', status: 'Pending', agent: null, dependencies: ['#24'], created: '3/11/2026', duration: null },
-  { id: 30, title: 'Animation Production', objective: 'Animated explainer video — Episode 1', status: 'Pending', agent: null, dependencies: ['#23', '#25'], created: '3/11/2026', duration: null },
-  { id: 31, title: 'Pricing page A/B variants', objective: 'Launch marketing website v2', status: 'Assigned', agent: { name: 'VectorX', avatar: char2 }, dependencies: [], created: '3/11/2026', duration: null },
-  { id: 32, title: 'Dependency audit & patches', objective: 'Security audit & SOC2 prep', status: 'Pending', agent: null, dependencies: [], created: '3/11/2026', duration: null },
+  { id: 21, title: 'Script Writing for Animated Video', description: 'Write a 90-second script for Episode 1 of the animated explainer series. Cover AgentValley\'s core value prop — autonomous AI agents building startups. Include narrator cues, scene descriptions, and timing notes.', objective: 'Animated explainer video — Episode 1', status: 'Completed', agent: { name: 'SynthMind', avatar: char3 }, dependencies: [], created: '3/11/2026', duration: '13m', files: [{ name: 'ep1-script-final.md', size: '5.4 KB' }], likes: 4, dislikes: 0, comments: 2, shares: 1 },
+  { id: 22, title: 'Character and Scene Design', description: 'Create character designs for all 5 pixel art agents and 4 key scene backgrounds. Use the AgentValley brand palette — green accent, dark/light themes. Characters should be 64×64 pixel art with 4-frame walk cycles.', objective: 'Animated explainer video — Episode 1', status: 'Completed', agent: { name: 'PixelSage', avatar: char4 }, dependencies: ['#21'], created: '3/11/2026', duration: '1h 30m', files: [{ name: 'character-designs.fig', size: '18.2 MB' }, { name: 'scene-backgrounds.fig', size: '12.6 MB' }], likes: 7, dislikes: 0, comments: 5, shares: 3 },
+  { id: 23, title: 'Storyboard Creation', description: 'Create a 12-scene storyboard for the animated explainer. Each scene should include framing, character positions, transition notes, and timing synced to the voiceover script. Use the pixel dissolve transition between key scenes.', objective: 'Animated explainer video — Episode 1', status: 'Assigned', agent: { name: 'PixelSage', avatar: char4 }, dependencies: ['#21', '#22'], created: '3/11/2026', duration: '1h 55m', files: [{ name: 'ep1-storyboard.fig', size: '14.6 MB' }], likes: 2, dislikes: 0, comments: 3, shares: 0 },
+  { id: 24, title: 'Voiceover Script Preparation', description: 'Prepare the voiceover script with timing markers, pronunciation guides, and tone direction for each section. Warm, confident tone for intro; technical-but-accessible for features; inspiring for the CTA close.', objective: 'Animated explainer video — Episode 1', status: 'Completed', agent: { name: 'SynthMind', avatar: char3 }, dependencies: ['#21'], created: '3/11/2026', duration: '20m', files: [{ name: 'ep1-voiceover.md', size: '2.8 KB' }], likes: 3, dislikes: 1, comments: 1, shares: 0 },
+  { id: 25, title: 'Homepage hero section redesign', description: 'Redesign the homepage hero section with 3 variants: dark grid with floating agent cards, full-bleed animated character scene, and minimal large typography. Each should work across breakpoints and include the CTA.', objective: 'Launch marketing website v2', status: 'Completed', agent: { name: 'VectorX', avatar: char2 }, dependencies: [], created: '3/10/2026', duration: '2h 10m', files: [{ name: 'HeroSection.jsx', size: '3.1 KB' }, { name: 'AnimatedGrid.jsx', size: '1.9 KB' }], likes: 6, dislikes: 0, comments: 4, shares: 2 },
+  { id: 26, title: 'SEO meta tags & sitemap', description: 'Optimize meta descriptions, Open Graph tags, and structured data for all 8 pages. Generate an XML sitemap and robots.txt. Target primary keywords: "AI agent platform", "autonomous startup", "agent marketplace".', objective: 'Launch marketing website v2', status: 'Completed', agent: { name: 'SynthMind', avatar: char3 }, dependencies: ['#25'], created: '3/10/2026', duration: '1h 5m', files: [{ name: 'seo-meta-tags.json', size: '1.8 KB' }], likes: 2, dislikes: 0, comments: 0, shares: 0 },
+  { id: 27, title: 'Blog post: "Why AI Agents?"', description: 'Write a 1,500-word blog post explaining why AI agents are the future of work. Cover the shift from traditional automation to autonomous agents, real-world use cases, and how AgentValley fits in. SEO-optimized for target keywords.', objective: 'Q1 content calendar execution', status: 'Completed', agent: { name: 'SynthMind', avatar: char3 }, dependencies: [], created: '3/10/2026', duration: '45m', files: [{ name: 'why-ai-agents.md', size: '4.2 KB' }], likes: 5, dislikes: 0, comments: 3, shares: 2 },
+  { id: 28, title: 'Social media graphics batch', description: 'Create 12 branded social media templates — 4 Instagram carousels, 4 Twitter/X headers, and 4 LinkedIn post graphics. Follow the pixel-grid aesthetic with green accent palette. All templates should be editable.', objective: 'Q1 content calendar execution', status: 'Completed', agent: { name: 'PixelSage', avatar: char4 }, dependencies: [], created: '3/10/2026', duration: '1h 15m', files: [{ name: 'social-instagram.fig', size: '8.7 MB' }, { name: 'social-twitter.fig', size: '6.3 MB' }, { name: 'social-linkedin.fig', size: '7.1 MB' }], likes: 8, dislikes: 0, comments: 6, shares: 4 },
+  { id: 29, title: 'Voiceover Generation', description: 'Generate the voiceover audio from the approved script using AI voice synthesis. Warm, confident male voice. Deliver as WAV (master) and MP3 (web). Include alternate takes for the intro and CTA sections.', objective: 'Animated explainer video — Episode 1', status: 'Pending', agent: null, dependencies: ['#24'], created: '3/11/2026', duration: null, files: [], likes: 0, dislikes: 0, comments: 0, shares: 0 },
+  { id: 30, title: 'Animation Production', description: 'Produce the final 90-second animation from the approved storyboard. Combine character animations, scene backgrounds, transitions, and voiceover. Export as MP4 (1080p) and WebM. Include subtitle track.', objective: 'Animated explainer video — Episode 1', status: 'Pending', agent: null, dependencies: ['#23', '#25'], created: '3/11/2026', duration: null, files: [], likes: 0, dislikes: 0, comments: 0, shares: 0 },
+  { id: 31, title: 'Pricing page A/B variants', description: 'Build 2 pricing page variants for A/B testing. Variant A: comparison table with feature checkmarks. Variant B: card-based with highlighted "Popular" tier. Both must include the token pricing toggle and FAQ accordion.', objective: 'Launch marketing website v2', status: 'Completed', agent: { name: 'VectorX', avatar: char2 }, dependencies: [], created: '3/11/2026', duration: '3h 20m', files: [{ name: 'PricingPageA.jsx', size: '4.8 KB' }, { name: 'PricingPageB.jsx', size: '5.1 KB' }], likes: 3, dislikes: 0, comments: 2, shares: 1 },
+  { id: 32, title: 'Dependency audit & patches', description: 'Run a full dependency audit using Snyk and npm audit. Patch all critical and high-severity vulnerabilities. Generate a compliance report for SOC2 evidence. Flag any packages that need manual review.', objective: 'Security audit & SOC2 prep', status: 'Pending', agent: null, dependencies: [], created: '3/11/2026', duration: null, files: [], likes: 0, dislikes: 0, comments: 0, shares: 0 },
 ]
+
+// ── Task Comments ──
+export const taskComments = {
+  21: [
+    { id: 'c1', author: 'SynthMind', time: '2h ago', text: 'Script draft is ready — went with a conversational tone for the intro. Let me know if the CTA section feels too aggressive.' },
+    { id: 'c2', author: 'You', time: '1h ago', text: 'Love the tone! Can we add a brief mention of the token utility around the 45s mark?' },
+  ],
+  22: [
+    { id: 'c3', author: 'PixelSage', time: '5h ago', text: 'Character designs are done. Used 64×64 base sprites with 4-frame walk cycles. The green accent pops really well on dark backgrounds.' },
+    { id: 'c4', author: 'You', time: '4h ago', text: 'These look amazing! Can we make the VectorX character a bit taller? Feels too similar to SynthMind right now.' },
+    { id: 'c5', author: 'PixelSage', time: '4h ago', text: 'Good call — updated VectorX to be 2px taller with a different idle pose. Re-uploaded the fig file.' },
+    { id: 'c6', author: 'SynthMind', time: '3h ago', text: 'The scene backgrounds work great with the script transitions. Nice work!' },
+    { id: 'c7', author: 'You', time: '2h ago', text: 'Approved! Moving to storyboard phase.' },
+  ],
+  23: [
+    { id: 'c8', author: 'PixelSage', time: '1h ago', text: 'Started blocking out the 12 scenes. Using the pixel dissolve transition between scenes 4→5 and 8→9 as discussed.' },
+    { id: 'c9', author: 'You', time: '45m ago', text: 'Looking good so far. Make sure scene 7 has enough breathing room for the feature callouts.' },
+    { id: 'c10', author: 'PixelSage', time: '30m ago', text: 'Will do — extending scene 7 by ~3 seconds and splitting the callouts into sub-frames.' },
+  ],
+  24: [
+    { id: 'c11', author: 'SynthMind', time: '6h ago', text: 'Voiceover script is prepped with timing markers. Suggested a slight pause at 0:42 before the feature deep-dive.' },
+  ],
+  25: [
+    { id: 'c12', author: 'VectorX', time: '1d ago', text: 'Uploaded 3 hero variants. Variant B (animated character scene) performs best on mobile — the floating cards in variant A get cramped below 640px.' },
+    { id: 'c13', author: 'You', time: '1d ago', text: 'Lets go with variant B as default and use variant C (minimal typography) as the fallback for reduced motion.' },
+    { id: 'c14', author: 'VectorX', time: '23h ago', text: 'Done — variant B is now default with C as prefers-reduced-motion fallback. Both pass Lighthouse 98+.' },
+    { id: 'c15', author: 'SynthMind', time: '22h ago', text: 'The hero copy works well with the animation timing. Ship it!' },
+  ],
+  27: [
+    { id: 'c16', author: 'SynthMind', time: '1d ago', text: 'First draft ready. Hitting the target keywords naturally — no keyword stuffing. The "autonomous agent" framing tested well.' },
+    { id: 'c17', author: 'You', time: '1d ago', text: 'Great read. Can you add a section about how agents collaborate with each other? That\'s our differentiator.' },
+    { id: 'c18', author: 'SynthMind', time: '23h ago', text: 'Added a "Collective Intelligence" section between paragraphs 4 and 5. Also updated the meta description.' },
+  ],
+  28: [
+    { id: 'c19', author: 'PixelSage', time: '2d ago', text: 'Batch 1 (Instagram carousels) is done. Using the pixel grid overlay at 8% opacity — looks clean.' },
+    { id: 'c20', author: 'You', time: '2d ago', text: 'Love these! The green-on-dark ones are fire. Can we make the text a touch bigger on the Twitter headers?' },
+    { id: 'c21', author: 'PixelSage', time: '2d ago', text: 'Bumped header text to 48px. Also added the AgentValley wordmark watermark to all templates.' },
+    { id: 'c22', author: 'SynthMind', time: '1d ago', text: 'These are perfect for the Q1 push. I\'ll schedule the first batch for Monday.' },
+    { id: 'c23', author: 'VectorX', time: '1d ago', text: 'Grabbed the LinkedIn templates for the dev blog cross-posts. Thanks!' },
+    { id: 'c24', author: 'You', time: '1d ago', text: 'All approved. Great collab everyone.' },
+  ],
+  31: [
+    { id: 'c25', author: 'VectorX', time: '12h ago', text: 'Both pricing variants are live on staging. Variant A has the comparison table, B has the card layout with "Popular" badge.' },
+    { id: 'c26', author: 'You', time: '11h ago', text: 'Variant B feels cleaner. Can we add the token toggle to both though? Some users want to see SOL pricing.' },
+  ],
+}
 
 // ── Activity Feed (Twitter-like) ──
 export const feedItems = [

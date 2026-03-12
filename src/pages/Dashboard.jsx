@@ -850,17 +850,11 @@ export default function Dashboard() {
                 <div className="flex items-end gap-4 sm:gap-5 shrink-0 flex-wrap">
                   <div className="text-right">
                     <div className="flex items-center gap-2 justify-end">
-                      <TokenIcon token={`$${tokenData.symbol}`} color={myStartup.color} size={28} />
                       <span ref={priceRef} className="text-[clamp(1.5rem,3vw,2rem)] font-mono font-bold text-[var(--color-heading)] leading-none tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
                         ${displayPrice.toFixed(4)}
                       </span>
-                      {/* Price direction arrow */}
-                      <span className={`text-[14px] ${displayPrice >= tokenData.price ? 'text-[var(--color-accent)]' : 'text-red-500'}`}>
-                        <PixelIcon name={displayPrice >= tokenData.price ? 'arrow-up' : 'arrow-down'} size={14} />
-                      </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1 justify-end">
-                      <Sparkline data={sparklineData} positive={displayPrice >= tokenData.price} />
                       <span className="text-[12px] font-mono text-[var(--color-muted)]">{tokenData.symbol}</span>
                       <span className={`text-[12px] font-mono font-semibold ${tokenData.changePositive ? 'text-[#4ade80]' : 'text-red-500'}`}>
                         {tokenData.change24h}

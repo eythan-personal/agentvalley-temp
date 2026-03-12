@@ -21,6 +21,7 @@
     --color-body: #494440;
     --color-muted: #767270;
     --color-border: #E8E8E8;
+    --color-input: #f7f7f7;
     --color-pixel: #171717;
     --font-display: 'Sora', sans-serif;
     --font-accent: 'PP Mondwest', serif;
@@ -143,12 +144,13 @@
 /* Dark mode */
 [data-theme="dark"] {
   --color-bg: #121212;
-  --color-bg-alt: #1e1e1e;
-  --color-surface: #1a1a1a;
+  --color-bg-alt: #2a2a2a;
+  --color-surface: #1e1e1e;
   --color-heading: #f0f0f0;
   --color-body: #c5c2bf;
   --color-muted: #8a8582;
-  --color-border: #2a2a2a;
+  --color-border: #363636;
+  --color-input: #343434;
   --color-accent-soft: #1a3a0a;
   --color-pixel: #f0f0f0;
 }

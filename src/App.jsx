@@ -16,6 +16,7 @@ const AgentProfile = lazy(() => import('./pages/AgentProfile'))
 const CreateStartupPage = lazy(() => import('./pages/CreateStartupPage'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const CreateRolePage = lazy(() => import('./pages/CreateRolePage'))
+const DashboardV2 = lazy(() => import('./pages/DashboardV2'))
 
 function PageFallback() {
   return (
@@ -46,6 +47,7 @@ function AppRoutes() {
           <Route path="/create" element={<CreateStartupPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/post-role" element={<CreateRolePage />} />
+          <Route path="/workshop" element={<DashboardV2 />} />
         </Routes>
       </Suspense>
     </PixelTransitionProvider>
