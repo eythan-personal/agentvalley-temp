@@ -6,6 +6,7 @@ import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TokenIcon from '../components/TokenIcon'
 import TokenModal from '../components/TokenModal'
+import { StartupCardSkeleton, StartupListRowSkeleton } from '../components/Skeleton'
 import { startups } from '../data/startups'
 
 const filters = ['All', 'Graduated', 'Incubating']
@@ -33,13 +34,13 @@ const dissolveRows = 10
 const pixels = []
 const rng = mulberry32(42)
 for (let row = 0; row < dissolveRows; row++) {
-  // Smooth curve: 1.0 → 0.95 → 0.85 → 0.7 → ... → 0
   const t = row / (dissolveRows - 1)
-  const density = Math.pow(1 - t, 2)
+  // First 2 rows are fully solid, then quadratic falloff
+  const density = row < 2 ? 1.0 : Math.pow(1 - (row - 1) / (dissolveRows - 2), 2)
   for (let col = 0; col < cols; col++) {
     const rand = rng()
     if (rand < density) {
-      const shade = row < 2 ? '#F2F0ED' : stoneShades[Math.floor(rng() * stoneShades.length)]
+      const shade = row < 3 ? '#F2F0ED' : stoneShades[Math.floor(rng() * stoneShades.length)]
       pixels.push({ x: col * pixelSize, y: row * pixelSize, color: shade })
     }
   }
@@ -51,6 +52,7 @@ export default function Startups() {
   const [view, setView] = useState('card')
   const [search, setSearch] = useState('')
   const [modalStartup, setModalStartup] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   const filtered = startups.filter((s) => {
     const matchesFilter = activeFilter === 'All' || s.status === activeFilter
@@ -67,9 +69,10 @@ export default function Startups() {
   useEffect(() => {
     document.title = 'Startups — AgentValley'
     window.scrollTo(0, 0)
+    const timer = setTimeout(() => setLoading(false), 600)
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReducedMotion) return
+    if (prefersReducedMotion) { setLoading(false); return () => clearTimeout(timer) }
 
     const ctx = gsap.context(() => {
       gsap.from('.startups-header', { y: 0, opacity: 0, duration: 0.6, delay: 0.1, clearProps: 'all' })
@@ -96,7 +99,7 @@ export default function Startups() {
         })
       })
     }, pageRef)
-    return () => ctx.revert()
+    return () => { clearTimeout(timer); ctx.revert() }
   }, [])
 
   return (
@@ -199,7 +202,7 @@ export default function Startups() {
       </div>
 
       {/* Dissolving pixel transition */}
-      <div className="relative overflow-hidden" style={{ height: dissolveRows * pixelSize }}>
+      <div className="relative w-full overflow-hidden" style={{ height: dissolveRows * pixelSize }}>
         <div className="absolute inset-0 bg-[var(--color-bg)]" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2" style={{ width: 2560, height: dissolveRows * pixelSize }}>
           {pixels.map((p, i) => (
@@ -216,14 +219,26 @@ export default function Startups() {
       <main id="main" className="relative z-10 pb-16 px-6 min-h-screen -mt-36">
         <div className="max-w-[var(--container)] mx-auto">
 
-          {filtered.length === 0 && (
+          {/* Skeleton loaders */}
+          {loading && view === 'card' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[...Array(6)].map((_, i) => <StartupCardSkeleton key={i} />)}
+            </div>
+          )}
+          {loading && view === 'list' && (
+            <div className="bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden">
+              {[...Array(6)].map((_, i) => <StartupListRowSkeleton key={i} />)}
+            </div>
+          )}
+
+          {!loading && filtered.length === 0 && (
             <div className="py-12 text-center text-[14px] text-[var(--color-muted)]">
               No startups match your search.
             </div>
           )}
 
           {/* Card View */}
-          {view === 'card' && filtered.length > 0 && (
+          {!loading && view === 'card' && filtered.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filtered.map((s, i) => (
                 <TransitionLink
@@ -270,7 +285,7 @@ export default function Startups() {
                         </h3>
                         <span className="flex items-center gap-2 text-[11px] text-[var(--color-muted)] leading-none mt-1">
                           <span className="flex items-center gap-1">
-                            <PixelIcon name="robot" size={11} />
+                            <PixelIcon name="robot" size={11} className="text-[var(--color-heading)]" />
                             {s.agents}
                           </span>
                           <span>{s.founded}</span>
@@ -301,8 +316,8 @@ export default function Startups() {
                           <div className="flex items-center gap-2">
                             <div className="w-14 h-1.5 rounded-full bg-[var(--color-bg-alt)] overflow-hidden">
                               <div
-                                className="h-full rounded-full"
-                                style={{ width: `${s.progress}%`, backgroundColor: s.color }}
+                                className="h-full rounded-full bg-[var(--color-accent)]"
+                                style={{ width: `${s.progress}%` }}
                               />
                             </div>
                             <span className="text-[10px] font-mono text-[var(--color-muted)]">{s.progress}%</span>
@@ -311,12 +326,11 @@ export default function Startups() {
                         <button
                           type="button"
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigator.vibrate?.(10); setModalStartup(s) }}
-                          className="h-7 px-3 rounded-full text-[11px] font-semibold cursor-pointer
-                                     bg-[var(--color-accent)] text-[#0d2000]
-                                     hover:shadow-md hover:shadow-[var(--color-accent)]/20 transition-all duration-150
-                                     inline-flex items-center gap-1.5"
+                          className="h-7 px-3 rounded-lg text-[11px] font-medium cursor-pointer
+                                     border border-[var(--color-border)] text-[var(--color-body)]
+                                     hover:border-[var(--color-accent)] hover:text-[var(--color-heading)] transition-all duration-150
+                                     inline-flex items-center"
                         >
-                          <PixelIcon name="coins" size={11} />
                           {s.status === 'Graduated' ? 'Buy' : 'Invest'}
                         </button>
                       </div>
@@ -328,7 +342,7 @@ export default function Startups() {
           )}
 
           {/* List View */}
-          {view === 'list' && filtered.length > 0 && (
+          {!loading && view === 'list' && filtered.length > 0 && (
             <div className="relative bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden">
               {/* Pixel grid texture overlay */}
               <div
@@ -342,8 +356,8 @@ export default function Startups() {
                 }}
               />
 
-              <div className="relative hidden lg:grid grid-cols-[2fr_70px_90px_110px_90px_100px_80px_90px_80px] gap-3 px-6 py-3.5 border-b border-[var(--color-border)] bg-[var(--color-bg-alt)]/50">
-                {['Startup', 'Agents', 'Founded', 'Revenue', 'Token', 'MCap', '24h', 'Status', ''].map((label) => (
+              <div className="relative hidden lg:grid grid-cols-[3fr_110px_100px_80px_100px_80px_90px_80px] gap-3 px-6 py-3.5 border-b border-[var(--color-border)] bg-[var(--color-bg-alt)]/50">
+                {['Startup', 'Revenue', 'Token', 'Price', 'MCap', '24h', 'Status', ''].map((label) => (
                   <span
                     key={label}
                     className="text-[11px] font-semibold tracking-[0.15em] uppercase text-[var(--color-muted)]"
@@ -358,7 +372,7 @@ export default function Startups() {
                 <TransitionLink
                   key={i}
                   to={`/startups/${s.slug}`}
-                  className="startups-row relative grid grid-cols-1 lg:grid-cols-[2fr_70px_90px_110px_90px_100px_80px_90px_80px] gap-2 lg:gap-3 px-5 lg:px-6 py-4 items-center border-b border-[var(--color-border)] last:border-b-0
+                  className="startups-row relative grid grid-cols-1 lg:grid-cols-[3fr_110px_100px_80px_100px_80px_90px_80px] gap-2 lg:gap-3 px-5 lg:px-6 py-4 items-center border-b border-[var(--color-border)] last:border-b-0
                     hover:bg-[var(--color-accent-soft)]/40 transition-colors cursor-pointer group"
                   style={{ transitionTimingFunction: 'steps(3)' }}
                 >
@@ -389,22 +403,17 @@ export default function Startups() {
                     </div>
                   </div>
 
-                  <div className="hidden lg:flex items-center gap-1">
-                    <PixelIcon name="robot" size={12} className="text-[var(--color-accent)]" />
-                    <span className="text-[13px] text-[var(--color-heading)] font-mono">{s.agents}</span>
-                  </div>
-
-                  <span className="text-[12px] text-[var(--color-muted)] hidden lg:block font-mono">
-                    {s.founded}
-                  </span>
-
                   <span className="text-[13px] text-[var(--color-heading)] font-mono font-semibold hidden lg:block">
                     {s.revenue}
                   </span>
 
-                  <span className="hidden lg:inline-flex items-center gap-1.5 text-[12px] text-[var(--color-heading)] font-mono">
+                  <span className="hidden lg:inline-flex items-center gap-1.5 text-[13px] text-[var(--color-heading)] font-mono">
                     <TokenIcon token={s.token} color={s.tokenColor} icon={s.tokenIcon} size={14} />
                     {s.token}
+                  </span>
+
+                  <span className="text-[13px] text-[var(--color-heading)] font-mono hidden lg:block">
+                    {s.price || '—'}
                   </span>
 
                   <div className="hidden lg:block">
@@ -417,8 +426,8 @@ export default function Startups() {
                         </span>
                         <div className="w-full h-1.5 rounded-full bg-[var(--color-bg-alt)] overflow-hidden">
                           <div
-                            className="h-full rounded-full"
-                            style={{ width: `${s.progress}%`, backgroundColor: s.color }}
+                            className="h-full rounded-full bg-[var(--color-accent)]"
+                            style={{ width: `${s.progress}%` }}
                           />
                         </div>
                       </div>
@@ -427,36 +436,34 @@ export default function Startups() {
 
                   <div className="hidden lg:block">
                     {s.change24h ? (
-                      <span className={`text-[12px] font-mono font-semibold ${s.changePositive ? 'text-[#3d7a1c]' : 'text-red-500'}`}>
+                      <span className={`text-[13px] font-mono font-semibold ${s.changePositive ? 'text-[#3d7a1c]' : 'text-red-500'}`}>
                         {s.change24h}
                       </span>
                     ) : (
-                      <span className="text-[12px] text-[var(--color-muted)]">—</span>
+                      <span className="text-[13px] text-[var(--color-muted)]">—</span>
                     )}
                   </div>
 
                   <div className="hidden lg:block">
-                    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md
+                    <span className={`inline-flex items-center text-[13px] font-semibold px-2.5 py-1 rounded-md
                       ${s.status === 'Graduated'
                         ? 'bg-[var(--color-accent-soft)] text-[#3d7a1c]'
                         : 'bg-amber-50 text-amber-600'
                       }`}>
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.status === 'Graduated' ? '#3d7a1c' : '#d97706' }} />
                       {s.status}
                     </span>
                   </div>
 
                   {/* Buy/Invest */}
-                  <div className="hidden lg:block">
+                  <div className="hidden lg:flex lg:justify-end">
                     <button
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigator.vibrate?.(10); setModalStartup(s) }}
-                      className="h-7 px-3 rounded-full text-[11px] font-semibold cursor-pointer
-                                 bg-[var(--color-accent)] text-[#0d2000]
-                                 hover:shadow-md hover:shadow-[var(--color-accent)]/20 transition-all duration-150
-                                 inline-flex items-center gap-1.5"
+                      className="h-7 px-3 rounded-lg text-[13px] font-medium cursor-pointer
+                                 border border-[var(--color-border)] text-[var(--color-body)]
+                                 hover:border-[var(--color-accent)] hover:text-[var(--color-heading)] transition-all duration-150
+                                 inline-flex items-center"
                     >
-                      <PixelIcon name="coins" size={11} />
                       {s.status === 'Graduated' ? 'Buy' : 'Invest'}
                     </button>
                   </div>
@@ -467,6 +474,9 @@ export default function Startups() {
                       <TokenIcon token={s.token} color={s.tokenColor} icon={s.tokenIcon} size={13} />
                       {s.token}
                     </span>
+                    {s.price && (
+                      <span className="font-mono text-[var(--color-heading)]">{s.price}</span>
+                    )}
                     {s.mcap && (
                       <span className="font-mono text-[var(--color-muted)]">{s.mcap}</span>
                     )}
@@ -483,11 +493,11 @@ export default function Startups() {
                     <button
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigator.vibrate?.(10); setModalStartup(s) }}
-                      className="h-6 px-2.5 rounded-full text-[11px] font-semibold cursor-pointer
-                                 bg-[var(--color-accent)] text-[#0d2000] ml-auto
-                                 inline-flex items-center gap-1"
+                      className="h-7 px-3 rounded-lg text-[11px] font-medium cursor-pointer
+                                 border border-[var(--color-border)] text-[var(--color-body)]
+                                 hover:border-[var(--color-accent)] hover:text-[var(--color-heading)] transition-all duration-150
+                                 inline-flex items-center ml-auto"
                     >
-                      <PixelIcon name="coins" size={10} />
                       {s.status === 'Graduated' ? 'Buy' : 'Invest'}
                     </button>
                   </div>

@@ -6,6 +6,7 @@ import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
 import TokenIcon from '../components/TokenIcon'
+import { JobRowSkeleton } from '../components/Skeleton'
 import { jobs } from '../data/jobs'
 
 const filters = ['All', 'Urgent', 'Medium', 'Open']
@@ -15,6 +16,7 @@ export default function Jobs() {
   const { login, authenticated } = useAuth()
   const [activeFilter, setActiveFilter] = useState('All')
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
 
   const filtered = jobs.filter((job) => {
     const matchesFilter = activeFilter === 'All' || job.urgency === activeFilter
@@ -30,9 +32,10 @@ export default function Jobs() {
   useEffect(() => {
     document.title = 'Agent Jobs — AgentValley'
     window.scrollTo(0, 0)
+    const timer = setTimeout(() => setLoading(false), 600)
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReducedMotion) return
+    if (prefersReducedMotion) { setLoading(false); return () => clearTimeout(timer) }
 
     const ctx = gsap.context(() => {
       gsap.from('.jobs-header', { y: 30, opacity: 0, duration: 0.5, delay: 0.2 })
@@ -40,7 +43,7 @@ export default function Jobs() {
       gsap.from('.jobs-filters', { y: 20, opacity: 0, duration: 0.4, delay: 0.35 })
       gsap.from('.jobs-row', { y: 15, opacity: 0, stagger: 0.04, duration: 0.35, delay: 0.5, ease: 'power3.out' })
     }, pageRef)
-    return () => ctx.revert()
+    return () => { clearTimeout(timer); ctx.revert() }
   }, [])
 
   return (
@@ -131,13 +134,15 @@ export default function Jobs() {
               ))}
             </div>
 
-            {filtered.length === 0 && (
+            {loading && [...Array(6)].map((_, i) => <JobRowSkeleton key={i} />)}
+
+            {!loading && filtered.length === 0 && (
               <div className="relative px-6 py-12 text-center text-[14px] text-[var(--color-muted)]">
                 No jobs match your search.
               </div>
             )}
 
-            {filtered.map((job, i) => (
+            {!loading && filtered.map((job, i) => (
               <TransitionLink
                 key={i}
                 to={`/jobs/${job.slug}`}

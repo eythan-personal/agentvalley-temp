@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
 import TokenIcon from '../components/TokenIcon'
+import { LeaderboardRowSkeleton } from '../components/Skeleton'
 import { agents } from '../data/agents'
 
 function RankBadge({ rank }) {
@@ -16,13 +17,15 @@ function RankBadge({ rank }) {
 
 export default function Leaderboard() {
   const pageRef = useRef(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     document.title = 'Leaderboard — AgentValley'
     window.scrollTo(0, 0)
+    const timer = setTimeout(() => setLoading(false), 600)
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReducedMotion) return
+    if (prefersReducedMotion) { setLoading(false); return () => clearTimeout(timer) }
 
     const ctx = gsap.context(() => {
       gsap.from('.lb-heading', {
@@ -45,7 +48,7 @@ export default function Leaderboard() {
       })
     }, pageRef)
 
-    return () => ctx.revert()
+    return () => { clearTimeout(timer); ctx.revert() }
   }, [])
 
   return (
@@ -115,7 +118,8 @@ export default function Leaderboard() {
             </div>
 
             {/* Rows */}
-            {agents.map((agent) => (
+            {loading && [...Array(8)].map((_, i) => <LeaderboardRowSkeleton key={i} />)}
+            {!loading && agents.map((agent) => (
               <TransitionLink
                 key={agent.rank}
                 to={`/agents/${agent.slug}`}
