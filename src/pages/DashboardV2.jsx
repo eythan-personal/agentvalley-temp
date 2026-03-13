@@ -14,18 +14,25 @@ const AGENT_COLORS = {
   'VectorX': '#3b82f6',
 }
 
-function AgentDot({ name, size = 28, className = '', style = {} }) {
+function AgentDot({ name, size = 28, className = '', style = {}, active = false }) {
   const bg = AGENT_COLORS[name] || '#999'
   const initials = name ? name.slice(0, 2).toUpperCase() : '??'
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full shrink-0 ${className}`}
+      className={`inline-flex items-center justify-center rounded-full shrink-0 ${active ? 'agent-active-ring' : ''} ${className}`}
       style={{ width: size, height: size, background: bg, color: '#fff', fontSize: size * 0.38, fontWeight: 700, letterSpacing: '-0.02em', ...style }}
       title={name}
     >
       {initials}
     </span>
   )
+}
+
+// Agent working status messages that rotate
+const AGENT_ACTIVITIES = {
+  'SynthMind': ['Writing voiceover cues...', 'Reviewing script timing...', 'Refining CTA section...'],
+  'PixelSage': ['Blocking scene layouts...', 'Animating transitions...', 'Working on storyboard.fig...'],
+  'VectorX': ['Optimizing hero assets...', 'Running Lighthouse audit...', 'Tweaking responsive grid...'],
 }
 
 const WORKSHOP_TABS = [
@@ -61,6 +68,18 @@ export default function DashboardV2() {
   const [objDropdown, setObjDropdown] = useState(false)
   const objDropdownRef = useRef(null)
   const modalRef = useRef(null)
+  const [likedTasks, setLikedTasks] = useState({})
+  const [dislikedTasks, setDislikedTasks] = useState({})
+  const [creatingObjective, setCreatingObjective] = useState(false)
+  const [creationStep, setCreationStep] = useState(0)
+  const [creationTasks, setCreationTasks] = useState([])
+  const taskDetailRef = useRef(null)
+  const taskTouchStartX = useRef(0)
+  const tabNotifications = useRef({ chat: 2, files: 0 })
+  const [agentStatusIdx, setAgentStatusIdx] = useState({})
+  const [liveTime, setLiveTime] = useState(0) // ticks up every 60s
+  const [tokenDisplayPrice, setTokenDisplayPrice] = useState(0)
+  const navPillRef = useRef(null)
 
   const completedObjectives = sortedObjectives.filter(o => o.status === 'completed')
   const queuedObjectives = sortedObjectives.filter(o => o.status === 'queued')
@@ -93,6 +112,43 @@ export default function DashboardV2() {
     document.title = 'Workshop — AgentValley'
   }, [])
 
+  // Token price counter animation on mount
+  useEffect(() => {
+    const target = tokenData.price
+    const duration = 800
+    const start = performance.now()
+    const tick = (now) => {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      // Ease out
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setTokenDisplayPrice(parseFloat((target * eased).toFixed(3)))
+      if (progress < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }, [])
+
+  // Rotate agent working status every 4s
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAgentStatusIdx(prev => {
+        const next = { ...prev }
+        Object.keys(AGENT_ACTIVITIES).forEach(name => {
+          const msgs = AGENT_ACTIVITIES[name]
+          next[name] = ((prev[name] || 0) + 1) % msgs.length
+        })
+        return next
+      })
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Live timestamp ticker — increments every 60s
+  useEffect(() => {
+    const interval = setInterval(() => setLiveTime(t => t + 1), 60000)
+    return () => clearInterval(interval)
+  }, [])
+
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (prefersReducedMotion) return
@@ -110,6 +166,31 @@ export default function DashboardV2() {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [objDropdown])
+
+  // Animate nav pill on tab switch
+  useEffect(() => {
+    if (!navPillRef.current) return
+    const tabIdx = WORKSHOP_TABS.findIndex(t => t.id === workshopTab)
+    if (tabIdx < 0) return
+    // Each button is 44px (w-11) + 4px gap
+    const offset = tabIdx * 48
+    gsap.to(navPillRef.current, { x: offset, duration: 0.25, ease: 'steps(4)' })
+  }, [workshopTab])
+
+  // Live time display helper
+  const liveTimestamp = (base) => {
+    if (!base) return ''
+    // Parse "Xm ago" / "Xh ago" style strings and add liveTime minutes
+    const match = base.match(/^(\d+)(m|h|d)\s*ago$/)
+    if (!match) return base
+    let mins = parseInt(match[1])
+    if (match[2] === 'h') mins *= 60
+    if (match[2] === 'd') mins *= 1440
+    mins += liveTime
+    if (mins < 60) return `${mins}m ago`
+    if (mins < 1440) return `${Math.floor(mins / 60)}h ago`
+    return `${Math.floor(mins / 1440)}d ago`
+  }
 
   const handleSubmitObjective = (e) => {
     e.preventDefault()
@@ -143,6 +224,102 @@ export default function DashboardV2() {
     setSecretRevealed(false)
   }
 
+  // #4 — Task prev/next navigation
+  const allVisibleTasks = [...assignedTasks, ...pendingTasks, ...completedTasks]
+  const currentTaskIndex = selectedTask ? allVisibleTasks.findIndex(t => t.id === selectedTask.id) : -1
+  const prevTask = currentTaskIndex > 0 ? allVisibleTasks[currentTaskIndex - 1] : null
+  const nextTask = currentTaskIndex < allVisibleTasks.length - 1 ? allVisibleTasks[currentTaskIndex + 1] : null
+
+  const goToTask = (task) => {
+    if (!task) return
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (taskDetailRef.current && !prefersReducedMotion) {
+      gsap.to(taskDetailRef.current, { opacity: 0, duration: 0.15, onComplete: () => {
+        setSelectedTask(task)
+        setTaskComment('')
+        gsap.fromTo(taskDetailRef.current, { opacity: 0 }, { opacity: 1, duration: 0.2 })
+      }})
+    } else {
+      setSelectedTask(task)
+      setTaskComment('')
+    }
+  }
+
+  // #10 — Like/dislike with optimistic feedback
+  const handleLike = (e, taskId) => {
+    e.stopPropagation()
+    setLikedTasks(prev => {
+      const wasLiked = prev[taskId]
+      if (wasLiked) return { ...prev, [taskId]: false }
+      setDislikedTasks(p => ({ ...p, [taskId]: false }))
+      return { ...prev, [taskId]: true }
+    })
+  }
+  const handleDislike = (e, taskId) => {
+    e.stopPropagation()
+    setDislikedTasks(prev => {
+      const was = prev[taskId]
+      if (was) return { ...prev, [taskId]: false }
+      setLikedTasks(p => ({ ...p, [taskId]: false }))
+      return { ...prev, [taskId]: true }
+    })
+  }
+
+  // #5 — Creation flow: fake parsing steps
+  const CREATION_STEPS = [
+    'Analyzing objective...',
+    'Breaking down into tasks...',
+    'Assigning agents...',
+    'Estimating timelines...',
+    'Ready!',
+  ]
+  const handleCreateObjective = () => {
+    if (!objectiveInput.trim()) return
+    setCreatingObjective(true)
+    setCreationStep(0)
+    setCreationTasks([])
+
+    // Determine if there's already an in-progress objective
+    const hasInProgress = sortedObjectives.some(o => o.status === 'in-progress')
+
+    // Step through loading states
+    let step = 0
+    const interval = setInterval(() => {
+      step++
+      setCreationStep(step)
+      if (step >= CREATION_STEPS.length - 1) {
+        clearInterval(interval)
+        setTimeout(() => {
+          setCreatingObjective(false)
+          setIsNewMode(false)
+          if (hasInProgress) {
+            // Show as queued
+            toast(`"${objectiveInput}" added to queue — will start after current objective.`, { type: 'success', icon: 'clock' })
+            // Select the queued view
+            const queued = sortedObjectives.find(o => o.status === 'queued')
+            if (queued) selectObjective(queued)
+          } else {
+            toast('Objective created! Your agents are on it.', { type: 'success', icon: 'zap' })
+            // Select in-progress
+            const ip = sortedObjectives.find(o => o.status === 'in-progress')
+            if (ip) selectObjective(ip)
+          }
+        }, 600)
+      }
+    }, 900)
+  }
+
+  // #4 — Keyboard arrows for task navigation
+  useEffect(() => {
+    if (!selectedTask) return
+    const handleKey = (e) => {
+      if (e.key === 'ArrowLeft' && prevTask) goToTask(prevTask)
+      if (e.key === 'ArrowRight' && nextTask) goToTask(nextTask)
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [selectedTask, prevTask, nextTask])
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-heading)]">
       <Nav forceScrolled />
@@ -156,16 +333,60 @@ export default function DashboardV2() {
           const isCompleted = task.status === 'Completed'
           const isInProgress = task.status === 'Assigned'
           return (
-            <div className="max-w-[540px] mx-auto">
-              {/* Back button */}
-              <button
-                type="button"
-                onClick={() => { setSelectedTask(null); setTaskComment('') }}
-                className="flex items-center gap-1.5 text-[13px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer mb-5"
-              >
-                <PixelIcon name="arrow-left" size={14} />
-                Back to objectives
-              </button>
+            <div
+              ref={taskDetailRef}
+              className="max-w-[540px] mx-auto relative"
+              onTouchStart={(e) => { taskTouchStartX.current = e.touches[0].clientX }}
+              onTouchEnd={(e) => {
+                const diff = taskTouchStartX.current - e.changedTouches[0].clientX
+                if (diff > 60 && nextTask) goToTask(nextTask)
+                else if (diff < -60 && prevTask) goToTask(prevTask)
+              }}
+            >
+              {/* Prev/Next arrows — fixed mid-viewport */}
+              {prevTask && (
+                <button
+                  type="button"
+                  onClick={() => goToTask(prevTask)}
+                  className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full
+                             bg-[var(--color-surface)] shadow-lg shadow-black/10 border border-[var(--color-border)]
+                             items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-heading)]
+                             hover:shadow-xl transition-all cursor-pointer"
+                  aria-label="Previous task"
+                >
+                  <PixelIcon name="arrow-left" size={16} />
+                </button>
+              )}
+              {nextTask && (
+                <button
+                  type="button"
+                  onClick={() => goToTask(nextTask)}
+                  className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full
+                             bg-[var(--color-surface)] shadow-lg shadow-black/10 border border-[var(--color-border)]
+                             items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-heading)]
+                             hover:shadow-xl transition-all cursor-pointer"
+                  aria-label="Next task"
+                >
+                  <PixelIcon name="arrow-right" size={16} />
+                </button>
+              )}
+
+              {/* Task counter + back */}
+              <div className="flex items-center justify-between mb-5">
+                <button
+                  type="button"
+                  onClick={() => { setSelectedTask(null); setTaskComment('') }}
+                  className="flex items-center gap-1.5 text-[13px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer"
+                >
+                  <PixelIcon name="arrow-left" size={14} />
+                  Back
+                </button>
+                {allVisibleTasks.length > 1 && (
+                  <span className="text-[11px] font-mono text-[var(--color-muted)]">
+                    {currentTaskIndex + 1} / {allVisibleTasks.length}
+                  </span>
+                )}
+              </div>
 
               {/* ── Task Details (single card) ── */}
               <div className="rounded-2xl bg-[var(--color-surface)] shadow-md shadow-black/4 border border-[var(--color-border)] mb-4 overflow-hidden">
@@ -220,7 +441,7 @@ export default function DashboardV2() {
                         <AgentDot name={feed.agent.name} size={24} />
                         <div>
                           <span className="text-[13px] font-medium text-[var(--color-heading)]">{feed.agent.name}</span>
-                          <span className="text-[11px] text-[var(--color-muted)] ml-2">{feed.time}</span>
+                          <span className="text-[11px] text-[var(--color-muted)] ml-2">{liveTimestamp(feed.time)}</span>
                         </div>
                       </div>
                       {feed.preview?.kind === 'code' ? (
@@ -280,7 +501,7 @@ export default function DashboardV2() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
                             <span className="text-[13px] font-semibold text-[var(--color-heading)]">{c.author}</span>
-                            <span className="text-[11px] text-[var(--color-muted)]">{c.time}</span>
+                            <span className="text-[11px] text-[var(--color-muted)]">{liveTimestamp(c.time)}</span>
                           </div>
                           <p className="text-[13px] text-[var(--color-body)] leading-relaxed">{c.text}</p>
                         </div>
@@ -298,7 +519,7 @@ export default function DashboardV2() {
                       onChange={e => setTaskComment(e.target.value)}
                       placeholder="Add a comment..."
                       className="w-full h-11 pl-4 pr-12 rounded-xl bg-[var(--color-input)] text-[13px] text-[var(--color-heading)]
-                                 placeholder:text-[var(--color-muted)/60] focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all"
+                                 placeholder:text-[#b0adaa] focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all"
                       aria-label="Add a comment"
                     />
                     <button
@@ -504,7 +725,7 @@ export default function DashboardV2() {
                       onChange={e => setObjectiveInput(e.target.value)}
                       placeholder="e.g. Launch marketing website v2"
                       className="w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-medium
-                                 placeholder:text-[var(--color-muted)/60] placeholder:font-normal focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all mb-3"
+                                 placeholder:text-[#b0adaa] placeholder:font-normal focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all mb-3"
                       aria-label="Objective title"
                       autoFocus
                     />
@@ -514,7 +735,7 @@ export default function DashboardV2() {
                       placeholder="Describe what you want to achieve, any constraints, and what success looks like..."
                       rows={3}
                       className="w-full px-4 py-3 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                                 placeholder:text-[var(--color-muted)/60] focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all resize-none leading-relaxed"
+                                 placeholder:text-[#b0adaa] focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all resize-none leading-relaxed"
                       aria-label="Objective description"
                     />
                   </div>
@@ -562,10 +783,10 @@ export default function DashboardV2() {
                 <div className="tl-card relative z-10">
                   <button
                     type="button"
-                    onClick={() => { if (!objectiveInput.trim()) return; toast('Objective created! Your agents are on it.', { type: 'success' }); setIsNewMode(false) }}
-                    disabled={!objectiveInput.trim()}
+                    onClick={handleCreateObjective}
+                    disabled={!objectiveInput.trim() || creatingObjective}
                     className={`w-full h-12 rounded-2xl text-[14px] font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      objectiveInput.trim()
+                      objectiveInput.trim() && !creatingObjective
                         ? 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg'
                         : 'bg-[var(--color-bg-alt)] text-[var(--color-muted)] cursor-not-allowed'
                     }`}
@@ -574,6 +795,36 @@ export default function DashboardV2() {
                     Create Objective
                   </button>
                 </div>
+
+                {/* Creation loading overlay */}
+                {creatingObjective && (
+                  <div className="tl-card mt-6 relative z-10">
+                    <div className="rounded-2xl bg-[var(--color-surface)] p-6 shadow-md shadow-black/4 border border-[var(--color-border)]">
+                      <div className="flex flex-col items-center text-center">
+                        <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/15 flex items-center justify-center mb-4">
+                          <PixelIcon name="loader" size={20} className="text-[var(--color-accent)] live-pulse" />
+                        </div>
+                        <div className="text-[14px] font-semibold text-[var(--color-heading)] mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                          {CREATION_STEPS[creationStep]}
+                        </div>
+                        {/* Step progress */}
+                        <div className="flex items-center gap-1.5 mt-3">
+                          {CREATION_STEPS.map((_, i) => (
+                            <span
+                              key={i}
+                              className={`h-1.5 rounded-full transition-all ${
+                                i <= creationStep
+                                  ? 'bg-[var(--color-accent)] w-5'
+                                  : 'bg-[var(--color-border)] w-1.5'
+                              }`}
+                              style={{ transitionTimingFunction: 'steps(3)', transitionDuration: '300ms' }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
               </>
             )}
@@ -754,6 +1005,7 @@ export default function DashboardV2() {
                                 key={a.name}
                                 name={a.name}
                                 size={24}
+                                active={assignedTasks.some(t => t.agent?.name === a.name)}
                                 className="border-2 border-[var(--color-surface)]"
                                 style={{ marginLeft: i > 0 ? '-6px' : 0, zIndex: uniqueAgents.length - i }}
                               />
@@ -788,7 +1040,7 @@ export default function DashboardV2() {
                         <span>{activeObjective.progress}%</span>
                         <div className="flex-1 h-1.5 rounded-full bg-[var(--color-input)] overflow-hidden">
                           <div
-                            className="h-full bg-[var(--color-accent)] rounded-full"
+                            className="h-full bg-[var(--color-accent)] rounded-full progress-shimmer"
                             style={{ width: `${activeObjective.progress}%`, transition: 'width 0.4s ease' }}
                           />
                         </div>
@@ -810,12 +1062,12 @@ export default function DashboardV2() {
                     {assignedTasks.map(task => (
                       <div key={task.id} className="tl-card mb-3">
                         <div
-                          className="rounded-2xl bg-[var(--color-surface)] overflow-hidden shadow-md shadow-black/4 border border-[var(--color-border)] cursor-pointer hover:shadow-md hover:shadow-black/8 transition-shadow"
+                          className="card-alive rounded-2xl bg-[var(--color-surface)] overflow-hidden shadow-md shadow-black/4 border border-[var(--color-border)] cursor-pointer hover:shadow-lg hover:shadow-black/8"
                           onClick={() => setSelectedTask(task)}
                         >
                           <div className="p-5">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+                              <span className="badge-breathe inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
                                 <PixelIcon name="loader" size={10} />
                                 In Progress
                               </span>
@@ -823,10 +1075,22 @@ export default function DashboardV2() {
                             <h3 className="text-[15px] font-bold text-[var(--color-heading)] mb-1" style={{ fontFamily: 'var(--font-body)' }}>
                               {task.title}
                             </h3>
-                            <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-4 line-clamp-2">{task.description || task.objective}</p>
+                            <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-3 line-clamp-2">{task.description || task.objective}</p>
+
+                            {/* Agent working status */}
+                            {task.agent && AGENT_ACTIVITIES[task.agent.name] && (
+                              <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-[var(--color-input)]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] live-pulse shrink-0" />
+                                <span className="text-[11px] text-[var(--color-muted)] font-mono truncate">
+                                  {AGENT_ACTIVITIES[task.agent.name][agentStatusIdx[task.agent.name] || 0]}
+                                </span>
+                                <span className="blink-cursor text-[var(--color-accent)] text-[11px] font-mono shrink-0">▌</span>
+                              </div>
+                            )}
+
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                {task.agent && <AgentDot name={task.agent.name} size={24} />}
+                                {task.agent && <AgentDot name={task.agent.name} size={24} active />}
                                 {task.agent && <span className="text-[12px] text-[var(--color-muted)]">{task.agent.name}</span>}
                               </div>
                               <div className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
@@ -836,13 +1100,13 @@ export default function DashboardV2() {
                             </div>
                           </div>
                           <div className="flex items-center border-t border-[var(--color-border)] px-3 py-1.5">
-                            <button type="button" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-accent)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer">
+                            <button type="button" onClick={(e) => handleLike(e, task.id)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${likedTasks[task.id] ? 'text-[var(--color-accent)] bg-[var(--color-accent)]/10' : 'text-[var(--color-muted)] hover:text-[var(--color-accent)] hover:bg-[var(--color-bg-alt)]'}`}>
                               <PixelIcon name="thumbs-up" size={14} />
-                              {task.likes > 0 && <span className="text-[11px]">{task.likes}</span>}
+                              <span className="text-[11px]">{(task.likes || 0) + (likedTasks[task.id] ? 1 : 0)}</span>
                             </button>
-                            <button type="button" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[var(--color-muted)] hover:text-red-400 hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer">
+                            <button type="button" onClick={(e) => handleDislike(e, task.id)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${dislikedTasks[task.id] ? 'text-red-400 bg-red-500/10' : 'text-[var(--color-muted)] hover:text-red-400 hover:bg-[var(--color-bg-alt)]'}`}>
                               <PixelIcon name="thumbs-down" size={14} />
-                              {task.dislikes > 0 && <span className="text-[11px]">{task.dislikes}</span>}
+                              <span className="text-[11px]">{(task.dislikes || 0) + (dislikedTasks[task.id] ? 1 : 0)}</span>
                             </button>
                             <button type="button" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[var(--color-muted)] hover:text-blue-400 hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedTask(task) }}>
                               <PixelIcon name="message" size={14} />
@@ -872,7 +1136,7 @@ export default function DashboardV2() {
                     {pendingTasks.map(task => (
                       <div key={task.id} className="tl-card mb-3">
                         <div
-                          className="rounded-2xl bg-[var(--color-surface)] overflow-hidden shadow-md shadow-black/4 border border-[var(--color-border)] cursor-pointer hover:shadow-md hover:shadow-black/8 transition-shadow"
+                          className="card-alive rounded-2xl bg-[var(--color-surface)] overflow-hidden shadow-md shadow-black/4 border border-[var(--color-border)] cursor-pointer hover:shadow-lg hover:shadow-black/8"
                           onClick={() => setSelectedTask(task)}
                         >
                           <div className="p-5">
@@ -895,13 +1159,13 @@ export default function DashboardV2() {
                             </div>
                           </div>
                           <div className="flex items-center border-t border-[var(--color-border)] px-3 py-1.5">
-                            <button type="button" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-accent)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer">
+                            <button type="button" onClick={(e) => handleLike(e, task.id)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${likedTasks[task.id] ? 'text-[var(--color-accent)] bg-[var(--color-accent)]/10' : 'text-[var(--color-muted)] hover:text-[var(--color-accent)] hover:bg-[var(--color-bg-alt)]'}`}>
                               <PixelIcon name="thumbs-up" size={14} />
-                              {task.likes > 0 && <span className="text-[11px]">{task.likes}</span>}
+                              <span className="text-[11px]">{(task.likes || 0) + (likedTasks[task.id] ? 1 : 0)}</span>
                             </button>
-                            <button type="button" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[var(--color-muted)] hover:text-red-400 hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer">
+                            <button type="button" onClick={(e) => handleDislike(e, task.id)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${dislikedTasks[task.id] ? 'text-red-400 bg-red-500/10' : 'text-[var(--color-muted)] hover:text-red-400 hover:bg-[var(--color-bg-alt)]'}`}>
                               <PixelIcon name="thumbs-down" size={14} />
-                              {task.dislikes > 0 && <span className="text-[11px]">{task.dislikes}</span>}
+                              <span className="text-[11px]">{(task.dislikes || 0) + (dislikedTasks[task.id] ? 1 : 0)}</span>
                             </button>
                             <button type="button" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[var(--color-muted)] hover:text-blue-400 hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedTask(task) }}>
                               <PixelIcon name="message" size={14} />
@@ -935,7 +1199,7 @@ export default function DashboardV2() {
                           className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[var(--color-bg-alt)] transition-colors ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}
                           onClick={() => setSelectedTask(task)}
                         >
-                          <PixelIcon name="check" size={14} className="text-[var(--color-accent)] shrink-0" />
+                          <span className="check-pop"><PixelIcon name="check" size={14} className="text-[var(--color-accent)] shrink-0" /></span>
                           <span className="text-[14px] text-[var(--color-heading)] min-w-0 truncate">{task.title}</span>
                           {task.duration && (
                             <span className="text-[11px] text-[var(--color-muted)] shrink-0">{task.duration}</span>
@@ -1040,8 +1304,8 @@ export default function DashboardV2() {
               </div>
               <div className="flex items-end justify-between mb-4">
                 <div>
-                  <div className="text-[28px] font-bold text-[var(--color-heading)] leading-none" style={{ fontFamily: 'var(--font-display)' }}>
-                    ${tokenData.price}
+                  <div className="text-[28px] font-bold text-[var(--color-heading)] leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>
+                    ${tokenDisplayPrice}
                   </div>
                   <span className={`text-[13px] font-medium ${tokenData.changePositive ? 'text-[var(--color-accent)]' : 'text-red-500'}`}>
                     {tokenData.change24h} <span className="text-[var(--color-muted)] font-normal">24h</span>
@@ -1300,7 +1564,25 @@ export default function DashboardV2() {
                 <PixelIcon name="message" size={22} className="text-[var(--color-muted)]" />
               </div>
               <h2 className="text-[18px] font-bold text-[var(--color-heading)] mb-2" style={{ fontFamily: 'var(--font-display)' }}>Chat</h2>
-              <p className="text-[14px] text-[var(--color-muted)]">Talk to your agents and coordinate work.</p>
+              <p className="text-[14px] text-[var(--color-muted)] mb-6">Talk to your agents and coordinate work.</p>
+
+              {/* Agent typing indicators */}
+              <div className="flex flex-col gap-3 w-full max-w-[360px]">
+                {agents.filter(a => assignedTasks.some(t => t.agent?.name === a.name)).map(a => (
+                  <div key={a.name} className="flex items-center gap-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3">
+                    <AgentDot name={a.name} size={28} active />
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="text-[13px] font-medium text-[var(--color-heading)]">{a.name}</div>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] typing-dot-1" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] typing-dot-2" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] typing-dot-3" />
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-[var(--color-muted)] font-mono">typing</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -1312,24 +1594,34 @@ export default function DashboardV2() {
         className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-[var(--color-heading)] rounded-full px-2 py-2 shadow-xl shadow-black/20"
         aria-label="Workshop navigation"
       >
+        {/* Sliding active pill */}
+        <span
+          ref={navPillRef}
+          className="absolute left-2 top-2 w-11 h-11 rounded-full bg-[var(--color-accent)]/15 pointer-events-none"
+          aria-hidden="true"
+        />
         {WORKSHOP_TABS.map(tab => {
           const isActive = workshopTab === tab.id
+          const notifCount = tabNotifications.current[tab.id] || 0
           return (
             <button
               key={tab.id}
               type="button"
               onClick={() => { navigator.vibrate?.(10); setWorkshopTab(tab.id) }}
-              className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200 cursor-pointer ${
+              className={`relative z-10 flex items-center justify-center w-11 h-11 rounded-full cursor-pointer transition-colors duration-150 ${
                 isActive
-                  ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)]'
+                  ? 'text-[var(--color-accent)]'
                   : 'text-[var(--color-muted)] hover:text-[var(--color-bg)]'
               }`}
               style={{ transitionTimingFunction: 'steps(3)' }}
-              aria-label={tab.label}
+              aria-label={`${tab.label}${notifCount > 0 ? ` (${notifCount} new)` : ''}`}
               aria-current={isActive ? 'page' : undefined}
               title={tab.label}
             >
               <PixelIcon name={tab.icon} size={20} />
+              {notifCount > 0 && !isActive && (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[var(--color-accent)] ring-2 ring-[var(--color-heading)]" />
+              )}
             </button>
           )
         })}
