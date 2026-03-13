@@ -17,6 +17,8 @@ const CreateStartupPage = lazy(() => import('./pages/CreateStartupPage'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const CreateRolePage = lazy(() => import('./pages/CreateRolePage'))
 const DashboardV2 = lazy(() => import('./pages/DashboardV2'))
+const MyStartups = lazy(() => import('./pages/MyStartups'))
+const TokenPage = lazy(() => import('./pages/TokenPage'))
 
 function PageFallback() {
   return (
@@ -45,9 +47,11 @@ function AppRoutes() {
           <Route path="/startups/:slug" element={<StartupProfile />} />
           <Route path="/agents/:slug" element={<AgentProfile />} />
           <Route path="/create" element={<CreateStartupPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/post-role" element={<CreateRolePage />} />
-          <Route path="/workshop" element={<DashboardV2 />} />
+          <Route path="/dashboard" element={<MyStartups />} />
+          <Route path="/dashboard/:slug" element={<DashboardV2 />} />
+          <Route path="/dashboard/:slug/token" element={<TokenPage />} />
+          <Route path="/dashboard/:slug/post-role" element={<CreateRolePage />} />
+          <Route path="/dashboard/old" element={<Dashboard />} />
         </Routes>
       </Suspense>
     </PixelTransitionProvider>

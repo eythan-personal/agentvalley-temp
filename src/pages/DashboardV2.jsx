@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from 'react'
+import { useParams } from 'react-router-dom'
 import gsap from 'gsap'
-import Nav from '../components/Nav'
 import PixelIcon from '../components/PixelIcon'
+import TransitionLink from '../components/TransitionLink'
 import { useToast } from '../components/Toast'
+import { useAuth } from '../hooks/useAuth'
 import {
-  objectives, tasks, feedItems, agents, myStartup, myRoles, tokenData, taskComments,
+  objectives, tasks, feedItems, agents, myStartup, myStartups, myRoles, tokenData, taskComments, chatMessages,
 } from '../data/dashboard'
 
 // Agent color map (replaces avatar images)
@@ -50,7 +52,14 @@ const sortedObjectives = [...objectives].sort((a, b) => (statusOrder[a.status] ?
 const defaultObjective = sortedObjectives.find(o => o.status === 'in-progress') || sortedObjectives[0]
 
 export default function DashboardV2() {
+  const { slug } = useParams()
+  const currentStartup = myStartups.find(s => s.slug === slug) || myStartups[0]
   const toast = useToast()
+  const { logout, authenticated, user } = useAuth()
+  const [userMenu, setUserMenu] = useState(false)
+  const userMenuRef = useRef(null)
+  const [startupMenu, setStartupMenu] = useState(false)
+  const startupMenuRef = useRef(null)
   const [workshopTab, setWorkshopTab] = useState('objectives')
   const [objectiveInput, setObjectiveInput] = useState('')
   const [activeObjective, setActiveObjective] = useState(defaultObjective)
@@ -80,6 +89,10 @@ export default function DashboardV2() {
   const [liveTime, setLiveTime] = useState(0) // ticks up every 60s
   const [tokenDisplayPrice, setTokenDisplayPrice] = useState(0)
   const navPillRef = useRef(null)
+  const [chatInput, setChatInput] = useState('')
+  const [messages, setMessages] = useState(chatMessages)
+  const [agentTyping, setAgentTyping] = useState(null)
+  const chatEndRef = useRef(null)
 
   const completedObjectives = sortedObjectives.filter(o => o.status === 'completed')
   const queuedObjectives = sortedObjectives.filter(o => o.status === 'queued')
@@ -154,6 +167,30 @@ export default function DashboardV2() {
     if (prefersReducedMotion) return
     gsap.from('.tl-card', { opacity: 0, y: 20, stagger: 0.06, duration: 0.35, delay: 0.1, clearProps: 'all' })
   }, [activeObjective, isNewMode])
+
+  // Close startup menu on outside click
+  useEffect(() => {
+    if (!startupMenu) return
+    const handleClick = (e) => {
+      if (startupMenuRef.current && !startupMenuRef.current.contains(e.target)) {
+        setStartupMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [startupMenu])
+
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!userMenu) return
+    const handleClick = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [userMenu])
 
   // Close objective dropdown on outside click
   useEffect(() => {
@@ -265,6 +302,64 @@ export default function DashboardV2() {
     })
   }
 
+  // Chat: scroll to bottom on new messages
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, agentTyping])
+
+  // Agent reply bank
+  const AGENT_REPLIES = {
+    'PixelSage': [
+      'On it! I\'ll have an update for you shortly.',
+      'Good question — let me check the latest designs and get back to you.',
+      'Just pushed an update to the storyboard. Take a look when you get a chance!',
+      'The pixel dissolve transitions are rendering nicely. Almost there.',
+    ],
+    'SynthMind': [
+      'Understood. I\'ll factor that into the current draft.',
+      'Great feedback — updating the copy now. Should be done in ~5 minutes.',
+      'I\'ve been analyzing the keywords and have some suggestions. Want me to share?',
+      'Script revision is live. Let me know if the tone feels right.',
+    ],
+    'VectorX': [
+      'Running the latest build now. Performance looks solid.',
+      'I\'ll push the responsive fixes in the next commit.',
+      'Good catch. I\'ll adjust the grid spacing and re-deploy.',
+      'Lighthouse scores are looking good — 96 on mobile, 98 on desktop.',
+    ],
+  }
+
+  const handleSendChat = (e) => {
+    e.preventDefault()
+    if (!chatInput.trim()) return
+    const now = new Date()
+    const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    const userMsg = { id: `m-${Date.now()}`, from: 'you', text: chatInput.trim(), time: timeStr }
+    setMessages(prev => [...prev, userMsg])
+    setChatInput('')
+
+    // Detect @mention or pick a random active agent to reply
+    const mentioned = agents.find(a => chatInput.includes(`@${a.name}`))
+    const activeAgents = agents.filter(a => assignedTasks.some(t => t.agent?.name === a.name))
+    const responder = mentioned || activeAgents[Math.floor(Math.random() * activeAgents.length)]
+    if (!responder) return
+
+    // Show typing indicator then reply
+    setAgentTyping(responder.name)
+    const replies = AGENT_REPLIES[responder.name] || ['Got it!']
+    const reply = replies[Math.floor(Math.random() * replies.length)]
+    setTimeout(() => {
+      const replyTime = new Date()
+      setAgentTyping(null)
+      setMessages(prev => [...prev, {
+        id: `m-${Date.now()}`,
+        from: responder.name,
+        text: reply,
+        time: replyTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+      }])
+    }, 1500 + Math.random() * 1500)
+  }
+
   // #5 — Creation flow: fake parsing steps
   const CREATION_STEPS = [
     'Analyzing objective...',
@@ -322,10 +417,148 @@ export default function DashboardV2() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-heading)]">
-      <Nav forceScrolled />
+      {/* Nav hidden — dashboard has its own top bar */}
 
-      <main className="pt-24 pb-24 px-4 sm:px-6">
+      {/* ── Sticky top nav bar ── */}
+      {!selectedTask && (
+        <div className="sticky top-0 z-50 px-4 sm:px-6">
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(to bottom, var(--color-bg) 60%, transparent)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              maskImage: 'linear-gradient(to bottom, black 60%, transparent)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)',
+            }}
+          />
+          <div className="max-w-[540px] mx-auto py-4 flex items-center relative">
+            {/* Left: Logo + Startup switcher */}
+            <div className="flex items-center gap-4">
+              {/* AV logo */}
+              <TransitionLink
+                to="/"
+                className="w-8 h-8 rounded-full bg-[var(--color-heading)] flex items-center justify-center shrink-0"
+                aria-label="AgentValley home"
+              >
+                <span className="text-[var(--color-bg)] text-[11px] font-bold" style={{ fontFamily: 'var(--font-display)' }}>AV</span>
+              </TransitionLink>
 
+              {/* Startup switcher dropdown */}
+              <div className="relative" ref={startupMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setStartupMenu(prev => !prev)}
+                  className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <span
+                    className="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+                    style={{ background: currentStartup.color }}
+                  >
+                    {currentStartup.initials}
+                  </span>
+                  <span className="text-[14px] font-semibold text-[var(--color-heading)]">
+                    {currentStartup.name}
+                  </span>
+                  <PixelIcon name="chevrons-vertical" size={14} className="text-[var(--color-muted)]" />
+                </button>
+
+                {startupMenu && (
+                  <div className="absolute left-0 top-full mt-2 w-60 rounded-xl bg-[var(--color-surface)] shadow-lg shadow-black/10 border border-[var(--color-border)] py-1.5 z-50">
+                    <div className="px-4 py-2 text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)]">
+                      Startups
+                    </div>
+                    {myStartups.map(s => (
+                      <TransitionLink
+                        key={s.slug}
+                        to={`/dashboard/${s.slug}`}
+                        onClick={() => setStartupMenu(false)}
+                        className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] transition-colors cursor-pointer ${
+                          s.slug === currentStartup.slug
+                            ? 'bg-[var(--color-bg-alt)] text-[var(--color-heading)] font-medium'
+                            : 'text-[var(--color-body)] hover:bg-[var(--color-bg-alt)]'
+                        }`}
+                      >
+                        <span
+                          className="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+                          style={{ background: s.color }}
+                        >
+                          {s.initials}
+                        </span>
+                        {s.name}
+                      </TransitionLink>
+                    ))}
+                    <div className="border-t border-[var(--color-border)] mt-1 pt-1">
+                      <TransitionLink
+                        to="/create"
+                        onClick={() => setStartupMenu(false)}
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer"
+                      >
+                        <PixelIcon name="plus" size={14} />
+                        Create startup
+                      </TransitionLink>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1" />
+
+            {/* Right: User avatar */}
+            <div className="relative shrink-0" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenu(prev => !prev)}
+                className="w-8 h-8 rounded-full bg-[var(--color-heading)] text-[var(--color-bg)] flex items-center justify-center text-[11px] font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                aria-label="Account menu"
+              >
+                {user?.wallet?.address ? user.wallet.address.slice(2, 4).toUpperCase() : 'ME'}
+              </button>
+
+              {userMenu && (
+                <div className="absolute right-0 top-full mt-2 w-52 rounded-xl bg-[var(--color-surface)] shadow-lg shadow-black/10 border border-[var(--color-border)] py-1.5 z-50">
+                  {user?.wallet?.address && (
+                    <div className="px-4 py-2.5 border-b border-[var(--color-border)]">
+                      <div className="text-[11px] font-mono text-[var(--color-muted)] truncate">
+                        {user.wallet.address.slice(0, 6)}...{user.wallet.address.slice(-4)}
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setUserMenu(false); toast('Copied wallet address', { type: 'success', icon: 'clipboard' }) }}
+                    className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5"
+                  >
+                    <PixelIcon name="clipboard" size={14} className="text-[var(--color-muted)]" />
+                    Copy Address
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setUserMenu(false) }}
+                    className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5"
+                  >
+                    <PixelIcon name="settings" size={14} className="text-[var(--color-muted)]" />
+                    Account Settings
+                  </button>
+                  <div className="border-t border-[var(--color-border)] mt-1 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => { setUserMenu(false); logout() }}
+                      className="w-full text-left px-4 py-2.5 text-[13px] text-red-500 hover:bg-red-500/5 transition-colors cursor-pointer flex items-center gap-2.5"
+                    >
+                      <PixelIcon name="power" size={14} />
+                      Disconnect Wallet
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="pb-24 px-4 sm:px-6">
         {/* ═══ TASK DETAIL PAGE ═══ */}
         {selectedTask && (() => {
           const task = selectedTask
@@ -371,21 +604,37 @@ export default function DashboardV2() {
                 </button>
               )}
 
-              {/* Task counter + back */}
-              <div className="flex items-center justify-between mb-5">
-                <button
-                  type="button"
-                  onClick={() => { setSelectedTask(null); setTaskComment('') }}
-                  className="flex items-center gap-1.5 text-[13px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer"
-                >
-                  <PixelIcon name="arrow-left" size={14} />
-                  Back
-                </button>
-                {allVisibleTasks.length > 1 && (
-                  <span className="text-[11px] font-mono text-[var(--color-muted)]">
-                    {currentTaskIndex + 1} / {allVisibleTasks.length}
-                  </span>
-                )}
+              {/* Sticky task header */}
+              <div className="sticky top-0 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-5">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(to bottom, var(--color-bg) 60%, transparent)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    maskImage: 'linear-gradient(to bottom, black 60%, transparent)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)',
+                  }}
+                />
+                <div className="max-w-[540px] mx-auto py-3 flex items-center justify-between relative">
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedTask(null); setTaskComment('') }}
+                    className="h-8 px-3 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm shadow-black/4
+                               flex items-center gap-1.5 text-[13px] font-medium text-[var(--color-muted)] hover:text-[var(--color-heading)]
+                               hover:border-[var(--color-muted)] transition-all cursor-pointer"
+                  >
+                    <PixelIcon name="arrow-left" size={13} />
+                    Back
+                  </button>
+                  {allVisibleTasks.length > 1 && (
+                    <span className="h-7 px-3 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm shadow-black/4
+                                     inline-flex items-center gap-1.5 text-[11px] font-mono text-[var(--color-muted)]">
+                      <PixelIcon name="list-box" size={12} className="text-[var(--color-muted)]" />
+                      {currentTaskIndex + 1}<span className="opacity-40">/</span>{allVisibleTasks.length}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* ── Task Details (single card) ── */}
@@ -539,12 +788,6 @@ export default function DashboardV2() {
         {/* ═══ OBJECTIVES TAB ═══ */}
         {!selectedTask && workshopTab === 'objectives' && (
         <div className="max-w-[540px] mx-auto">
-
-          {/* ── Page header ── */}
-          <div className="mb-8 text-center">
-            <h1 className="text-[24px] font-bold text-[var(--color-heading)] mb-1" style={{ fontFamily: 'var(--font-display)' }}>Workshop</h1>
-            <p className="text-[14px] text-[var(--color-muted)]">Set objectives for your agents and track their progress.</p>
-          </div>
 
           {/* ── Objective selector + New button ── */}
           <div className="flex items-center gap-2.5 mb-10">
@@ -925,7 +1168,7 @@ export default function DashboardV2() {
                   <div className="tl-card mb-4 relative z-10">
                     <div className="rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)]">
                       <div className="flex items-start gap-3 mb-3">
-                        <span className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0 mt-0.5">
                           <PixelIcon name="clock" size={15} className="text-amber-500" />
                         </span>
                         <div className="flex-1 min-w-0">
@@ -940,11 +1183,11 @@ export default function DashboardV2() {
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-amber-50 px-4 py-3 mb-3">
-                        <div className="flex items-center gap-2 text-[13px] text-amber-700">
+                      <div className="rounded-xl bg-amber-500/10 px-4 py-3 mb-3">
+                        <div className="flex items-center gap-2 text-[13px] text-amber-500">
                           <PixelIcon name="clock" size={14} />
                           <span className="font-medium">Queued</span>
-                          <span className="text-amber-600/70">— will start when the current objective completes</span>
+                          <span className="text-amber-500/70">— will start when the current objective completes</span>
                         </div>
                       </div>
 
@@ -1297,10 +1540,16 @@ export default function DashboardV2() {
             </div>
 
             {/* ── Token ── */}
-            <div className="rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
+            <TransitionLink
+              to={`/dashboard/${slug}/token`}
+              className="block rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4 card-alive group"
+            >
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Token</span>
-                <span className="text-[12px] text-[var(--color-muted)]">${tokenData.symbol}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[12px] text-[var(--color-muted)]">${tokenData.symbol}</span>
+                  <PixelIcon name="chevron-right" size={12} className="text-[var(--color-muted)] group-hover:text-[var(--color-heading)] transition-colors" />
+                </div>
               </div>
               <div className="flex items-end justify-between mb-4">
                 <div>
@@ -1322,7 +1571,7 @@ export default function DashboardV2() {
                   <div className="text-[14px] font-semibold text-[var(--color-heading)]">{tokenData.mcap}</div>
                 </div>
               </div>
-            </div>
+            </TransitionLink>
 
             {/* ── Treasury ── */}
             <div className="rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
@@ -1558,31 +1807,95 @@ export default function DashboardV2() {
 
         {/* ═══ CHAT TAB ═══ */}
         {!selectedTask && workshopTab === 'chat' && (
-          <div className="max-w-[540px] mx-auto">
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-12 h-12 rounded-full bg-[var(--color-bg-alt)] flex items-center justify-center mb-4">
-                <PixelIcon name="message" size={22} className="text-[var(--color-muted)]" />
-              </div>
-              <h2 className="text-[18px] font-bold text-[var(--color-heading)] mb-2" style={{ fontFamily: 'var(--font-display)' }}>Chat</h2>
-              <p className="text-[14px] text-[var(--color-muted)] mb-6">Talk to your agents and coordinate work.</p>
+          <div className="max-w-[540px] mx-auto flex flex-col" style={{ minHeight: 'calc(100vh - 180px)' }}>
 
-              {/* Agent typing indicators */}
-              <div className="flex flex-col gap-3 w-full max-w-[360px]">
-                {agents.filter(a => assignedTasks.some(t => t.agent?.name === a.name)).map(a => (
-                  <div key={a.name} className="flex items-center gap-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3">
-                    <AgentDot name={a.name} size={28} active />
-                    <div className="flex-1 min-w-0 text-left">
-                      <div className="text-[13px] font-medium text-[var(--color-heading)]">{a.name}</div>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] typing-dot-1" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] typing-dot-2" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] typing-dot-3" />
-                      </div>
+            {/* Online agents bar */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Online</span>
+              <div className="flex items-center gap-1.5">
+                {agents.map(a => {
+                  const isActive = assignedTasks.some(t => t.agent?.name === a.name)
+                  return (
+                    <div key={a.name} className="relative" title={`${a.name}${isActive ? ' — working' : ''}`}>
+                      <AgentDot name={a.name} size={28} active={isActive} />
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[var(--color-bg)] ${isActive ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'}`} />
                     </div>
-                    <span className="text-[11px] text-[var(--color-muted)] font-mono">typing</span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto pb-4 flex flex-col gap-3">
+              {messages.map(msg => {
+                const isYou = msg.from === 'you'
+                return (
+                  <div key={msg.id} className={`flex gap-2.5 ${isYou ? 'flex-row-reverse' : ''}`}>
+                    {!isYou && <AgentDot name={msg.from} size={30} className="mt-1 shrink-0" />}
+                    <div className={`max-w-[75%] ${isYou ? 'ml-auto' : ''}`}>
+                      {!isYou && (
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[12px] font-semibold text-[var(--color-heading)]">{msg.from}</span>
+                          <span className="text-[11px] text-[var(--color-muted)]">{msg.time}</span>
+                        </div>
+                      )}
+                      <div className={`rounded-2xl px-4 py-2.5 text-[13px] leading-relaxed ${
+                        isYou
+                          ? 'bg-[var(--color-heading)] text-[var(--color-bg)] rounded-br-md'
+                          : 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-body)] rounded-bl-md'
+                      }`}>
+                        {msg.text}
+                      </div>
+                      {isYou && (
+                        <div className="text-[11px] text-[var(--color-muted)] text-right mt-1">{msg.time}</div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Typing indicator */}
+              {agentTyping && (
+                <div className="flex gap-2.5">
+                  <AgentDot name={agentTyping} size={30} className="mt-1 shrink-0" active />
+                  <div>
+                    <div className="text-[12px] font-semibold text-[var(--color-heading)] mb-1">{agentTyping}</div>
+                    <div className="rounded-2xl rounded-bl-md bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 inline-flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] typing-dot-1" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] typing-dot-2" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] typing-dot-3" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="sticky bottom-20 pt-3 bg-[var(--color-bg)]">
+              <form onSubmit={handleSendChat} className="relative">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  placeholder="Message your agents... use @name to mention"
+                  className="w-full h-12 pl-4 pr-12 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] text-[14px] text-[var(--color-heading)]
+                             placeholder:text-[#b0adaa] focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all shadow-md shadow-black/4"
+                  aria-label="Chat message"
+                />
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim()}
+                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
+                    chatInput.trim()
+                      ? 'bg-[var(--color-heading)] text-[var(--color-bg)] hover:bg-[var(--color-body)]'
+                      : 'bg-[var(--color-bg-alt)] text-[var(--color-muted)] cursor-not-allowed'
+                  }`}
+                  aria-label="Send message"
+                >
+                  <PixelIcon name="arrow-right" size={14} />
+                </button>
+              </form>
             </div>
           </div>
         )}

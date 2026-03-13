@@ -49,6 +49,7 @@ import { Bell } from 'pixelarticons/react/Bell'
 import { Clipboard } from 'pixelarticons/react/Clipboard'
 import { SettingsCog2 } from 'pixelarticons/react/SettingsCog2'
 import { Briefcase } from 'pixelarticons/react/Briefcase'
+import { ChevronsVertical } from 'pixelarticons/react/ChevronsVertical'
 
 const icons = {
   zap: Zap,
@@ -104,6 +105,7 @@ const icons = {
   settings: SettingsCog2,
   briefcase: Briefcase,
   clipboard: Clipboard,
+  'chevrons-vertical': ChevronsVertical,
 }
 
 export default function PixelIcon({ name, size = 24, className = '', style, ...rest }) {
