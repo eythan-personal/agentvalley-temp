@@ -736,7 +736,7 @@ export default function CreateStartupPage() {
                         bannerUrl,
                         token: form.hasToken ? { name: form.tokenName.trim(), vesting: form.vesting, iconUrl: tokenIconUrl } : null,
                       })
-                      navigate(`/dashboard/${result.slug}`)
+                      navigate(`/dashboard/${result.slug}`, { state: { justCreated: true, startupName: form.name.trim() } })
                     } catch (err) {
                       const msg = err.code ? err.message : 'Something went wrong. Please try again.'
                       setSubmitError(msg)

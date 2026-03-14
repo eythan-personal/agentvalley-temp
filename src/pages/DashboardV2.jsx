@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams, useLocation } from 'react-router-dom'
 import gsap from 'gsap'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
@@ -52,9 +52,12 @@ const statusOrder = { 'in-progress': 0, 'queued': 1, 'completed': 2 }
 
 export default function DashboardV2() {
   const { slug } = useParams()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: startupData, startup: currentStartup, loading, error, refetch } = useStartupData(slug)
   const { startups: myStartups } = useMyStartups()
+  const [showWelcome, setShowWelcome] = useState(() => location.state?.justCreated === true)
+  const welcomeName = location.state?.startupName || currentStartup?.name || ''
 
   // ── Destructure startup-specific data from the hook ──
   const seedObjectives = useMemo(() => startupData?.objectives ?? [], [startupData])
@@ -993,6 +996,7 @@ export default function DashboardV2() {
   }
 
   return (
+    <>
     <ErrorBoundary>
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-heading)]">
       {/* Nav hidden — dashboard has its own top bar */}
@@ -2375,15 +2379,48 @@ export default function DashboardV2() {
                         <div className="text-[11px] text-[var(--color-muted)]">{defaultObjective.tasksComplete}/{defaultObjective.tasksTotal} tasks · est. {defaultObjective.estCompletion}</div>
                       </>
                     ) : (
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center shrink-0">
-                          <PixelIcon name="check" size={13} className="text-[var(--color-accent)]" />
+                      <button
+                        type="button"
+                        onClick={() => { setWorkshopTab('objectives'); setTimeout(() => setIsNewMode(true), 150) }}
+                        className="w-full text-left group cursor-pointer"
+                      >
+                        {/* Pixel grid background */}
+                        <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-[var(--color-accent)]/30 group-hover:border-[var(--color-accent)] transition-colors duration-300 p-5">
+                          <div
+                            className="absolute inset-0 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity duration-300"
+                            style={{
+                              backgroundImage: `
+                                linear-gradient(var(--color-accent) 1px, transparent 1px),
+                                linear-gradient(90deg, var(--color-accent) 1px, transparent 1px)
+                              `,
+                              backgroundSize: '6px 6px',
+                            }}
+                          />
+                          <div className="relative flex items-start gap-3.5">
+                            <div
+                              className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/10 flex items-center justify-center shrink-0 group-hover:bg-[var(--color-accent)]/20 transition-colors"
+                              style={{ animation: 'pixel-float 2.5s steps(4) infinite' }}
+                            >
+                              <PixelIcon name="bullseye-arrow" size={18} className="text-[var(--color-accent)]" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div
+                                className="text-[15px] font-semibold text-[var(--color-heading)] mb-0.5 group-hover:text-[var(--color-accent)] transition-colors"
+                                style={{ fontFamily: 'var(--font-display)' }}
+                              >
+                                Create your first objective
+                              </div>
+                              <div className="text-[12px] text-[var(--color-muted)] leading-relaxed">
+                                Tell your agents what to build. They'll break it into tasks and get to work.
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-2.5">
+                                <span className="text-[11px] font-semibold text-[var(--color-accent)] tracking-wide uppercase">Get started</span>
+                                <PixelIcon name="chevron-right" size={11} className="text-[var(--color-accent)] group-hover:translate-x-0.5 transition-transform" />
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-[13px] font-medium text-[var(--color-accent)]">All objectives completed</div>
-                          <div className="text-[11px] text-[var(--color-muted)]">No active objectives</div>
-                        </div>
-                      </div>
+                      </button>
                     )}
                   </div>
 
@@ -2884,5 +2921,111 @@ export default function DashboardV2() {
       </nav>}
     </div>
     </ErrorBoundary>
+
+    {/* ── Welcome Modal ── */}
+    {showWelcome && (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          onClick={() => setShowWelcome(false)}
+          style={{ animation: 'fadeIn 0.3s ease-out' }}
+        />
+
+        {/* Modal */}
+        <div
+          className="relative w-full max-w-[380px] rounded-2xl overflow-hidden shadow-2xl"
+          style={{ animation: 'modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        >
+          {/* Top accent band with pixel grid */}
+          <div className="relative h-28 bg-[var(--color-accent)] overflow-hidden">
+            <div
+              className="absolute inset-0 opacity-[0.12]"
+              style={{
+                backgroundImage: `
+                  linear-gradient(#0d2000 1px, transparent 1px),
+                  linear-gradient(90deg, #0d2000 1px, transparent 1px)
+                `,
+                backgroundSize: '6px 6px',
+              }}
+            />
+            {/* Floating pixel icons */}
+            <div className="absolute inset-0 flex items-center justify-center gap-4">
+              {['robot', 'zap', 'crown', 'coins', 'trophy'].map((icon, i) => (
+                <div
+                  key={icon}
+                  className="w-8 h-8 rounded-lg bg-[#0d2000]/15 flex items-center justify-center text-[#0d2000]"
+                  style={{
+                    animation: 'pixel-float 2.5s steps(4) infinite',
+                    animationDelay: `${i * 0.18}s`,
+                  }}
+                >
+                  <PixelIcon name={icon} size={15} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] border-t-0 rounded-b-2xl px-7 pb-7 pt-6 text-center">
+            <h2
+              className="text-[22px] text-[var(--color-heading)] leading-tight mb-1"
+              style={{ fontFamily: 'var(--font-accent)', fontWeight: 500 }}
+            >
+              Welcome to
+            </h2>
+            <h2
+              className="text-[26px] text-[var(--color-accent)] leading-tight mb-4"
+              style={{ fontFamily: 'var(--font-accent)', fontWeight: 500 }}
+            >
+              {welcomeName || currentStartup?.name || 'your startup'}
+            </h2>
+
+            <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-6 max-w-[280px] mx-auto">
+              Your startup is live. Create your first objective and your AI agents will break it into tasks and start building.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowWelcome(false)
+                setWorkshopTab('objectives')
+                setTimeout(() => setIsNewMode(true), 150)
+              }}
+              className="w-full h-11 rounded-full text-[13px] font-semibold cursor-pointer
+                         bg-[var(--color-accent)] text-[#0d2000]
+                         hover:shadow-lg hover:shadow-[var(--color-accent)]/20
+                         transition-all duration-200
+                         inline-flex items-center justify-center gap-2"
+            >
+              <PixelIcon name="bullseye-arrow" size={15} />
+              Create Your First Objective
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowWelcome(false)}
+              className="w-full mt-2.5 h-9 rounded-full text-[12px] font-medium cursor-pointer
+                         text-[var(--color-muted)] hover:text-[var(--color-heading)]
+                         transition-colors"
+            >
+              I'll explore first
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <style>{`
+      @keyframes fadeIn {
+        from { opacity: 0 }
+        to { opacity: 1 }
+      }
+      @keyframes modalIn {
+        from { opacity: 0; transform: scale(0.92) translateY(12px) }
+        to { opacity: 1; transform: scale(1) translateY(0) }
+      }
+    `}</style>
+    </>
   )
 }
