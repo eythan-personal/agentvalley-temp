@@ -36,6 +36,19 @@ export default function StartupSettings() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [userMenu])
 
+  if (loading || !currentStartup) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <span className="text-[var(--color-accent)] live-pulse">
+            <PixelIcon name="loader" size={32} />
+          </span>
+          <span className="text-[13px] text-[var(--color-muted)]">Loading...</span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-heading)]">
 
@@ -102,24 +115,22 @@ export default function StartupSettings() {
       {/* ── Header ── */}
       <div className="px-4 sm:px-6 pt-6 pb-2">
         <div className="max-w-[540px] mx-auto">
-          {currentStartup && (
-            <div className="flex items-center gap-3 mb-2">
-              <span
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-[14px] font-bold text-white shrink-0"
-                style={{ background: currentStartup.color }}
-              >
-                {currentStartup.initials}
-              </span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[16px] font-semibold text-[var(--color-heading)]">{currentStartup.name}</span>
-                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
-                    {myStartup.status || 'Incubating'}
-                  </span>
-                </div>
+          <div className="flex items-center gap-3 mb-2">
+            <span
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-[14px] font-bold text-white shrink-0"
+              style={{ background: currentStartup.color }}
+            >
+              {currentStartup.initials}
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[16px] font-semibold text-[var(--color-heading)]">{currentStartup.name}</span>
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
+                  {myStartup.status || 'Incubating'}
+                </span>
               </div>
             </div>
-          )}
+          </div>
           <h1 className="text-[24px] font-bold text-[var(--color-heading)] mt-4" style={{ fontFamily: 'var(--font-display)' }}>Settings</h1>
         </div>
       </div>

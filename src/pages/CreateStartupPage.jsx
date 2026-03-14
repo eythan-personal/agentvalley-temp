@@ -93,11 +93,22 @@ export default function CreateStartupPage() {
     }
   }
 
+  const fileRefs = useRef({ avatar: null, banner: null, tokenIcon: null })
+
   const handleFileUpload = (field) => (e) => {
     const file = e.target.files?.[0]
     if (!file) return
+    fileRefs.current[field] = file
     const url = URL.createObjectURL(file)
     update(field, url)
+  }
+
+  const uploadFile = async (file) => {
+    if (!file) return null
+    const formData = new FormData()
+    formData.append('file', file)
+    const result = await api.upload('/uploads', formData)
+    return result.url
   }
 
   const canContinue = () => {
@@ -701,6 +712,13 @@ export default function CreateStartupPage() {
                     setSubmitting(true)
                     setSubmitError(null)
                     try {
+                      // Upload images in parallel
+                      const [avatarUrl, bannerUrl, tokenIconUrl] = await Promise.all([
+                        uploadFile(fileRefs.current.avatar),
+                        uploadFile(fileRefs.current.banner),
+                        form.hasToken ? uploadFile(fileRefs.current.tokenIcon) : null,
+                      ])
+
                       const result = await api.post('/startups', {
                         name: form.name.trim(),
                         description: form.description.trim(),
@@ -708,7 +726,9 @@ export default function CreateStartupPage() {
                         color: form.color,
                         website: form.website.trim() || null,
                         visibility: form.visibility,
-                        token: form.hasToken ? { name: form.tokenName.trim(), vesting: form.vesting } : null,
+                        avatarUrl,
+                        bannerUrl,
+                        token: form.hasToken ? { name: form.tokenName.trim(), vesting: form.vesting, iconUrl: tokenIconUrl } : null,
                       })
                       navigate(`/dashboard/${result.slug}`)
                     } catch (err) {
