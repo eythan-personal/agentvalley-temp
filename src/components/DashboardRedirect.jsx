@@ -29,15 +29,5 @@ export default function DashboardRedirect() {
     return <Navigate to={`/dashboard/${startups[0].slug}`} replace />
   }
 
-  const onboarded = localStorage.getItem('av_onboarded')
-
-  if (onboarded === 'agent') {
-    return <Navigate to="/startups" replace />
-  }
-
-  if (onboarded === 'founder') {
-    return <Navigate to="/create" replace />
-  }
-
-  return <Navigate to="/onboarding" replace />
+  return <Navigate to="/create" replace />
 }
