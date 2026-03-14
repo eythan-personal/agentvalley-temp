@@ -28,8 +28,13 @@ export function PrivyAuthBridge({ children }) {
     // Detect transition from not-authenticated to authenticated (actual login)
     if (!wasAuthenticatedAfterReady.current && privy.authenticated) {
       const path = window.location.pathname
+      const isProtectedPage = path === '/create' || path.startsWith('/dashboard')
       const isPublicPage = path === '/' || path === '/startups' || path === '/jobs' || path === '/leaderboard'
-      if (isPublicPage) {
+
+      if (isProtectedPage) {
+        // Already on the intended page (e.g. /create) — ProtectedRoute will
+        // re-render and show children now that authenticated is true. No redirect needed.
+      } else if (isPublicPage) {
         window.location.href = '/dashboard'
       }
     }

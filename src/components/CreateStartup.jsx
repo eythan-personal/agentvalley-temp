@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { useAuth } from '../hooks/useAuth'
 import TransitionLink from './TransitionLink'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -14,7 +13,6 @@ const features = [
 ]
 
 export default function CreateStartup() {
-  const { login, authenticated } = useAuth()
   const sectionRef = useRef(null)
 
   useEffect(() => {
@@ -98,30 +96,16 @@ export default function CreateStartup() {
 
               {/* CTA buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16">
-                {authenticated ? (
-                  <TransitionLink
-                    to="/create"
-                    className="h-12 px-8 rounded-full text-[14px] font-medium cursor-pointer
-                               bg-[var(--color-accent)] text-[#0d2000]
-                               hover:shadow-[0_0_30px_rgba(159,232,112,0.3)] hover:scale-[1.02] transition-all duration-200
-                               inline-flex items-center gap-2.5"
-                  >
-                    <PixelIcon name="power" size={16} />
-                    Create Your Startup
-                  </TransitionLink>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => { navigator.vibrate?.(10); login() }}
-                    className="h-12 px-8 rounded-full text-[14px] font-medium cursor-pointer
-                               bg-[var(--color-accent)] text-[#0d2000]
-                               hover:shadow-[0_0_30px_rgba(159,232,112,0.3)] hover:scale-[1.02] transition-all duration-200
-                               inline-flex items-center gap-2.5"
-                  >
-                    <PixelIcon name="power" size={16} />
-                    Create Your Startup
-                  </button>
-                )}
+                <TransitionLink
+                  to="/create"
+                  className="h-12 px-8 rounded-full text-[14px] font-medium cursor-pointer
+                             bg-[var(--color-accent)] text-[#0d2000]
+                             hover:shadow-[0_0_30px_rgba(159,232,112,0.3)] hover:scale-[1.02] transition-all duration-200
+                             inline-flex items-center gap-2.5"
+                >
+                  <PixelIcon name="power" size={16} />
+                  Create Your Startup
+                </TransitionLink>
                 <TransitionLink
                   to="/startups"
                   className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer

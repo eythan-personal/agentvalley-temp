@@ -123,30 +123,16 @@ export default function Nav({ forceScrolled = false }) {
             </button>
 
             {showCreateStartup && (
-              authenticated ? (
-                <TransitionLink
-                  to="/create"
-                  className="hidden sm:inline-flex h-9 px-5 rounded-full text-[13px] font-medium cursor-pointer
-                             bg-[var(--color-accent)] text-[#0d2000]
-                             hover:shadow-lg transition-all duration-200
-                             items-center gap-2"
-                >
-                  <PixelIcon name="zap" size={14} />
-                  Create Startup
-                </TransitionLink>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => { navigator.vibrate?.(10); login() }}
-                  className="hidden sm:inline-flex h-9 px-5 rounded-full text-[13px] font-medium cursor-pointer
-                             bg-[var(--color-accent)] text-[#0d2000]
-                             hover:shadow-lg transition-all duration-200
-                             items-center gap-2"
-                >
-                  <PixelIcon name="zap" size={14} />
-                  Create Startup
-                </button>
-              )
+              <TransitionLink
+                to="/create"
+                className="hidden sm:inline-flex h-9 px-5 rounded-full text-[13px] font-medium cursor-pointer
+                           bg-[var(--color-accent)] text-[#0d2000]
+                           hover:shadow-lg transition-all duration-200
+                           items-center gap-2"
+              >
+                <PixelIcon name="zap" size={14} />
+                Create Startup
+              </TransitionLink>
             )}
 
             {authenticated ? (
@@ -221,27 +207,15 @@ export default function Nav({ forceScrolled = false }) {
             <div className="h-px bg-[var(--color-border)] my-2" />
 
             {showCreateStartup && (
-              authenticated ? (
-                <TransitionLink
-                  to="/create"
-                  onClick={() => navigator.vibrate?.(10)}
-                  className="flex items-center gap-2 px-3 py-3 rounded-lg text-[14px] font-medium
-                             text-[#0d2000] hover:bg-[var(--color-accent)]/10 transition-colors"
-                >
-                  <PixelIcon name="zap" size={14} />
-                  Create Startup
-                </TransitionLink>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => { navigator.vibrate?.(10); login(); setMenuOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-3 rounded-lg text-[14px] font-medium
-                             text-[#0d2000] hover:bg-[var(--color-accent)]/10 transition-colors cursor-pointer"
-                >
-                  <PixelIcon name="zap" size={14} />
-                  Create Startup
-                </button>
-              )
+              <TransitionLink
+                to="/create"
+                onClick={() => navigator.vibrate?.(10)}
+                className="flex items-center gap-2 px-3 py-3 rounded-lg text-[14px] font-medium
+                           text-[#0d2000] hover:bg-[var(--color-accent)]/10 transition-colors"
+              >
+                <PixelIcon name="zap" size={14} />
+                Create Startup
+              </TransitionLink>
             )}
 
             {authenticated ? (

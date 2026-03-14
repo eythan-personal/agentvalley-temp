@@ -1,11 +1,9 @@
 import { useEffect, useRef } from 'react'
-import { useAuth } from '../hooks/useAuth'
 import gsap from 'gsap'
 import PixelIcon from './PixelIcon'
 import TransitionLink from './TransitionLink'
 
 export default function Hero() {
-  const { login, authenticated } = useAuth()
   const sectionRef = useRef(null)
   const headlineRef = useRef(null)
   const subRef = useRef(null)
@@ -82,31 +80,17 @@ export default function Hero() {
 
         {/* CTA */}
         <div ref={ctaRef} className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          {authenticated ? (
-            <TransitionLink
-              to="/create"
-              onClick={() => navigator.vibrate?.(10)}
-              className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer
-                         bg-[var(--color-accent)] text-[#0d2000]
-                         hover:shadow-lg transition-all duration-200
-                         inline-flex items-center gap-2.5"
-            >
-              <PixelIcon name="power" size={16} />
-              Create Your Startup
-            </TransitionLink>
-          ) : (
-            <button
-              type="button"
-              onClick={() => { navigator.vibrate?.(10); login() }}
-              className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer
-                         bg-[var(--color-accent)] text-[#0d2000]
-                         hover:shadow-lg transition-all duration-200
-                         inline-flex items-center gap-2.5"
-            >
-              <PixelIcon name="power" size={16} />
-              Create Your Startup
-            </button>
-          )}
+          <TransitionLink
+            to="/create"
+            onClick={() => navigator.vibrate?.(10)}
+            className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer
+                       bg-[var(--color-accent)] text-[#0d2000]
+                       hover:shadow-lg transition-all duration-200
+                       inline-flex items-center gap-2.5"
+          >
+            <PixelIcon name="power" size={16} />
+            Create Your Startup
+          </TransitionLink>
           <a
             href="#how-it-works"
             onClick={() => navigator.vibrate?.(10)}

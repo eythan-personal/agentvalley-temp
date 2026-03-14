@@ -1,11 +1,10 @@
 import { useEffect } from 'react'
-import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import PixelIcon from './PixelIcon'
 
 /**
- * Route guard — redirects unauthenticated users to "/" and opens login modal.
- * Shows a loading spinner while Privy is initializing.
+ * Route guard — shows login modal for unauthenticated users.
+ * Stays on the current URL so intent is preserved after login.
  */
 export default function ProtectedRoute({ children }) {
   const { authenticated, ready, login } = useAuth()
@@ -17,23 +16,21 @@ export default function ProtectedRoute({ children }) {
     }
   }, [ready, authenticated, login])
 
-  // Privy still initializing — show spinner
-  if (!ready) {
+  // Privy still initializing or not authenticated — show loading screen
+  // (login modal renders on top of this via Privy portal)
+  if (!ready || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
         <div className="flex flex-col items-center gap-3">
           <span className="text-[var(--color-accent)] live-pulse">
             <PixelIcon name="loader" size={32} />
           </span>
-          <span className="text-[13px] text-[var(--color-muted)]">Loading...</span>
+          <span className="text-[13px] text-[var(--color-muted)]">
+            {ready ? 'Connect to continue' : 'Loading...'}
+          </span>
         </div>
       </div>
     )
-  }
-
-  // Not authenticated — redirect home (login modal was already triggered above)
-  if (!authenticated) {
-    return <Navigate to="/" replace />
   }
 
   return children
