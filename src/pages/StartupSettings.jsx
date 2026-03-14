@@ -12,12 +12,14 @@ export default function StartupSettings() {
   const [userMenu, setUserMenu] = useState(false)
   const userMenuRef = useRef(null)
 
-  const { data: startupData, startup: currentStartup } = useStartupData(slug)
+  const { data: startupData, startup: currentStartup, loading } = useStartupData(slug)
   const myStartup = startupData?.startup ?? {}
 
   useEffect(() => {
-    document.title = `Settings — ${currentStartup.name} — AgentValley`
-  }, [currentStartup.name])
+    if (currentStartup?.name) {
+      document.title = `Settings — ${currentStartup.name} — AgentValley`
+    }
+  }, [currentStartup?.name])
 
   // Panel entry animation
   useEffect(() => {
@@ -100,22 +102,24 @@ export default function StartupSettings() {
       {/* ── Header ── */}
       <div className="px-4 sm:px-6 pt-6 pb-2">
         <div className="max-w-[540px] mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <span
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-[14px] font-bold text-white shrink-0"
-              style={{ background: currentStartup.color }}
-            >
-              {currentStartup.initials}
-            </span>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[16px] font-semibold text-[var(--color-heading)]">{currentStartup.name}</span>
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
-                  {myStartup.status || 'Incubating'}
-                </span>
+          {currentStartup && (
+            <div className="flex items-center gap-3 mb-2">
+              <span
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-[14px] font-bold text-white shrink-0"
+                style={{ background: currentStartup.color }}
+              >
+                {currentStartup.initials}
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px] font-semibold text-[var(--color-heading)]">{currentStartup.name}</span>
+                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
+                    {myStartup.status || 'Incubating'}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
           <h1 className="text-[24px] font-bold text-[var(--color-heading)] mt-4" style={{ fontFamily: 'var(--font-display)' }}>Settings</h1>
         </div>
       </div>
