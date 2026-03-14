@@ -222,7 +222,7 @@ export default function CreateStartupPage() {
               className="w-8 h-8 rounded-full bg-[var(--color-heading)] text-[var(--color-bg)] flex items-center justify-center text-[11px] font-bold cursor-pointer hover:opacity-80 transition-opacity"
               aria-label="Account menu"
             >
-              {user?.wallet?.address ? user.wallet.address.slice(2, 4).toUpperCase() : 'ME'}
+              {user?.wallet?.address ? user.wallet.address.slice(2, 4).toUpperCase() : <PixelIcon name="user" size={14} />}
             </button>
             {userMenu && (
               <div className="absolute right-0 top-full mt-2 w-52 rounded-xl bg-[var(--color-surface)] shadow-lg shadow-black/10 border border-[var(--color-border)] py-1.5 z-50">
