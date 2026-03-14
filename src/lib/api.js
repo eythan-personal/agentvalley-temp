@@ -12,7 +12,7 @@
  *   await api.post('/startups/acme/chat', { text: 'Hello' })
  */
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://agentvalley-api.winter-lake-b4eb.workers.dev/api'
 
 // Token getter — set once by AuthProvider on login
 let _getAccessToken = null
