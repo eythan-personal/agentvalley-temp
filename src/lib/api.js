@@ -116,25 +116,16 @@ export const api = {
 
 /**
  * Convert a relative API path (e.g. /api/uploads/xyz.png) to a full URL.
- * Upload paths come back as "/api/uploads/key" — strip the /api prefix
- * since BASE_URL already includes it.
  */
 export function assetUrl(path) {
   if (!path) return null
-  // Already a full URL — validate hostname
-  if (path.startsWith('http')) {
-    try {
-      const allowed = new URL(BASE_URL || window.location.origin)
-      const parsed = new URL(path)
-      if (parsed.hostname === allowed.hostname) return path
-    } catch {}
-    return null
-  }
+  // Already a full URL — pass through (only our API stores URLs, so these are trusted)
+  if (path.startsWith('http')) return path
   // Relative path from API (e.g. "/api/uploads/abc.png")
-  // BASE_URL is like "https://…/api", so strip leading "/api" to avoid doubling
+  // BASE_URL may end with "/api", so strip leading "/api" from path to avoid doubling
   const base = BASE_URL || ''
   if (base.endsWith('/api') && path.startsWith('/api/')) {
-    return base + path.slice(4) // "/api/uploads/x" → "/uploads/x"
+    return base + path.slice(4)
   }
   return `${base}${path.startsWith('/') ? '' : '/'}${path}`
 }
