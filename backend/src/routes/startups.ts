@@ -26,6 +26,7 @@ app.get('/me/startups', async (c) => {
       initials: startups.initials,
       color: startups.color,
       status: startups.status,
+      avatarUrl: startups.avatarUrl,
       createdAt: startups.createdAt,
     })
     .from(startupMembers)
@@ -51,6 +52,7 @@ app.get('/me/startups', async (c) => {
         name: s.name,
         initials: s.initials,
         color: s.color,
+        avatarUrl: s.avatarUrl,
         token: token ? `$${token.symbol}` : '',
         status: s.status,
         agents: agentCount ? 1 : 0, // count workaround for D1
@@ -70,7 +72,7 @@ app.post('/startups', async (c) => {
   const userId = c.get('userId')
   const body = await c.req.json()
 
-  const { name, description, category, color, website, visibility, token: tokenConfig } = body
+  const { name, description, category, color, website, visibility, token: tokenConfig, avatarUrl, bannerUrl } = body
 
   if (!name?.trim() || !description?.trim() || !category) {
     return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Name, description, and category are required' } }, 400)
@@ -103,6 +105,8 @@ app.post('/startups', async (c) => {
     category,
     website: website || null,
     visibility: visibility || 'public',
+    avatarUrl: avatarUrl || null,
+    bannerUrl: bannerUrl || null,
     ownerId: userId,
   })
 
@@ -120,11 +124,79 @@ app.post('/startups', async (c) => {
       id: crypto.randomUUID(),
       startupId,
       symbol: tokenConfig.name.toUpperCase(),
+      iconUrl: tokenConfig.iconUrl || null,
       vesting: tokenConfig.vesting || '',
     })
   }
 
   return c.json({ slug, name: name.trim(), id: startupId }, 201)
+})
+
+// ── PATCH /api/startups/:slug ──
+// Update startup fields
+app.patch('/startups/:slug', async (c) => {
+  const db = c.get('db')
+  const userId = c.get('userId')
+  const { slug } = c.req.param()
+  const body = await c.req.json()
+
+  const [startup] = await db.select().from(startups).where(eq(startups.slug, slug)).limit(1)
+  if (!startup) return c.json({ error: { code: 'NOT_FOUND', message: 'Startup not found' } }, 404)
+  if (startup.ownerId !== userId) return c.json({ error: { code: 'FORBIDDEN', message: 'Only the owner can edit' } }, 403)
+
+  const updates: Record<string, any> = {}
+  if (body.name !== undefined) updates.name = body.name.trim()
+  if (body.description !== undefined) updates.description = body.description.trim()
+  if (body.website !== undefined) updates.website = body.website?.trim() || null
+  if (body.color !== undefined) updates.color = body.color
+  if (body.category !== undefined) updates.category = body.category
+  if (body.visibility !== undefined) updates.visibility = body.visibility
+  if (body.status !== undefined) updates.status = body.status
+  if (body.avatarUrl !== undefined) updates.avatarUrl = body.avatarUrl
+  if (body.bannerUrl !== undefined) updates.bannerUrl = body.bannerUrl
+
+  if (body.name) {
+    updates.initials = body.name.trim().split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await db.update(startups).set(updates).where(eq(startups.id, startup.id))
+  }
+
+  return c.json({ ok: true })
+})
+
+// ── DELETE /api/startups/:slug ──
+// Delete startup and all related data
+app.delete('/startups/:slug', async (c) => {
+  const db = c.get('db')
+  const userId = c.get('userId')
+  const { slug } = c.req.param()
+
+  const [startup] = await db.select().from(startups).where(eq(startups.slug, slug)).limit(1)
+  if (!startup) return c.json({ error: { code: 'NOT_FOUND', message: 'Startup not found' } }, 404)
+  if (startup.ownerId !== userId) return c.json({ error: { code: 'FORBIDDEN', message: 'Only the owner can delete' } }, 403)
+
+  // Delete in dependency order
+  const sid = startup.id
+  await db.delete(chatMessages).where(eq(chatMessages.startupId, sid))
+  await db.delete(feedItems).where(eq(feedItems.startupId, sid))
+
+  const taskIds = (await db.select({ id: tasks.id }).from(tasks).where(eq(tasks.startupId, sid))).map(t => t.id)
+  for (const tid of taskIds) {
+    await db.delete(taskComments).where(eq(taskComments.taskId, tid))
+  }
+  await db.delete(tasks).where(eq(tasks.startupId, sid))
+  await db.delete(objectives).where(eq(objectives.startupId, sid))
+  await db.delete(agents).where(eq(agents.startupId, sid))
+  await db.delete(roles).where(eq(roles.startupId, sid))
+  await db.delete(outputFiles).where(eq(outputFiles.startupId, sid))
+  await db.delete(outputFolders).where(eq(outputFolders.startupId, sid))
+  await db.delete(tokens).where(eq(tokens.startupId, sid))
+  await db.delete(startupMembers).where(eq(startupMembers.startupId, sid))
+  await db.delete(startups).where(eq(startups.id, sid))
+
+  return c.json({ ok: true })
 })
 
 // ── GET /api/startups/:slug/dashboard ──
@@ -298,6 +370,7 @@ app.get('/startups/:slug/dashboard', async (c) => {
 
     tokenData: tokenData[0] ? {
       symbol: `$${tokenData[0].symbol}`,
+      iconUrl: tokenData[0].iconUrl,
       price: tokenData[0].price,
       change24h: tokenData[0].change24h,
       changePositive: tokenData[0].changePositive,
