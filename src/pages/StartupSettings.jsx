@@ -67,10 +67,11 @@ export default function StartupSettings() {
   }, [currentStartup?.name])
 
   useEffect(() => {
+    if (loading || !currentStartup) return
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (prefersReducedMotion) return
     gsap.from('.dash-panel', { opacity: 0, y: 20, stagger: 0.06, duration: 0.35, delay: 0.15, clearProps: 'all' })
-  }, [])
+  }, [loading, currentStartup])
 
   useEffect(() => {
     if (!userMenu) return
