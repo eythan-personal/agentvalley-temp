@@ -5,7 +5,8 @@ import { setTokenGetter } from '../lib/api'
 
 export function PrivyAuthBridge({ children }) {
   const privy = usePrivy()
-  const wasAuthenticated = useRef(privy.authenticated)
+  const readyRef = useRef(false)
+  const wasAuthenticatedAfterReady = useRef(false)
 
   // Wire Privy's token getter into the API client
   useEffect(() => {
@@ -14,18 +15,28 @@ export function PrivyAuthBridge({ children }) {
     }
   }, [privy.authenticated, privy.getAccessToken])
 
-  // Redirect to /dashboard after fresh login (not on page refresh)
+  // Redirect to /dashboard after fresh login
   useEffect(() => {
-    if (!wasAuthenticated.current && privy.authenticated) {
-      // Only redirect if user is on a public page (not already on dashboard/create/onboarding)
+    if (!privy.ready) return
+
+    // First time ready fires — snapshot the initial auth state
+    if (!readyRef.current) {
+      readyRef.current = true
+      wasAuthenticatedAfterReady.current = privy.authenticated
+      return
+    }
+
+    // Detect transition from not-authenticated to authenticated (actual login)
+    if (!wasAuthenticatedAfterReady.current && privy.authenticated) {
       const path = window.location.pathname
       const isPublicPage = path === '/' || path === '/startups' || path === '/jobs' || path === '/leaderboard'
       if (isPublicPage) {
         window.location.href = '/dashboard'
       }
     }
-    wasAuthenticated.current = privy.authenticated
-  }, [privy.authenticated])
+
+    wasAuthenticatedAfterReady.current = privy.authenticated
+  }, [privy.ready, privy.authenticated])
 
   return (
     <AuthFallbackContext.Provider value={privy}>
