@@ -3,6 +3,7 @@ import * as schema from './db/schema'
 
 export type Env = {
   DB: D1Database
+  UPLOADS: R2Bucket
   PRIVY_APP_ID: string
   PRIVY_APP_SECRET: string
   FRONTEND_URL: string

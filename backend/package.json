@@ -11,13 +11,15 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@privy-io/server-auth": "^1.32.5",
+    "drizzle-orm": "^0.44.0",
     "hono": "^4.7.0",
-    "drizzle-orm": "^0.44.0"
+    "jose": "^6.2.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250214.0",
     "drizzle-kit": "^0.30.0",
-    "wrangler": "^4.0.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
   }
 }

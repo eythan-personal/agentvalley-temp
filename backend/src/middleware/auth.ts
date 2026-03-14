@@ -1,13 +1,14 @@
 import { Context, Next } from 'hono'
 import { eq } from 'drizzle-orm'
+import { PrivyClient } from '@privy-io/server-auth'
 import { users } from '../db/schema'
 import type { Env, Variables } from '../types'
 
 /**
  * Privy JWT verification middleware.
  *
- * Verifies the JWT from the Authorization header against Privy's API,
- * extracts the wallet address, and ensures the user exists in DB.
+ * Uses @privy-io/server-auth to verify the access token,
+ * then fetches the user's linked accounts to get their wallet address.
  *
  * Sets c.var.userId and c.var.walletAddress for downstream handlers.
  */
@@ -28,54 +29,51 @@ export async function authMiddleware(
     return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Auth not configured' } }, 500)
   }
 
-  // Verify token with Privy API
-  let privyUser: any
+  const privy = new PrivyClient(appId, appSecret)
+
+  // 1. Verify the access token
+  let verifiedClaims: any
   try {
-    const res = await fetch('https://auth.privy.io/api/v1/token/verify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'privy-app-id': appId,
-        Authorization: `Basic ${btoa(`${appId}:${appSecret}`)}`,
-      },
-      body: JSON.stringify({ token }),
-    })
+    verifiedClaims = await privy.verifyAuthToken(token)
+  } catch (err) {
+    return c.json({ error: { code: 'UNAUTHORIZED', message: 'Invalid token' } }, 401)
+  }
 
-    if (!res.ok) {
-      return c.json({ error: { code: 'UNAUTHORIZED', message: 'Invalid token' } }, 401)
-    }
+  const privyDid = verifiedClaims.userId
+  if (!privyDid) {
+    return c.json({ error: { code: 'UNAUTHORIZED', message: 'Invalid token payload' } }, 401)
+  }
 
-    privyUser = await res.json()
+  // 2. Get user's wallet address from Privy
+  let walletAddress: string | null = null
+  try {
+    const privyUser = await privy.getUser(privyDid)
+    const wallet = privyUser?.wallet
+      || privyUser?.linkedAccounts?.find((a: any) => a.type === 'wallet')
+    walletAddress = (wallet as any)?.address?.toLowerCase() || null
   } catch {
-    return c.json({ error: { code: 'UNAUTHORIZED', message: 'Token verification failed' } }, 401)
+    // Non-fatal — wallet may not exist for email-only users
   }
 
-  // Extract wallet address from Privy user
-  const wallet = privyUser?.user?.wallet?.address
-    || privyUser?.user?.linked_accounts?.find((a: any) => a.type === 'wallet')?.address
-
-  if (!wallet) {
-    return c.json({ error: { code: 'UNAUTHORIZED', message: 'No wallet linked' } }, 401)
-  }
-
-  const walletAddress = wallet.toLowerCase()
+  // Use Privy DID as fallback identifier if no wallet
+  const userIdentifier = walletAddress || privyDid.replace('did:privy:', '')
   const db = c.get('db')
 
   // Upsert user — create on first login
   let [user] = await db
     .select()
     .from(users)
-    .where(eq(users.walletAddress, walletAddress))
+    .where(eq(users.walletAddress, userIdentifier))
     .limit(1)
 
   if (!user) {
     const id = crypto.randomUUID()
-    await db.insert(users).values({ id, walletAddress })
-    user = { id, walletAddress, createdAt: new Date().toISOString() }
+    await db.insert(users).values({ id, walletAddress: userIdentifier })
+    user = { id, walletAddress: userIdentifier, createdAt: new Date().toISOString() }
   }
 
   c.set('userId', user.id)
-  c.set('walletAddress', walletAddress)
+  c.set('walletAddress', walletAddress || '')
 
   await next()
 }

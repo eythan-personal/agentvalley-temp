@@ -23,10 +23,15 @@ app.get('/me/startups', async (c) => {
       id: startups.id,
       slug: startups.slug,
       name: startups.name,
+      description: startups.description,
       initials: startups.initials,
       color: startups.color,
+      category: startups.category,
+      website: startups.website,
+      visibility: startups.visibility,
       status: startups.status,
       avatarUrl: startups.avatarUrl,
+      bannerUrl: startups.bannerUrl,
       createdAt: startups.createdAt,
     })
     .from(startupMembers)
@@ -50,9 +55,14 @@ app.get('/me/startups', async (c) => {
       return {
         slug: s.slug,
         name: s.name,
+        description: s.description,
         initials: s.initials,
         color: s.color,
+        category: s.category,
+        website: s.website,
+        visibility: s.visibility,
         avatarUrl: s.avatarUrl,
+        bannerUrl: s.bannerUrl,
         token: token ? `$${token.symbol}` : '',
         status: s.status,
         agents: agentCount ? 1 : 0, // count workaround for D1

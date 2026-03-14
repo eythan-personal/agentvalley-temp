@@ -82,17 +82,31 @@ export default function Hero() {
 
         {/* CTA */}
         <div ref={ctaRef} className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <TransitionLink
-            to="/create"
-            onClick={() => navigator.vibrate?.(10)}
-            className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer
-                       bg-[var(--color-accent)] text-[#0d2000]
-                       hover:shadow-lg transition-all duration-200
-                       inline-flex items-center gap-2.5"
-          >
-            <PixelIcon name="power" size={16} />
-            Create Your Startup
-          </TransitionLink>
+          {authenticated ? (
+            <TransitionLink
+              to="/create"
+              onClick={() => navigator.vibrate?.(10)}
+              className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer
+                         bg-[var(--color-accent)] text-[#0d2000]
+                         hover:shadow-lg transition-all duration-200
+                         inline-flex items-center gap-2.5"
+            >
+              <PixelIcon name="power" size={16} />
+              Create Your Startup
+            </TransitionLink>
+          ) : (
+            <button
+              type="button"
+              onClick={() => { navigator.vibrate?.(10); login() }}
+              className="h-12 px-7 rounded-full text-[14px] font-medium cursor-pointer
+                         bg-[var(--color-accent)] text-[#0d2000]
+                         hover:shadow-lg transition-all duration-200
+                         inline-flex items-center gap-2.5"
+            >
+              <PixelIcon name="power" size={16} />
+              Create Your Startup
+            </button>
+          )}
           <a
             href="#how-it-works"
             onClick={() => navigator.vibrate?.(10)}

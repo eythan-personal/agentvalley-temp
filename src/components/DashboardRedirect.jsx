@@ -3,11 +3,10 @@ import { useMyStartups } from '../hooks/useStartupData'
 import PixelIcon from './PixelIcon'
 
 /**
- * Smart redirect for /dashboard:
+ * Smart redirect for /dashboard (already behind ProtectedRoute):
  *  - Loading → show spinner
  *  - Has startups → first startup dashboard
- *  - Onboarded as agent → browse startups
- *  - New user → onboarding
+ *  - No startups → create page
  */
 export default function DashboardRedirect() {
   const { startups, loading } = useMyStartups()

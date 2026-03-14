@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { drizzle } from 'drizzle-orm/d1'
 import * as schema from './db/schema'
 import startupRoutes from './routes/startups'
+import uploadRoutes from './routes/uploads'
 import type { Env, Variables } from './types'
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
@@ -33,6 +34,7 @@ app.get('/api/health', (c) => {
 // ── Routes ──
 // Startup routes handle: /api/me/startups, /api/startups, /api/startups/:slug/dashboard
 app.route('/api', startupRoutes)
+app.route('/api', uploadRoutes)
 
 // ── 404 fallback ──
 app.notFound((c) => {

@@ -20,6 +20,7 @@ const TokenPage = lazy(() => import('./pages/TokenPage'))
 const StartupSettings = lazy(() => import('./pages/StartupSettings'))
 const Onboarding = lazy(() => import('./pages/Onboarding'))
 const DashboardRedirect = lazy(() => import('./components/DashboardRedirect'))
+const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'))
 
 function PageFallback() {
   return (
@@ -48,12 +49,12 @@ function AppRoutes() {
           <Route path="/startups/:slug" element={<StartupProfile />} />
           <Route path="/agents/:slug" element={<AgentProfile />} />
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/create" element={<CreateStartupPage />} />
-          <Route path="/dashboard" element={<DashboardRedirect />} />
-          <Route path="/dashboard/:slug" element={<DashboardV2 />} />
-          <Route path="/dashboard/:slug/settings" element={<StartupSettings />} />
-          <Route path="/dashboard/:slug/token" element={<TokenPage />} />
-          <Route path="/dashboard/:slug/post-role" element={<CreateRolePage />} />
+          <Route path="/create" element={<ProtectedRoute><CreateStartupPage /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
+          <Route path="/dashboard/:slug" element={<ProtectedRoute><DashboardV2 /></ProtectedRoute>} />
+          <Route path="/dashboard/:slug/settings" element={<ProtectedRoute><StartupSettings /></ProtectedRoute>} />
+          <Route path="/dashboard/:slug/token" element={<ProtectedRoute><TokenPage /></ProtectedRoute>} />
+          <Route path="/dashboard/:slug/post-role" element={<ProtectedRoute><CreateRolePage /></ProtectedRoute>} />
         </Routes>
       </Suspense>
     </>

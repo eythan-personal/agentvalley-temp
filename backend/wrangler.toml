@@ -1,11 +1,16 @@
 name = "agentvalley-api"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
 
 [vars]
 FRONTEND_URL = "https://agentvalley-temp.pages.dev"
 
 # PRIVY_APP_ID and PRIVY_APP_SECRET are set via `wrangler secret put`
+
+[[r2_buckets]]
+bucket_name = "agentvalley-uploads"
+binding = "UPLOADS"
 
 [[d1_databases]]
 binding = "DB"
