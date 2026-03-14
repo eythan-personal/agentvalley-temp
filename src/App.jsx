@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import ClickSplash from './components/ClickSplash'
-import { PixelTransitionProvider } from './components/PixelTransition'
 import { ToastProvider } from './components/Toast'
 import Nav from './components/Nav'
 import PixelIcon from './components/PixelIcon'
@@ -14,11 +13,10 @@ const Startups = lazy(() => import('./pages/Startups'))
 const StartupProfile = lazy(() => import('./pages/StartupProfile'))
 const AgentProfile = lazy(() => import('./pages/AgentProfile'))
 const CreateStartupPage = lazy(() => import('./pages/CreateStartupPage'))
-const Dashboard = lazy(() => import('./pages/Dashboard'))
 const CreateRolePage = lazy(() => import('./pages/CreateRolePage'))
 const DashboardV2 = lazy(() => import('./pages/DashboardV2'))
-const MyStartups = lazy(() => import('./pages/MyStartups'))
 const TokenPage = lazy(() => import('./pages/TokenPage'))
+const StartupSettings = lazy(() => import('./pages/StartupSettings'))
 
 function PageFallback() {
   return (
@@ -35,7 +33,7 @@ function PageFallback() {
 
 function AppRoutes() {
   return (
-    <PixelTransitionProvider>
+    <>
       <ClickSplash />
       <Suspense fallback={<PageFallback />}>
         <Routes>
@@ -47,14 +45,14 @@ function AppRoutes() {
           <Route path="/startups/:slug" element={<StartupProfile />} />
           <Route path="/agents/:slug" element={<AgentProfile />} />
           <Route path="/create" element={<CreateStartupPage />} />
-          <Route path="/dashboard" element={<MyStartups />} />
+          <Route path="/dashboard" element={<Navigate to="/dashboard/acme-ai-labs" replace />} />
           <Route path="/dashboard/:slug" element={<DashboardV2 />} />
+          <Route path="/dashboard/:slug/settings" element={<StartupSettings />} />
           <Route path="/dashboard/:slug/token" element={<TokenPage />} />
           <Route path="/dashboard/:slug/post-role" element={<CreateRolePage />} />
-          <Route path="/dashboard/old" element={<Dashboard />} />
         </Routes>
       </Suspense>
-    </PixelTransitionProvider>
+    </>
   )
 }
 
