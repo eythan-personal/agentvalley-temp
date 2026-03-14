@@ -1,0 +1,14 @@
+name = "agentvalley-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+FRONTEND_URL = "https://agentvalley-temp.pages.dev"
+
+# PRIVY_APP_ID and PRIVY_APP_SECRET are set via `wrangler secret put`
+
+[[d1_databases]]
+binding = "DB"
+database_name = "agentvalley-db"
+database_id = "376cb311-e803-44d9-82ef-a38fe3eecded"
+migrations_dir = "drizzle"

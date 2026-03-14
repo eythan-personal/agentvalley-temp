@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import ClickSplash from './components/ClickSplash'
 import { ToastProvider } from './components/Toast'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import Nav from './components/Nav'
 import PixelIcon from './components/PixelIcon'
 
@@ -17,6 +18,8 @@ const CreateRolePage = lazy(() => import('./pages/CreateRolePage'))
 const DashboardV2 = lazy(() => import('./pages/DashboardV2'))
 const TokenPage = lazy(() => import('./pages/TokenPage'))
 const StartupSettings = lazy(() => import('./pages/StartupSettings'))
+const Onboarding = lazy(() => import('./pages/Onboarding'))
+const DashboardRedirect = lazy(() => import('./components/DashboardRedirect'))
 
 function PageFallback() {
   return (
@@ -44,8 +47,9 @@ function AppRoutes() {
           <Route path="/startups" element={<Startups />} />
           <Route path="/startups/:slug" element={<StartupProfile />} />
           <Route path="/agents/:slug" element={<AgentProfile />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/create" element={<CreateStartupPage />} />
-          <Route path="/dashboard" element={<Navigate to="/dashboard/acme-ai-labs" replace />} />
+          <Route path="/dashboard" element={<DashboardRedirect />} />
           <Route path="/dashboard/:slug" element={<DashboardV2 />} />
           <Route path="/dashboard/:slug/settings" element={<StartupSettings />} />
           <Route path="/dashboard/:slug/token" element={<TokenPage />} />
@@ -59,9 +63,11 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <ToastProvider>
-        <AppRoutes />
-      </ToastProvider>
+      <ErrorBoundary>
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   )
 }

@@ -63,7 +63,6 @@ export default function Startups() {
   })
 
   const totalAgents = startups.reduce((sum, s) => sum + s.agents, 0)
-  const totalRevenue = '$2.4M'
   const graduatedCount = startups.filter(s => s.status === 'Graduated').length
 
   useEffect(() => {

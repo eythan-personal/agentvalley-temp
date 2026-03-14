@@ -51,12 +51,44 @@ export default function CreateStartupPage() {
     banner: null,
   })
 
+  const [touched, setTouched] = useState({})
   const touchStartX = useRef(0)
   const avatarInputRef = useRef(null)
   const bannerInputRef = useRef(null)
   const tokenIconInputRef = useRef(null)
 
+  const markTouched = (field) => setTouched((prev) => ({ ...prev, [field]: true }))
   const update = (field, value) => setForm((prev) => ({ ...prev, [field]: value }))
+
+  // Field-level validation
+  const fieldError = (field) => {
+    if (!touched[field]) return null
+    switch (field) {
+      case 'name':
+        if (!form.name.trim()) return 'Startup name is required'
+        if (form.name.trim().length < 2) return 'Name must be at least 2 characters'
+        return null
+      case 'description':
+        if (!form.description.trim()) return 'Description is required'
+        if (form.description.trim().length < 10) return 'Give a bit more detail (10+ chars)'
+        return null
+      case 'category':
+        if (!form.category) return 'Pick a category'
+        return null
+      case 'tokenName':
+        if (!form.tokenName.trim()) return 'Token ticker is required'
+        if (!/^[A-Z0-9]{2,8}$/.test(form.tokenName.trim())) return '2–8 uppercase letters/numbers'
+        return null
+      case 'vesting':
+        if (!form.vesting) return 'Select a vesting schedule'
+        return null
+      case 'website':
+        if (form.website && !/^(https?:\/\/)?[\w.-]+\.\w{2,}/.test(form.website.trim())) return 'Enter a valid URL'
+        return null
+      default:
+        return null
+    }
+  }
 
   const handleFileUpload = (field) => (e) => {
     const file = e.target.files?.[0]
@@ -97,7 +129,12 @@ export default function CreateStartupPage() {
     })
   }
 
-  const next = () => canContinue() && step < 2 && animateStep('next')
+  const next = () => {
+    // Mark required fields as touched so errors appear
+    if (step === 0) setTouched(prev => ({ ...prev, name: true, description: true, category: true, website: true }))
+    if (step === 1 && form.hasToken) setTouched(prev => ({ ...prev, tokenName: true, vesting: true }))
+    if (canContinue() && step < 2) animateStep('next')
+  }
   const back = () => step > 0 && animateStep('back')
 
   useEffect(() => {
@@ -319,11 +356,16 @@ export default function CreateStartupPage() {
                     placeholder="e.g. Acme Industries"
                     value={form.name}
                     onChange={(e) => update('name', e.target.value)}
+                    onBlur={() => markTouched('name')}
                     autoFocus
                     aria-required="true"
-                    className="w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-medium
-                               placeholder:text-[#b0adaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all"
+                    aria-invalid={!!fieldError('name')}
+                    aria-describedby={fieldError('name') ? 'name-error' : undefined}
+                    className={`w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-medium
+                               placeholder:text-[#b0adaa] outline-none focus:ring-2 transition-all ${
+                               fieldError('name') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
                   />
+                  {fieldError('name') && <p id="name-error" className="text-[11px] text-red-400 mt-1.5">{fieldError('name')}</p>}
                 </div>
 
                 <div className="mb-5">
@@ -335,11 +377,16 @@ export default function CreateStartupPage() {
                     placeholder="Describe your startup in a sentence or two. Keep it snappy — the agents are listening."
                     value={form.description}
                     onChange={(e) => update('description', e.target.value)}
+                    onBlur={() => markTouched('description')}
                     rows={3}
                     aria-required="true"
-                    className="w-full px-4 py-3 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                               placeholder:text-[#b0adaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all resize-none"
+                    aria-invalid={!!fieldError('description')}
+                    aria-describedby={fieldError('description') ? 'desc-error' : undefined}
+                    className={`w-full px-4 py-3 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
+                               placeholder:text-[#b0adaa] outline-none focus:ring-2 transition-all resize-none ${
+                               fieldError('description') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
                   />
+                  {fieldError('description') && <p id="desc-error" className="text-[11px] text-red-400 mt-1.5">{fieldError('description')}</p>}
                 </div>
 
                 <div className="mb-5">
@@ -356,10 +403,15 @@ export default function CreateStartupPage() {
                       placeholder="yourstartup.com"
                       value={form.website}
                       onChange={(e) => update('website', e.target.value)}
-                      className="w-full h-11 pl-9 pr-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                                 placeholder:text-[#b0adaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all"
+                      onBlur={() => markTouched('website')}
+                      aria-invalid={!!fieldError('website')}
+                      aria-describedby={fieldError('website') ? 'website-error' : undefined}
+                      className={`w-full h-11 pl-9 pr-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
+                                 placeholder:text-[#b0adaa] outline-none focus:ring-2 transition-all ${
+                                 fieldError('website') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
                     />
                   </div>
+                  {fieldError('website') && <p id="website-error" className="text-[11px] text-red-400 mt-1.5">{fieldError('website')}</p>}
                 </div>
 
                 <div>
@@ -369,10 +421,13 @@ export default function CreateStartupPage() {
                   <select
                     id="startup-category"
                     value={form.category}
-                    onChange={(e) => update('category', e.target.value)}
+                    onChange={(e) => { update('category', e.target.value); markTouched('category') }}
+                    onBlur={() => markTouched('category')}
                     aria-required="true"
-                    className="w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                               outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all appearance-none cursor-pointer"
+                    aria-invalid={!!fieldError('category')}
+                    className={`w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
+                               outline-none focus:ring-2 transition-all appearance-none cursor-pointer ${
+                               fieldError('category') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
                     style={{ backgroundImage: selectArrow, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
                   >
                     <option value="" disabled>Select a category</option>
@@ -380,6 +435,7 @@ export default function CreateStartupPage() {
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
+                  {fieldError('category') && <p className="text-[11px] text-red-400 mt-1.5">{fieldError('category')}</p>}
                 </div>
               </div>
             )}
@@ -448,16 +504,22 @@ export default function CreateStartupPage() {
                             type="text"
                             id="token-name"
                             placeholder="ACME"
+                            maxLength={8}
                             value={form.tokenName}
-                            onChange={(e) => update('tokenName', e.target.value.toUpperCase())}
+                            onChange={(e) => update('tokenName', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                            onBlur={() => markTouched('tokenName')}
                             autoFocus
                             aria-required="true"
-                            className="w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-mono font-medium
-                                       placeholder:text-[#b0adaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all uppercase"
+                            aria-invalid={!!fieldError('tokenName')}
+                            aria-describedby={fieldError('tokenName') ? 'token-error' : undefined}
+                            className={`w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-mono font-medium
+                                       placeholder:text-[#b0adaa] outline-none focus:ring-2 transition-all uppercase ${
+                                       fieldError('tokenName') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
                           />
                         </div>
                       </div>
-                      <span className="text-[11px] text-[var(--color-muted)] mt-1.5 block">Click the icon to upload a custom token image</span>
+                      {fieldError('tokenName') && <p id="token-error" className="text-[11px] text-red-400 mt-1.5">{fieldError('tokenName')}</p>}
+                      {!fieldError('tokenName') && <span className="text-[11px] text-[var(--color-muted)] mt-1.5 block">Click the icon to upload a custom token image</span>}
                     </div>
 
                     <div className="mb-5">
@@ -467,10 +529,13 @@ export default function CreateStartupPage() {
                       <select
                         id="vesting-schedule"
                         value={form.vesting}
-                        onChange={(e) => update('vesting', e.target.value)}
+                        onChange={(e) => { update('vesting', e.target.value); markTouched('vesting') }}
+                        onBlur={() => markTouched('vesting')}
                         aria-required="true"
-                        className="w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                                   outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all appearance-none cursor-pointer"
+                        aria-invalid={!!fieldError('vesting')}
+                        className={`w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
+                                   outline-none focus:ring-2 transition-all appearance-none cursor-pointer ${
+                                   fieldError('vesting') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
                         style={{ backgroundImage: selectArrow, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
                       >
                         <option value="" disabled>How patient are your token holders?</option>
@@ -478,6 +543,7 @@ export default function CreateStartupPage() {
                           <option key={v} value={v}>{v}</option>
                         ))}
                       </select>
+                      {fieldError('vesting') && <p className="text-[11px] text-red-400 mt-1.5">{fieldError('vesting')}</p>}
                     </div>
 
                     {/* Info card */}
@@ -625,6 +691,8 @@ export default function CreateStartupPage() {
                 disabled={!canContinue()}
                 onClick={() => {
                   navigator.vibrate?.(15)
+                  // Mark all fields touched to surface any remaining errors
+                  setTouched({ name: true, description: true, category: true, website: true, tokenName: true, vesting: true })
                   if (!canContinue()) return
                   const slug = form.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
                   navigate(`/dashboard/${slug || 'my-startup'}`)

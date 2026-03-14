@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useRef } from 'react'
 import { Group } from '@visx/group'
 import { AreaStack, AreaClosed, LinePath, Bar, Line } from '@visx/shape'
-import { scaleLinear, scalePoint, scaleBand } from '@visx/scale'
+import { scaleLinear, scalePoint } from '@visx/scale'
 import { curveNatural, curveMonotoneX } from '@visx/curve'
 import { GridRows } from '@visx/grid'
 import { useTooltip } from '@visx/tooltip'
@@ -986,8 +986,8 @@ function RevenueActivityInner({ revenueData, activityData, labels, width, height
             <stop offset="100%" stopColor={`rgb(${accentRgb})`} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="revBarGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={`rgb(${accentRgb})`} stopOpacity={0.9} />
-            <stop offset="100%" stopColor={`rgb(${accentRgb})`} stopOpacity={0.3} />
+            <stop offset="0%" stopColor="rgb(180,160,140)" stopOpacity={0.7} />
+            <stop offset="100%" stopColor="rgb(180,160,140)" stopOpacity={0.2} />
           </linearGradient>
           <filter id="lineGlow">
             <feGaussianBlur stdDeviation="3" result="blur" />

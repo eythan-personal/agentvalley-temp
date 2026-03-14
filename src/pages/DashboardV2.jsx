@@ -8,6 +8,8 @@ import { useToast } from '../components/Toast'
 import { useAuth } from '../hooks/useAuth'
 import { useStartupData } from '../hooks/useStartupData'
 import { TokenChart, HoldersBar, RevenueActivityChart } from '../components/DashCharts'
+import { ErrorBoundary, SectionError } from '../components/ErrorBoundary'
+import { DashboardSkeleton } from '../components/Skeletons'
 import { myStartups } from '../data/dashboard'
 
 // Generate a color from agent name (deterministic hash → hue)
@@ -51,7 +53,7 @@ const statusOrder = { 'in-progress': 0, 'queued': 1, 'completed': 2 }
 export default function DashboardV2() {
   const { slug } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { data: startupData, startup: currentStartup } = useStartupData(slug)
+  const { data: startupData, startup: currentStartup, loading, error, refetch } = useStartupData(slug)
 
   // ── Destructure startup-specific data from the hook ──
   const seedObjectives = useMemo(() => startupData?.objectives ?? [], [startupData])
@@ -472,12 +474,21 @@ export default function DashboardV2() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [objDropdown])
 
-  // Animate nav pill on tab switch
+  // Animate nav pill on tab switch or when nav re-mounts after task detail closes
   useEffect(() => {
     if (!navPillRef.current) return
     const tabIdx = WORKSHOP_TABS.findIndex(t => t.id === workshopTab)
     if (tabIdx < 0) return
     // Each button is 44px (w-11) + 4px gap
+    const offset = tabIdx * 48
+    if (selectedTask) return // nav is hidden, skip
+    gsap.set(navPillRef.current, { x: offset })
+  }, [selectedTask])
+
+  useEffect(() => {
+    if (!navPillRef.current) return
+    const tabIdx = WORKSHOP_TABS.findIndex(t => t.id === workshopTab)
+    if (tabIdx < 0) return
     const offset = tabIdx * 48
     gsap.to(navPillRef.current, { x: offset, duration: 0.25, ease: 'power2.out' })
   }, [workshopTab])
@@ -894,7 +905,25 @@ export default function DashboardV2() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [selectedTask, prevTask, nextTask])
 
+  // ── Loading & error states ──
+  if (loading && !startupData) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg)] p-6 pt-20 max-w-6xl mx-auto">
+        <DashboardSkeleton />
+      </div>
+    )
+  }
+
+  if (error && !startupData) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
+        <SectionError message={error.message || 'Failed to load startup data'} onRetry={refetch} />
+      </div>
+    )
+  }
+
   return (
+    <ErrorBoundary>
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-heading)]">
       {/* Nav hidden — dashboard has its own top bar */}
 
@@ -2204,7 +2233,7 @@ export default function DashboardV2() {
           </div>
 
           {/* Full-width chart — breaks out of max-w and main padding */}
-          <div className="w-[100vw] relative left-1/2 -translate-x-1/2 mt-2 mb-6">
+          <div className="w-full mt-2 mb-6">
             {dashTab === 'overview' && (
               <RevenueActivityChart revenueData={monthlyRevenue} activityData={dailyActivity} labels={monthLabels} height={280} />
             )}
@@ -2790,5 +2819,6 @@ export default function DashboardV2() {
         })}
       </nav>}
     </div>
+    </ErrorBoundary>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
-import { useAuth } from '../hooks/useAuth'
+
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import PixelIcon from '../components/PixelIcon'
@@ -13,7 +13,7 @@ const filters = ['All', 'Urgent', 'Medium', 'Open']
 
 export default function Jobs() {
   const pageRef = useRef(null)
-  const { login, authenticated } = useAuth()
+
   const [activeFilter, setActiveFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)

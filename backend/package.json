@@ -1,0 +1,23 @@
+{
+  "name": "agentvalley-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply agentvalley-db --local",
+    "db:migrate:prod": "wrangler d1 migrations apply agentvalley-db --remote",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "hono": "^4.7.0",
+    "drizzle-orm": "^0.44.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250214.0",
+    "drizzle-kit": "^0.30.0",
+    "wrangler": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}
