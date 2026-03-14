@@ -5,7 +5,7 @@ import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
 import TokenIcon from '../components/TokenIcon'
 import { useAuth } from '../hooks/useAuth'
-import { tokenData, myStartups } from '../data/dashboard'
+import { useTokenData } from '../hooks/useStartupData'
 
 // ── SVG Chart (full-width, no dependencies) ──
 function PriceChart({ data, width, height, color, activeRange }) {
@@ -220,15 +220,16 @@ export default function TokenPage() {
   const userMenuRef = useRef(null)
   const [tokenDisplayPrice, setTokenDisplayPrice] = useState(0)
 
-  const currentStartup = myStartups.find(s => s.slug === slug) || myStartups[0]
+  const { tokenData, startup: currentStartup } = useTokenData(slug)
 
   useEffect(() => {
-    document.title = `${tokenData.symbol} Token — AgentValley`
-  }, [])
+    if (tokenData?.symbol) document.title = `${tokenData.symbol} Token — AgentValley`
+  }, [tokenData?.symbol])
 
-  // Token price counter animation
+  // Token price counter animation (re-triggers on startup switch)
   useEffect(() => {
-    const target = tokenData.price
+    const target = tokenData?.price
+    if (!target) return
     const dur = 800
     const start = performance.now()
     const tick = (now) => {
@@ -239,7 +240,7 @@ export default function TokenPage() {
       if (t < 1) requestAnimationFrame(tick)
     }
     requestAnimationFrame(tick)
-  }, [])
+  }, [slug, tokenData?.price])
 
   // Animate panels on mount
   useEffect(() => {
@@ -258,6 +259,7 @@ export default function TokenPage() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [userMenu])
 
+  if (!tokenData) return null
   const chartData = activeRange === '24h' ? tokenData.sparkline : tokenData.priceHistory7d
   const ranges = ['24h', '7d']
 
@@ -325,7 +327,7 @@ export default function TokenPage() {
       </div>
 
       {/* ── Hero: Token price + meta ── */}
-      <div className="px-4 sm:px-6 pt-4 pb-2">
+      <div className="px-4 sm:px-6 pt-6 pb-2">
         <div className="max-w-[540px] mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <TokenIcon token={tokenData.symbol} color={currentStartup.color} size={36} />
@@ -382,39 +384,39 @@ export default function TokenPage() {
       <div className="px-4 sm:px-6 pb-24">
         <div className="max-w-[540px] mx-auto">
 
-          {/* Stats grid */}
-          <div className="token-panel grid grid-cols-2 gap-3 mb-4">
-            <div className="rounded-2xl bg-[var(--color-surface)] p-4 shadow-md shadow-black/4 border border-[var(--color-border)]">
-              <div className="text-[11px] text-[var(--color-muted)] mb-1">Market Cap</div>
-              <div className="text-[18px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{tokenData.mcap}</div>
-            </div>
-            <div className="rounded-2xl bg-[var(--color-surface)] p-4 shadow-md shadow-black/4 border border-[var(--color-border)]">
-              <div className="text-[11px] text-[var(--color-muted)] mb-1">Volume (24h)</div>
-              <div className="text-[18px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{tokenData.volume}</div>
-            </div>
-            <div className="rounded-2xl bg-[var(--color-surface)] p-4 shadow-md shadow-black/4 border border-[var(--color-border)]">
-              <div className="text-[11px] text-[var(--color-muted)] mb-1">Holders</div>
-              <div className="text-[18px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{tokenData.holders}</div>
-            </div>
-            <div className="rounded-2xl bg-[var(--color-surface)] p-4 shadow-md shadow-black/4 border border-[var(--color-border)]">
-              <div className="text-[11px] text-[var(--color-muted)] mb-1">Liquidity</div>
-              <div className="text-[18px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{tokenData.liquidity}</div>
-            </div>
-          </div>
-
-          {/* Supply info */}
+          {/* Stats + Supply — single card */}
           <div className="token-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
-            <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Supply</span>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="rounded-xl bg-[var(--color-input)] px-3 py-2.5">
-                <div className="text-[11px] text-[var(--color-muted)] mb-0.5">Total Supply</div>
-                <div className="text-[14px] font-semibold text-[var(--color-heading)]">{tokenData.supply}</div>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4 mb-5">
+              <div>
+                <div className="text-[11px] text-[var(--color-muted)] mb-0.5">Market Cap</div>
+                <div className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{tokenData.mcap}</div>
               </div>
-              <div className="rounded-xl bg-[var(--color-input)] px-3 py-2.5">
-                <div className="text-[11px] text-[var(--color-muted)] mb-0.5">Circulating</div>
-                <div className="text-[14px] font-semibold text-[var(--color-heading)]">{tokenData.circulatingSupply}</div>
+              <div>
+                <div className="text-[11px] text-[var(--color-muted)] mb-0.5">Volume (24h)</div>
+                <div className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{tokenData.volume}</div>
+              </div>
+              <div>
+                <div className="text-[11px] text-[var(--color-muted)] mb-0.5">Holders</div>
+                <div className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{tokenData.holders}</div>
+              </div>
+              <div>
+                <div className="text-[11px] text-[var(--color-muted)] mb-0.5">Liquidity</div>
+                <div className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{tokenData.liquidity}</div>
               </div>
             </div>
+
+            <div className="border-t border-[var(--color-border)] pt-5">
+              <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Supply</span>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="rounded-xl bg-[var(--color-input)] px-3 py-2.5">
+                  <div className="text-[11px] text-[var(--color-muted)] mb-0.5">Total Supply</div>
+                  <div className="text-[14px] font-semibold text-[var(--color-heading)]">{tokenData.supply}</div>
+                </div>
+                <div className="rounded-xl bg-[var(--color-input)] px-3 py-2.5">
+                  <div className="text-[11px] text-[var(--color-muted)] mb-0.5">Circulating</div>
+                  <div className="text-[14px] font-semibold text-[var(--color-heading)]">{tokenData.circulatingSupply}</div>
+                </div>
+              </div>
             {/* Circulating supply bar */}
             <div className="mb-2">
               <div className="flex items-center justify-between mb-1.5">
@@ -424,20 +426,23 @@ export default function TokenPage() {
               <div className="w-full h-2 rounded-full bg-[var(--color-bg-alt)] overflow-hidden">
                 <div className="h-full rounded-full bg-[var(--color-accent)] progress-shimmer" style={{ width: '32%' }} />
               </div>
-            </div>
-          </div>
+              </div>
 
-          {/* Price extremes */}
-          <div className="token-panel grid grid-cols-2 gap-3 mb-4">
-            <div className="rounded-2xl bg-[var(--color-surface)] p-4 shadow-md shadow-black/4 border border-[var(--color-border)]">
-              <div className="text-[11px] text-[var(--color-muted)] mb-1">All-Time High</div>
-              <div className="text-[16px] font-bold text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-display)' }}>${tokenData.ath}</div>
-              <div className="text-[11px] text-[var(--color-muted)] mt-0.5">{tokenData.athDate}</div>
-            </div>
-            <div className="rounded-2xl bg-[var(--color-surface)] p-4 shadow-md shadow-black/4 border border-[var(--color-border)]">
-              <div className="text-[11px] text-[var(--color-muted)] mb-1">All-Time Low</div>
-              <div className="text-[16px] font-bold text-red-500" style={{ fontFamily: 'var(--font-display)' }}>${tokenData.atl}</div>
-              <div className="text-[11px] text-[var(--color-muted)] mt-0.5">{tokenData.atlDate}</div>
+              <div className="border-t border-[var(--color-border)] pt-5 mt-5">
+                <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Price Range</span>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-[var(--color-input)] px-3 py-2.5">
+                    <div className="text-[11px] text-[var(--color-muted)] mb-0.5">All-Time High</div>
+                    <div className="text-[14px] font-bold text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-display)' }}>${tokenData.ath}</div>
+                    <div className="text-[11px] text-[var(--color-muted)] mt-0.5">{tokenData.athDate}</div>
+                  </div>
+                  <div className="rounded-xl bg-[var(--color-input)] px-3 py-2.5">
+                    <div className="text-[11px] text-[var(--color-muted)] mb-0.5">All-Time Low</div>
+                    <div className="text-[14px] font-bold text-red-500" style={{ fontFamily: 'var(--font-display)' }}>${tokenData.atl}</div>
+                    <div className="text-[11px] text-[var(--color-muted)] mt-0.5">{tokenData.atlDate}</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

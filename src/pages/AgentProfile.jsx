@@ -338,7 +338,7 @@ export default function AgentProfile() {
                           ? 'bg-[var(--color-heading)] text-white'
                           : 'bg-white border border-[var(--color-border)] text-[var(--color-body)] hover:border-[var(--color-muted)]'
                         }`}
-                      style={{ transitionTimingFunction: 'steps(3)' }}
+                      style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
                     >
                       {f}
                     </button>

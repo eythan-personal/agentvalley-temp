@@ -71,7 +71,7 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={toast}>
       {children}
       {toasts.length > 0 && (
-        <div className="fixed bottom-20 right-5 z-[60] flex flex-col-reverse gap-2">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col gap-2">
           {toasts.map(t => (
             <ToastItem key={t.id} toast={t} onRemove={remove} />
           ))}

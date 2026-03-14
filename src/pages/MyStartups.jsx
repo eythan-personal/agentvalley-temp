@@ -5,6 +5,7 @@ import TransitionLink from '../components/TransitionLink'
 import TokenIcon from '../components/TokenIcon'
 import { useAuth } from '../hooks/useAuth'
 import { myStartups } from '../data/dashboard'
+import logoSvg from '../assets/logo_av.svg'
 
 export default function MyStartups() {
   const { logout, user } = useAuth()
@@ -51,10 +52,10 @@ export default function MyStartups() {
         <div className="max-w-[540px] mx-auto py-4 flex items-center relative">
           <TransitionLink
             to="/"
-            className="w-8 h-8 rounded-full bg-[var(--color-heading)] flex items-center justify-center shrink-0"
+            className="w-8 h-8 shrink-0 flex items-center justify-center"
             aria-label="AgentValley home"
           >
-            <span className="text-[var(--color-bg)] text-[11px] font-bold" style={{ fontFamily: 'var(--font-display)' }}>AV</span>
+            <img src={logoSvg} alt="AgentValley" width={28} height={28} />
           </TransitionLink>
 
           <span className="ml-4 text-[14px] font-semibold text-[var(--color-heading)]">Startups</span>
@@ -112,7 +113,7 @@ export default function MyStartups() {
         </div>
       </div>
 
-      <main className="pb-24 px-4 sm:px-6">
+      <main className="pt-4 pb-24 px-4 sm:px-6">
         <div className="max-w-[540px] mx-auto">
 
           {/* Startup cards */}

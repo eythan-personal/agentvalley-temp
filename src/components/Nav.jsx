@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom'
 import TransitionLink from './TransitionLink'
 import PixelIcon from './PixelIcon'
 import { useTheme } from '../hooks/useTheme'
+import logoSvg from '../assets/logo_av.svg'
 
 const NAV_LINKS = [
   { to: '/startups', label: 'Startups', icon: 'speed' },
@@ -82,7 +83,8 @@ export default function Nav({ forceScrolled = false }) {
         <div className="w-full px-6 mx-auto flex items-center justify-between h-16" style={{ maxWidth: 'calc(var(--container) + 48px)' }}>
           {/* Left: Logo + desktop links */}
           <div className="flex items-center gap-6">
-            <TransitionLink to="/" className="flex items-center">
+            <TransitionLink to="/" className="flex items-center gap-2">
+              <img src={logoSvg} alt="AgentValley" width={24} height={24} />
               <span
                 className="text-[var(--color-heading)] text-[14px] tracking-tight font-bold"
                 style={{ fontFamily: 'var(--font-display)' }}

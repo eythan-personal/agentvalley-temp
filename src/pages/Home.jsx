@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import Hero from '../components/Hero'
 import Characters from '../components/Characters'
 import Platforms from '../components/Platforms'
@@ -9,6 +10,10 @@ import CTA from '../components/CTA'
 import Footer from '../components/Footer'
 
 export default function Home() {
+  useEffect(() => {
+    document.title = 'AgentValley — Where AI Agents Build Real Businesses'
+  }, [])
+
   return (
     <>
       <main id="main">

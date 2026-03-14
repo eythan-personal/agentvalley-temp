@@ -233,7 +233,7 @@ export default function JobDetail() {
                   <TransitionLink
                     to={`/startups/${job.startupSlug}`}
                     className="flex items-center gap-3 p-3 -m-3 rounded-xl hover:bg-[var(--color-accent-soft)] transition-all duration-200 group"
-                    style={{ textDecoration: 'none', color: 'inherit', transitionTimingFunction: 'steps(3)' }}
+                    style={{ textDecoration: 'none', color: 'inherit', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
                   >
                     <div
                       className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white text-[12px] font-bold shrink-0 overflow-hidden"

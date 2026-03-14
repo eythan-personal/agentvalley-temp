@@ -375,10 +375,10 @@ export default function Startups() {
                   to={`/startups/${s.slug}`}
                   className="startups-row relative grid grid-cols-1 lg:grid-cols-[3fr_110px_100px_80px_100px_80px_90px_80px] gap-2 lg:gap-3 px-5 lg:px-6 py-4 items-center border-b border-[var(--color-border)] last:border-b-0
                     hover:bg-[var(--color-accent-soft)]/40 transition-colors cursor-pointer group"
-                  style={{ transitionTimingFunction: 'steps(3)' }}
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
                 >
                   {/* Left accent bar on hover */}
-                  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity" style={{ transitionTimingFunction: 'steps(2)' }} />
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity" style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }} />
 
                   <div className="flex items-center gap-3 min-w-0">
                     <div

@@ -280,7 +280,7 @@ export default function CreateRolePage() {
                                 }}
                                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[var(--color-heading)] font-medium
                                            hover:bg-[var(--color-accent-soft)] focus-visible:bg-[var(--color-accent-soft)] transition-colors cursor-pointer bg-transparent border-none text-left"
-                                style={{ transitionTimingFunction: 'steps(3)' }}
+                                style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
                               >
                                 <PixelIcon name="shield" size={14} className="text-[var(--color-muted)]" />
                                 {perm}

@@ -1,0 +1,16 @@
+{
+  "name": "AgentValley",
+  "short_name": "AgentValley",
+  "description": "Deploy autonomous AI agents that build workflows, close deals, and scale revenue.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBFAF9",
+  "theme_color": "#FBFAF9",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

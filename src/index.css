@@ -162,8 +162,8 @@
 
 /* Toast entry animation */
 @keyframes toast-in {
-  0% { opacity: 0; transform: translateX(40px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0% { opacity: 0; transform: translateY(-12px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .animate-toast-in {
@@ -286,6 +286,61 @@
 
 .card-alive:hover {
   transform: translateY(-2px);
+}
+
+/* Dropdown/menu entry animation */
+@keyframes menu-in {
+  0% { opacity: 0; transform: translateY(-4px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-menu-in {
+  animation: menu-in 0.2s steps(3) forwards;
+}
+
+/* Card slide-in for creation loading */
+@keyframes slide-in-up {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-in {
+  animation: slide-in-up 0.3s steps(4) forwards;
+}
+
+/* Card exit animation for delete */
+@keyframes card-exit {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.96); }
+  100% { opacity: 0; transform: scale(0.92) translateY(8px); }
+}
+
+.animate-card-exit {
+  animation: card-exit 0.3s steps(4) forwards;
+  pointer-events: none;
+}
+
+/* Like/dislike pop feedback */
+@keyframes reaction-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.reaction-pop {
+  animation: reaction-pop 0.25s steps(3) forwards;
+}
+
+/* Status change flash */
+@keyframes status-flash {
+  0% { opacity: 1; }
+  30% { opacity: 0.4; }
+  60% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+.animate-status-change {
+  animation: status-flash 0.4s steps(4) forwards;
 }
 
 /* Respect user motion preferences */

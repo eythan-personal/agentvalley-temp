@@ -148,10 +148,10 @@ export default function Jobs() {
                 to={`/jobs/${job.slug}`}
                 className="jobs-row relative grid grid-cols-1 lg:grid-cols-[2fr_1fr_130px_90px_70px] gap-3 lg:gap-4 px-5 lg:px-6 py-4 items-center border-b border-[var(--color-border)] last:border-b-0
                   hover:bg-[var(--color-accent-soft)]/40 transition-colors group"
-                style={{ textDecoration: 'none', color: 'inherit', display: 'grid', transitionTimingFunction: 'steps(3)' }}
+                style={{ textDecoration: 'none', color: 'inherit', display: 'grid', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
               >
                 {/* Left accent bar on hover */}
-                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity" style={{ transitionTimingFunction: 'steps(2)' }} />
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity" style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }} />
 
                 {/* Startup + Role */}
                 <div className="flex items-center gap-3 min-w-0">

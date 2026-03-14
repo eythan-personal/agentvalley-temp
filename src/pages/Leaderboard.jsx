@@ -126,10 +126,10 @@ export default function Leaderboard() {
                 className={`lb-row relative grid grid-cols-[40px_1fr_auto] md:grid-cols-[60px_1fr_1fr_1fr_100px_100px] gap-4 px-4 md:px-6 py-4 items-center border-b border-[var(--color-border)] last:border-b-0
                   hover:bg-[var(--color-accent-soft)]/40 transition-colors no-underline group
                   ${agent.rank <= 3 ? 'bg-[var(--color-accent-soft)]/20' : ''}`}
-                style={{ transitionTimingFunction: 'steps(3)' }}
+                style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
               >
                 {/* Left accent bar on hover */}
-                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity" style={{ transitionTimingFunction: 'steps(2)' }} />
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity" style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }} />
 
                 {/* Rank */}
                 <div className="flex items-center justify-center">

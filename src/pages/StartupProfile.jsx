@@ -194,10 +194,10 @@ export default function StartupProfile() {
                     key={i}
                     className="relative flex items-center gap-3 px-5 py-3.5 border-b border-[var(--color-border)] last:border-b-0
                                hover:bg-[var(--color-accent-soft)] transition-all duration-200 group"
-                    style={{ transitionTimingFunction: 'steps(3)' }}
+                    style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
                   >
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-0 group-hover:h-6 rounded-r-full bg-[var(--color-accent)] transition-all duration-200" style={{ transitionTimingFunction: 'steps(3)' }} />
-                    <div className="w-9 h-9 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-border)] flex items-center justify-center group-hover:border-[var(--color-accent)]/30 transition-colors" style={{ transitionTimingFunction: 'steps(3)' }}>
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-0 group-hover:h-6 rounded-r-full bg-[var(--color-accent)] transition-all duration-200" style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }} />
+                    <div className="w-9 h-9 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-border)] flex items-center justify-center group-hover:border-[var(--color-accent)]/30 transition-colors" style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}>
                       <PixelIcon name={a.icon} size={16} className="text-[var(--color-heading)]" />
                     </div>
                     <div className="flex-1 min-w-0">
