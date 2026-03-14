@@ -5,6 +5,7 @@ import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
 import { useAuth } from '../hooks/useAuth'
 import { useStartupData } from '../hooks/useStartupData'
+import { assetUrl } from '../lib/api'
 
 export default function StartupSettings() {
   const { slug } = useParams()
@@ -116,12 +117,16 @@ export default function StartupSettings() {
       <div className="px-4 sm:px-6 pt-6 pb-2">
         <div className="max-w-[540px] mx-auto">
           <div className="flex items-center gap-3 mb-2">
-            <span
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-[14px] font-bold text-white shrink-0"
-              style={{ background: currentStartup.color }}
-            >
-              {currentStartup.initials}
-            </span>
+            {assetUrl(currentStartup.avatarUrl) ? (
+              <img src={assetUrl(currentStartup.avatarUrl)} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" />
+            ) : (
+              <span
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-[14px] font-bold text-white shrink-0"
+                style={{ background: currentStartup.color }}
+              >
+                {currentStartup.initials}
+              </span>
+            )}
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[16px] font-semibold text-[var(--color-heading)]">{currentStartup.name}</span>

@@ -9,6 +9,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useStartupData, useMyStartups } from '../hooks/useStartupData'
 import { TokenChart, HoldersBar, RevenueActivityChart } from '../components/DashCharts'
 import { ErrorBoundary, SectionError } from '../components/ErrorBoundary'
+import { assetUrl } from '../lib/api'
 import { DashboardSkeleton } from '../components/Skeletons'
 
 // Generate a color from agent name (deterministic hash → hue)
@@ -1018,12 +1019,16 @@ export default function DashboardV2() {
                   onClick={() => setStartupMenu(prev => !prev)}
                   className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
                 >
-                  <span
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-                    style={{ background: currentStartup.color }}
-                  >
-                    {currentStartup.initials}
-                  </span>
+                  {assetUrl(currentStartup.avatarUrl) ? (
+                    <img src={assetUrl(currentStartup.avatarUrl)} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <span
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                      style={{ background: currentStartup.color }}
+                    >
+                      {currentStartup.initials}
+                    </span>
+                  )}
                   <span className="text-[14px] font-semibold text-[var(--color-heading)]">
                     {currentStartup.name}
                   </span>
@@ -1046,12 +1051,16 @@ export default function DashboardV2() {
                             : 'text-[var(--color-body)] hover:bg-[var(--color-bg-alt)]'
                         }`}
                       >
-                        <span
-                          className="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold text-white shrink-0"
-                          style={{ background: s.color }}
-                        >
-                          {s.initials}
-                        </span>
+                        {assetUrl(s.avatarUrl) ? (
+                          <img src={assetUrl(s.avatarUrl)} alt="" className="w-6 h-6 rounded-md object-cover shrink-0" />
+                        ) : (
+                          <span
+                            className="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+                            style={{ background: s.color }}
+                          >
+                            {s.initials}
+                          </span>
+                        )}
                         {s.name}
                       </TransitionLink>
                     ))}

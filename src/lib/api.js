@@ -114,4 +114,13 @@ export const api = {
   },
 }
 
+/**
+ * Convert a relative API path (e.g. /api/uploads/xyz.png) to a full URL.
+ */
+export function assetUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  return `${BASE_URL}${path}`
+}
+
 export { ApiError }

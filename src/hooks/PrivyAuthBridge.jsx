@@ -8,12 +8,11 @@ export function PrivyAuthBridge({ children }) {
   const readyRef = useRef(false)
   const wasAuthenticatedAfterReady = useRef(false)
 
-  // Wire Privy's token getter into the API client
-  useEffect(() => {
-    if (privy.authenticated && privy.getAccessToken) {
-      setTokenGetter(() => privy.getAccessToken())
-    }
-  }, [privy.authenticated, privy.getAccessToken])
+  // Wire Privy's token getter into the API client SYNCHRONOUSLY
+  // so it's available before any child effects fire
+  if (privy.authenticated && privy.getAccessToken) {
+    setTokenGetter(() => privy.getAccessToken())
+  }
 
   // Redirect to /dashboard after fresh login
   useEffect(() => {
