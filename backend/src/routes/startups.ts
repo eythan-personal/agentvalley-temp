@@ -7,6 +7,10 @@ import {
 import { authMiddleware } from '../middleware/auth'
 import type { Env, Variables } from '../types'
 
+function safeJsonParse(str: string, fallback: any = []) {
+  try { return JSON.parse(str) } catch { return fallback }
+}
+
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 // All routes require auth
@@ -88,6 +92,18 @@ app.post('/startups', async (c) => {
     return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Name, description, and category are required' } }, 400)
   }
 
+  // Validate website URL
+  if (website) {
+    try {
+      const url = new URL(website.startsWith('http') ? website : `https://${website}`)
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Website must be an HTTP or HTTPS URL' } }, 400)
+      }
+    } catch {
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid website URL' } }, 400)
+    }
+  }
+
   const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   const initials = name.trim().split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
 
@@ -105,20 +121,27 @@ app.post('/startups', async (c) => {
   const startupId = crypto.randomUUID()
   const memberId = crypto.randomUUID()
 
-  await db.insert(startups).values({
-    id: startupId,
-    slug,
-    name: name.trim(),
-    description: description.trim(),
-    initials,
-    color: color || '#9fe870',
-    category,
-    website: website || null,
-    visibility: visibility || 'public',
-    avatarUrl: avatarUrl || null,
-    bannerUrl: bannerUrl || null,
-    ownerId: userId,
-  })
+  try {
+    await db.insert(startups).values({
+      id: startupId,
+      slug,
+      name: name.trim(),
+      description: description.trim(),
+      initials,
+      color: color || '#9fe870',
+      category,
+      website: website || null,
+      visibility: visibility || 'public',
+      avatarUrl: avatarUrl || null,
+      bannerUrl: bannerUrl || null,
+      ownerId: userId,
+    })
+  } catch (err: any) {
+    if (err?.message?.includes('UNIQUE') || err?.message?.includes('unique')) {
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'A startup with this name already exists' } }, 400)
+    }
+    throw err
+  }
 
   // Add creator as owner member
   await db.insert(startupMembers).values({
@@ -139,6 +162,8 @@ app.post('/startups', async (c) => {
     })
   }
 
+  console.log(JSON.stringify({ event: 'startup.created', userId, startupId, slug, ts: Date.now() }))
+
   return c.json({ slug, name: name.trim(), id: startupId }, 201)
 })
 
@@ -153,6 +178,19 @@ app.patch('/startups/:slug', async (c) => {
   const [startup] = await db.select().from(startups).where(eq(startups.slug, slug)).limit(1)
   if (!startup) return c.json({ error: { code: 'NOT_FOUND', message: 'Startup not found' } }, 404)
   if (startup.ownerId !== userId) return c.json({ error: { code: 'FORBIDDEN', message: 'Only the owner can edit' } }, 403)
+
+  // Validate website URL
+  if (body.website) {
+    const website = body.website
+    try {
+      const url = new URL(website.startsWith('http') ? website : `https://${website}`)
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Website must be an HTTP or HTTPS URL' } }, 400)
+      }
+    } catch {
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid website URL' } }, 400)
+    }
+  }
 
   const updates: Record<string, any> = {}
   if (body.name !== undefined) updates.name = body.name.trim()
@@ -171,6 +209,7 @@ app.patch('/startups/:slug', async (c) => {
 
   if (Object.keys(updates).length > 0) {
     await db.update(startups).set(updates).where(eq(startups.id, startup.id))
+    console.log(JSON.stringify({ event: 'startup.updated', userId, startupId: startup.id, fields: Object.keys(updates), ts: Date.now() }))
   }
 
   return c.json({ ok: true })
@@ -205,6 +244,8 @@ app.delete('/startups/:slug', async (c) => {
   await db.delete(tokens).where(eq(tokens.startupId, sid))
   await db.delete(startupMembers).where(eq(startupMembers.startupId, sid))
   await db.delete(startups).where(eq(startups.id, sid))
+
+  console.log(JSON.stringify({ event: 'startup.deleted', userId, startupId: sid, slug, ts: Date.now() }))
 
   return c.json({ ok: true })
 })
@@ -256,10 +297,10 @@ app.get('/startups/:slug/dashboard', async (c) => {
     filesData,
   ] = await Promise.all([
     db.select().from(objectives).where(eq(objectives.startupId, startup.id)),
-    db.select().from(tasks).where(eq(tasks.startupId, startup.id)),
+    db.select().from(tasks).where(eq(tasks.startupId, startup.id)).limit(200),
     db.select().from(agents).where(eq(agents.startupId, startup.id)),
-    db.select().from(feedItems).where(eq(feedItems.startupId, startup.id)),
-    db.select().from(chatMessages).where(eq(chatMessages.startupId, startup.id)),
+    db.select().from(feedItems).where(eq(feedItems.startupId, startup.id)).limit(50),
+    db.select().from(chatMessages).where(eq(chatMessages.startupId, startup.id)).limit(100),
     db.select().from(roles).where(eq(roles.startupId, startup.id)),
     db.select().from(tokens).where(eq(tokens.startupId, startup.id)).limit(1),
     db.select().from(outputFolders).where(eq(outputFolders.startupId, startup.id)),
@@ -284,6 +325,7 @@ app.get('/startups/:slug/dashboard', async (c) => {
         .select()
         .from(taskComments)
         .where(eq(taskComments.taskId, taskId))
+        .limit(50)
 
       if (comments.length > 0) {
         commentsMap[taskId] = comments.map((c) => ({
@@ -299,8 +341,15 @@ app.get('/startups/:slug/dashboard', async (c) => {
   // Format agents for tasks
   const agentMap = new Map(agentsData.map((a) => [a.id, a]))
 
+  // Generate deterministic but unpredictable API key
+  const encoder = new TextEncoder()
+  const keyData = await crypto.subtle.importKey('raw', encoder.encode(c.env.PRIVY_APP_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+  const sig = await crypto.subtle.sign('HMAC', keyData, encoder.encode(startup.id))
+  const apiKey = 'ak_live_' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32)
+
   // Format response to match frontend expectations
   const response = {
+    apiKey,
     objectives: objectivesData.map((o) => ({
       id: o.id,
       title: o.title,
@@ -322,10 +371,10 @@ app.get('/startups/:slug/dashboard', async (c) => {
         objective: objectivesData.find((o) => o.id === t.objectiveId)?.title || '',
         status: t.status,
         agent: agent ? { name: agent.name, avatar: agent.avatarUrl } : null,
-        dependencies: JSON.parse(t.dependencies),
+        dependencies: safeJsonParse(t.dependencies),
         created: t.createdAt,
         duration: t.duration,
-        files: JSON.parse(t.files),
+        files: safeJsonParse(t.files),
         likes: t.likes,
         dislikes: t.dislikes,
         comments: t.comments,
@@ -344,8 +393,8 @@ app.get('/startups/:slug/dashboard', async (c) => {
         action: f.action,
         task: f.taskTitle,
         time: f.createdAt,
-        preview: JSON.parse(f.preview),
-        reactions: JSON.parse(f.reactions),
+        preview: safeJsonParse(f.preview, {}),
+        reactions: safeJsonParse(f.reactions),
       }
     }),
 
@@ -369,7 +418,7 @@ app.get('/startups/:slug/dashboard', async (c) => {
       id: r.id,
       title: r.title,
       summary: r.summary,
-      tools: JSON.parse(r.tools),
+      tools: safeJsonParse(r.tools),
       reward: r.reward,
       vesting: r.vesting,
       status: r.status,

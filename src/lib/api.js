@@ -119,8 +119,18 @@ export const api = {
  */
 export function assetUrl(path) {
   if (!path) return null
-  if (path.startsWith('http')) return path
-  return `${BASE_URL}${path}`
+  // Relative paths — prefix with base URL
+  if (path.startsWith('/')) return `${BASE_URL}${path}`
+  // Absolute URLs — only allow from our own API domain
+  if (path.startsWith('http')) {
+    try {
+      const url = new URL(path)
+      const baseUrl = new URL(BASE_URL || window.location.origin)
+      if (url.hostname === baseUrl.hostname) return path
+    } catch {}
+    return null // reject unknown external URLs
+  }
+  return `${BASE_URL}/${path}`
 }
 
 export { ApiError }

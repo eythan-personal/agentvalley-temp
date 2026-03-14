@@ -139,7 +139,8 @@ export default function StartupSettings() {
       refetch()
       setOpenSection(null)
     } catch (err) {
-      toast(err.message || 'Failed to save', { type: 'error', icon: 'alert' })
+      const msg = err.code ? err.message : 'Something went wrong. Please try again.'
+      toast(msg, { type: 'error', icon: 'alert' })
     } finally {
       setSaving(false)
     }
@@ -151,7 +152,8 @@ export default function StartupSettings() {
       toast(`Visibility set to ${vis}`, { type: 'success', icon: 'check' })
       refetch()
     } catch (err) {
-      toast(err.message || 'Failed to update', { type: 'error', icon: 'alert' })
+      const msg = err.code ? err.message : 'Something went wrong. Please try again.'
+      toast(msg, { type: 'error', icon: 'alert' })
     }
   }
 
@@ -163,7 +165,8 @@ export default function StartupSettings() {
       toast(newStatus === 'Paused' ? 'Startup paused' : 'Startup resumed', { type: 'success', icon: newStatus === 'Paused' ? 'pause' : 'play' })
       refetch()
     } catch (err) {
-      toast(err.message || 'Failed to update', { type: 'error', icon: 'alert' })
+      const msg = err.code ? err.message : 'Something went wrong. Please try again.'
+      toast(msg, { type: 'error', icon: 'alert' })
     } finally {
       setPausing(false)
     }
@@ -176,13 +179,14 @@ export default function StartupSettings() {
       toast('Startup deleted', { type: 'success', icon: 'check' })
       navigate('/dashboard')
     } catch (err) {
-      toast(err.message || 'Failed to delete', { type: 'error', icon: 'alert' })
+      const msg = err.code ? err.message : 'Something went wrong. Please try again.'
+      toast(msg, { type: 'error', icon: 'alert' })
       setDeleting(false)
     }
   }
 
   const isPaused = currentStartup.status === 'Paused'
-  const startupSecret = `ak_live_${slug}_${currentStartup.initials?.toLowerCase() || 'xx'}`.slice(0, 32)
+  const startupSecret = startupData?.apiKey || 'API key unavailable'
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-heading)]">

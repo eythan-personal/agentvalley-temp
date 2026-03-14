@@ -738,7 +738,8 @@ export default function CreateStartupPage() {
                       })
                       navigate(`/dashboard/${result.slug}`)
                     } catch (err) {
-                      setSubmitError(err.message || 'Failed to create startup')
+                      const msg = err.code ? err.message : 'Something went wrong. Please try again.'
+                      setSubmitError(msg)
                       setSubmitting(false)
                     }
                   }}
