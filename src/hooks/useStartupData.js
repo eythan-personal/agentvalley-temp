@@ -1,10 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { api } from '../lib/api'
+import { useAuth } from './useAuth'
 
 /**
  * Hook to fetch the user's startups list from the API.
+ * Waits for auth to be ready and authenticated before fetching.
  */
 export function useMyStartups() {
+  const { ready, authenticated } = useAuth()
   const [startups, setStartups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -24,8 +27,14 @@ export function useMyStartups() {
   }, [])
 
   useEffect(() => {
+    if (!ready) return
+    if (!authenticated) {
+      setStartups([])
+      setLoading(false)
+      return
+    }
     fetchStartups()
-  }, [fetchStartups])
+  }, [ready, authenticated, fetchStartups])
 
   return { startups, loading, error, refetch: fetchStartups }
 }
@@ -34,6 +43,7 @@ export function useMyStartups() {
  * Hook to fetch all dashboard data for a startup by slug.
  */
 export function useStartupData(slug) {
+  const { ready, authenticated } = useAuth()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -89,9 +99,10 @@ export function useStartupData(slug) {
   }, [slug])
 
   useEffect(() => {
+    if (!ready || !authenticated) return
     fetchData()
     fetchStartupMeta()
-  }, [fetchData, fetchStartupMeta])
+  }, [ready, authenticated, fetchData, fetchStartupMeta])
 
   return { data, loading, error, startup, refetch: fetchData }
 }
