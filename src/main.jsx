@@ -16,7 +16,7 @@ async function render() {
       <PrivyProvider
         appId={privyAppId}
         config={{
-          loginMethods: ['wallet', 'google'],
+          loginMethods: ['email', 'wallet'],
           appearance: {
             theme: 'dark',
             accentColor: '#00FF41',
