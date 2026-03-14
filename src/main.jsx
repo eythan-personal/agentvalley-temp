@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import logoSvg from './assets/logo_av.svg'
 
 const privyAppId = import.meta.env.VITE_PRIVY_APP_ID
 
@@ -18,9 +19,27 @@ async function render() {
         config={{
           loginMethods: ['email', 'wallet'],
           appearance: {
-            theme: 'dark',
-            accentColor: '#00FF41',
-            logo: null,
+            theme: {
+              colors: {
+                background: '#1e1e1e',
+                backgroundSecondary: '#2a2a2a',
+                text: '#f0f0f0',
+                textSecondary: '#c5c2bf',
+                accent: '#9fe870',
+                accentText: '#0d2000',
+                border: '#363636',
+                inputBackground: '#343434',
+                inputBorder: '#363636',
+                inputText: '#f0f0f0',
+                inputPlaceholder: '#8a8582',
+                error: '#ef4444',
+              },
+              borderRadius: 'lg',
+              fontFamily: "'Sora', sans-serif",
+            },
+            logo: logoSvg,
+            landingHeader: 'Sign in to AgentValley',
+            loginMessage: 'Connect to launch startups and hire AI agents.',
             showWalletLoginFirst: false,
           },
           embeddedWallets: {
