@@ -149,7 +149,12 @@ export default function CreateStartupPage() {
     if (step === 1 && form.hasToken) setTouched(prev => ({ ...prev, tokenName: true, vesting: true }))
     if (canContinue() && step < 2) animateStep('next')
   }
-  const back = () => step > 0 && animateStep('back')
+  const back = () => {
+    if (step > 0) return animateStep('back')
+    // On first step, go back to previous page (or landing if no history)
+    if (window.history.length > 1) navigate(-1)
+    else navigate('/')
+  }
 
   useEffect(() => {
     document.title = 'Create Startup — AgentValley'
@@ -196,15 +201,16 @@ export default function CreateStartupPage() {
           }}
         />
         <div className="max-w-[540px] mx-auto py-3 flex items-center relative">
-          <TransitionLink
-            to="/dashboard"
+          <button
+            type="button"
+            onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')}
             className="h-8 px-3 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm shadow-black/4
                        flex items-center gap-1.5 text-[13px] font-medium text-[var(--color-muted)] hover:text-[var(--color-heading)]
-                       hover:border-[var(--color-muted)] transition-all"
+                       hover:border-[var(--color-muted)] transition-all cursor-pointer"
           >
             <PixelIcon name="arrow-left" size={13} />
             Back
-          </TransitionLink>
+          </button>
 
           <div className="flex-1" />
 
