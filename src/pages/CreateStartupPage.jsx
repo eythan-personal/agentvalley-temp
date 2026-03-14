@@ -5,6 +5,7 @@ import PixelIcon from '../components/PixelIcon'
 import TokenIcon from '../components/TokenIcon'
 import TransitionLink from '../components/TransitionLink'
 import { useAuth } from '../hooks/useAuth'
+import { api } from '../lib/api'
 
 const categories = [
   'Creative', 'Engineering', 'Marketing', 'Finance', 'Security',
@@ -33,6 +34,8 @@ export default function CreateStartupPage() {
   const pageRef = useRef(null)
   const cardRef = useRef(null)
   const [step, setStep] = useState(0)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState(null)
   const [userMenu, setUserMenu] = useState(false)
   const userMenuRef = useRef(null)
 
@@ -687,27 +690,56 @@ export default function CreateStartupPage() {
                 <PixelIcon name="arrow-right" size={14} />
               </button>
             ) : (
-              <button type="button"
-                disabled={!canContinue()}
-                onClick={() => {
-                  navigator.vibrate?.(15)
-                  // Mark all fields touched to surface any remaining errors
-                  setTouched({ name: true, description: true, category: true, website: true, tokenName: true, vesting: true })
-                  if (!canContinue()) return
-                  const slug = form.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-                  navigate(`/dashboard/${slug || 'my-startup'}`)
-                }}
-                className={`flex-1 h-11 rounded-full text-[13px] font-medium cursor-pointer
-                           transition-all duration-200 inline-flex items-center justify-center gap-2.5
-                           focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
-                           ${canContinue()
-                             ? 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg'
-                             : 'bg-[var(--color-bg-alt)] text-[var(--color-muted)] cursor-not-allowed'
-                           }`}
-              >
-                <PixelIcon name="power" size={16} />
-                {form.hasToken ? 'Create Startup · 500 PROMPT' : 'Create Startup'}
-              </button>
+              <>
+                <button type="button"
+                  disabled={!canContinue() || submitting}
+                  onClick={async () => {
+                    navigator.vibrate?.(15)
+                    setTouched({ name: true, description: true, category: true, website: true, tokenName: true, vesting: true })
+                    if (!canContinue() || submitting) return
+
+                    setSubmitting(true)
+                    setSubmitError(null)
+                    try {
+                      const result = await api.post('/startups', {
+                        name: form.name.trim(),
+                        description: form.description.trim(),
+                        category: form.category,
+                        color: form.color,
+                        website: form.website.trim() || null,
+                        visibility: form.visibility,
+                        token: form.hasToken ? { name: form.tokenName.trim(), vesting: form.vesting } : null,
+                      })
+                      navigate(`/dashboard/${result.slug}`)
+                    } catch (err) {
+                      setSubmitError(err.message || 'Failed to create startup')
+                      setSubmitting(false)
+                    }
+                  }}
+                  className={`flex-1 h-11 rounded-full text-[13px] font-medium cursor-pointer
+                             transition-all duration-200 inline-flex items-center justify-center gap-2.5
+                             focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2
+                             ${canContinue()
+                               ? 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg'
+                               : 'bg-[var(--color-bg-alt)] text-[var(--color-muted)] cursor-not-allowed'
+                             }`}
+                >
+                  {submitting ? (
+                    <>
+                      <PixelIcon name="loader" size={16} className="live-pulse" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <PixelIcon name="power" size={16} />
+                      {form.hasToken ? 'Create Startup · 500 PROMPT' : 'Create Startup'}
+                    </>
+                  )}
+                </button>
+                {submitError && (
+                  <p className="text-[12px] text-red-400 text-center mt-2">{submitError}</p>
+                )}
+              </>
             )}
           </div>
         </div>

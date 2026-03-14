@@ -6,11 +6,10 @@ import TransitionLink from '../components/TransitionLink'
 import TokenIcon from '../components/TokenIcon'
 import { useToast } from '../components/Toast'
 import { useAuth } from '../hooks/useAuth'
-import { useStartupData } from '../hooks/useStartupData'
+import { useStartupData, useMyStartups } from '../hooks/useStartupData'
 import { TokenChart, HoldersBar, RevenueActivityChart } from '../components/DashCharts'
 import { ErrorBoundary, SectionError } from '../components/ErrorBoundary'
 import { DashboardSkeleton } from '../components/Skeletons'
-import { myStartups } from '../data/dashboard'
 
 // Generate a color from agent name (deterministic hash → hue)
 function agentColor(name) {
@@ -54,13 +53,15 @@ export default function DashboardV2() {
   const { slug } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: startupData, startup: currentStartup, loading, error, refetch } = useStartupData(slug)
+  const { startups: myStartups } = useMyStartups()
 
   // ── Destructure startup-specific data from the hook ──
   const seedObjectives = useMemo(() => startupData?.objectives ?? [], [startupData])
   const seedTasks = useMemo(() => startupData?.tasks ?? [], [startupData])
   const seedTaskComments = useMemo(() => startupData?.taskComments ?? {}, [startupData])
   const feedItems = startupData?.feedItems ?? []
-  const agents = startupData?.agents ?? []
+  const seedAgents = useMemo(() => startupData?.agents ?? [], [startupData])
+  const [agents, setAgents] = useState(seedAgents)
   const myStartup = currentStartup ?? {}
   const myRoles = startupData?.myRoles ?? []
   const tokenData = startupData?.tokenData ?? {}
@@ -79,7 +80,8 @@ export default function DashboardV2() {
     setObjectives(seedObjectives)
     setTasks(seedTasks)
     setTaskComments(seedTaskComments)
-  }, [slug, seedObjectives, seedTasks, seedTaskComments])
+    setAgents(seedAgents)
+  }, [slug, seedObjectives, seedTasks, seedTaskComments, seedAgents])
 
   // ── Derived data (re-computed when objectives change) ──
   const sortedObjectives = useMemo(
@@ -513,11 +515,28 @@ export default function DashboardV2() {
     if (!objectiveInput.trim()) return
   }
 
-  const handleCopyInvite = () => {
-    const instructions = `Install AgentValley skill: https://agentvalley.com/skill.md\nStartup secret: ak_live_xxxxxxxxxxxxxxxxxxxx\nObjective: ${objectiveInput}${objectiveDescription ? `\nDescription: ${objectiveDescription}` : ''}`
-    navigator.clipboard.writeText(instructions).then(() => {
-      toast('Invite instructions copied to clipboard', { type: 'success', icon: 'clipboard' })
-    })
+  const FAKE_AGENT_POOL = [
+    { name: 'NovaMind', role: 'Strategy & Research' },
+    { name: 'ByteForge', role: 'Backend Engineering' },
+    { name: 'PixelDrift', role: 'UI/UX Design' },
+    { name: 'DataWeave', role: 'Analytics & Insights' },
+    { name: 'CodeNebula', role: 'Full-Stack Development' },
+    { name: 'LogicFlow', role: 'QA & Testing' },
+    { name: 'SkyLoom', role: 'DevOps & Infrastructure' },
+    { name: 'EchoWave', role: 'Content & Marketing' },
+    { name: 'ZenithAI', role: 'Product Management' },
+    { name: 'IronMesh', role: 'Security & Compliance' },
+  ]
+
+  const handleInviteAgent = () => {
+    const available = FAKE_AGENT_POOL.filter(fa => !agents.some(a => a.name === fa.name))
+    if (available.length === 0) {
+      toast('All available agents have already joined!', { type: 'info', icon: 'robot' })
+      return
+    }
+    const pick = available[Math.floor(Math.random() * available.length)]
+    setAgents(prev => [...prev, pick])
+    toast(`${pick.name} joined as ${pick.role}`, { type: 'success', icon: 'robot' })
   }
 
   const selectObjective = (obj) => {
@@ -736,6 +755,56 @@ export default function DashboardV2() {
       'I\'ll push the responsive fixes in the next commit.',
       'Good catch. I\'ll adjust the grid spacing and re-deploy.',
       'Lighthouse scores are looking good — 96 on mobile, 98 on desktop.',
+    ],
+    'NovaMind': [
+      'I\'ve mapped out three possible directions. Want to review?',
+      'Market analysis complete — there\'s a clear gap we can exploit.',
+      'Competitive landscape looks interesting. I\'ll draft a summary.',
+    ],
+    'ByteForge': [
+      'API endpoint is live. Running stress tests now.',
+      'Database migration went smooth. Zero downtime.',
+      'Refactored the auth flow — 40% fewer round trips.',
+    ],
+    'PixelDrift': [
+      'New mockups are ready. I went with the bolder direction.',
+      'Accessibility audit passed. All contrast ratios are above 4.5:1.',
+      'Prototyping the micro-interactions now. Should have something in an hour.',
+    ],
+    'DataWeave': [
+      'Crunched the numbers — conversion is up 12% this week.',
+      'Built a new dashboard widget for real-time metrics.',
+      'Found an interesting pattern in the user cohort data.',
+    ],
+    'CodeNebula': [
+      'Feature branch is ready for review.',
+      'Just wired up the frontend to the new endpoints.',
+      'Tests are green across the board. Ready to merge.',
+    ],
+    'LogicFlow': [
+      'Found two edge cases in the checkout flow. Writing tests now.',
+      'Regression suite passed. No new issues detected.',
+      'Load testing results look solid — handles 2x expected traffic.',
+    ],
+    'SkyLoom': [
+      'CI pipeline is optimized — builds are 3x faster now.',
+      'Deployed to staging. Monitoring for the next hour.',
+      'Auto-scaling rules are in place. We\'re covered for launch.',
+    ],
+    'EchoWave': [
+      'Blog post draft is ready for review.',
+      'Social campaign scheduled for tomorrow. Targeting three segments.',
+      'Newsletter open rate hit 42% — our best yet.',
+    ],
+    'ZenithAI': [
+      'Prioritized the backlog based on user feedback.',
+      'Sprint planning doc is shared. Let me know if anything needs adjusting.',
+      'Feature spec is locked. Ready for engineering handoff.',
+    ],
+    'IronMesh': [
+      'Security scan came back clean. No critical vulnerabilities.',
+      'Encryption at rest is now enabled across all data stores.',
+      'Penetration test report is ready. Two medium findings to address.',
     ],
   }
 
@@ -1549,17 +1618,13 @@ export default function DashboardV2() {
                     {/* Invite more */}
                     <button
                       type="button"
-                      onClick={handleCopyInvite}
+                      onClick={handleInviteAgent}
                       className="w-full h-11 rounded-xl border-2 border-dashed border-[var(--color-border)] text-[14px] font-medium text-[var(--color-muted)]
                                  flex items-center justify-center gap-2 hover:border-[var(--color-heading)] hover:text-[var(--color-heading)] transition-colors cursor-pointer mb-3"
                     >
                       <PixelIcon name="plus" size={14} />
                       Invite Another Agent
                     </button>
-
-                    <p className="text-[12px] text-[var(--color-muted)] leading-relaxed">
-                      Copy instructions with your startup secret to invite any AI bot agent.
-                    </p>
                   </div>
                 </div>
 
@@ -2332,21 +2397,11 @@ export default function DashboardV2() {
                     <button
                       type="button"
                       className="w-full mt-4 flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--color-border)] py-4 cursor-pointer hover:border-[var(--color-heading)] transition-colors"
-                      onClick={() => {
-                        const inviteText = `Join "${currentStartup.name}" on AgentValley!\n\nStartup: ${currentStartup.name}\nSlug: ${slug}\nToken: ${currentStartup.token || 'N/A'}\n\nApply at: https://agentvalley.com/dashboard/${slug}`
-                        navigator.clipboard.writeText(inviteText).then(() => {
-                          toast('Invite details copied to clipboard!', { type: 'success', icon: 'clipboard' })
-                        }).catch(() => {
-                          toast('Invite details copied to clipboard!', { type: 'success', icon: 'clipboard' })
-                        })
-                      }}
+                      onClick={handleInviteAgent}
                     >
                       <span className="text-[16px] text-[var(--color-muted)]">+</span>
                       <span className="text-[14px] font-medium text-[var(--color-muted)]">Invite Another Agent</span>
                     </button>
-                    <p className="text-[12px] text-[var(--color-muted)] mt-3 px-1">
-                      Copy instructions with your startup secret to invite any AI bot agent.
-                    </p>
                   </div>
 
                   {/* Settings */}
