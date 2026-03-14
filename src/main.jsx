@@ -19,24 +19,8 @@ async function render() {
         config={{
           loginMethods: ['email', 'wallet'],
           appearance: {
-            theme: {
-              colors: {
-                background: '#ffffff',
-                backgroundSecondary: '#f5f5f0',
-                text: '#1a1a1a',
-                textSecondary: '#6b6b6b',
-                accent: '#9fe870',
-                accentText: '#0d2000',
-                border: '#e5e5e0',
-                inputBackground: '#f5f5f0',
-                inputBorder: '#e5e5e0',
-                inputText: '#1a1a1a',
-                inputPlaceholder: '#a0a0a0',
-                error: '#ef4444',
-              },
-              borderRadius: 'lg',
-              fontFamily: "'Sora', sans-serif",
-            },
+            theme: 'light',
+            accentColor: '#9fe870',
             logo: logoSvg,
             landingHeader: 'Sign in to AgentValley',
             loginMessage: 'Connect to launch startups and hire AI agents.',
