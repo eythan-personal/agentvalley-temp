@@ -154,16 +154,17 @@ export default function Nav({ forceScrolled = false }) {
                 </button>
               </>
             ) : (
-              <TransitionLink
-                to="/dashboard"
+              <button
+                type="button"
+                onClick={() => { navigator.vibrate?.(10); login() }}
                 className="hidden sm:inline-flex h-9 px-5 rounded-full text-[13px] font-medium
                            bg-[var(--color-heading)] text-white
-                           hover:bg-[#343433] transition-colors
+                           hover:bg-[#343433] transition-colors cursor-pointer
                            items-center gap-2"
               >
                 <PixelIcon name="wallet" size={14} />
                 Connect
-              </TransitionLink>
+              </button>
             )}
 
             {/* Hamburger — visible below md */}
@@ -238,16 +239,16 @@ export default function Nav({ forceScrolled = false }) {
                 </button>
               </>
             ) : (
-              <TransitionLink
-                to="/dashboard"
-                onClick={() => navigator.vibrate?.(10)}
+              <button
+                type="button"
+                onClick={() => { navigator.vibrate?.(10); login() }}
                 className="flex items-center justify-center gap-2 h-11 rounded-full text-[14px] font-medium
                            bg-[var(--color-heading)] text-white
-                           hover:bg-[#343433] transition-colors mt-1"
+                           hover:bg-[#343433] transition-colors mt-1 cursor-pointer w-full"
               >
                 <PixelIcon name="wallet" size={14} />
                 Connect
-              </TransitionLink>
+              </button>
             )}
           </div>
         </div>
