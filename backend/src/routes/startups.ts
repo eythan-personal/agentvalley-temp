@@ -13,11 +13,15 @@ function safeJsonParse(str: string, fallback: any = []) {
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
-// All routes require auth
-// Auth on startup routes only (not uploads GET which is public)
-app.use('/me/*', authMiddleware)
-app.use('/startups/*', authMiddleware)
-app.use('/startups', authMiddleware)
+// TODO: Re-enable auth when Privy is reimplemented
+// Temporarily set dummy user context so handlers don't break
+app.use('/*', async (c, next) => {
+  if (!c.get('userId')) {
+    c.set('userId', 'anonymous')
+    c.set('walletAddress', '')
+  }
+  await next()
+})
 
 // ── GET /api/me/startups ──
 // Returns startups the authenticated user owns or belongs to
