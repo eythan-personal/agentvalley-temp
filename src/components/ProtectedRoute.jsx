@@ -1,37 +1,9 @@
-import { useEffect } from 'react'
-import { useAuth } from '../hooks/useAuth'
-import PixelIcon from './PixelIcon'
+// TODO: Re-enable auth — Privy login temporarily disabled
+// Original implementation preserved in git history
 
 /**
- * Route guard — shows login modal for unauthenticated users.
- * Stays on the current URL so intent is preserved after login.
+ * Route guard — temporarily bypassed while auth is being reimplemented.
  */
 export default function ProtectedRoute({ children }) {
-  const { authenticated, ready, login } = useAuth()
-
-  useEffect(() => {
-    // Once Privy is ready and user isn't authenticated, trigger the login modal
-    if (ready && !authenticated) {
-      login()
-    }
-  }, [ready, authenticated, login])
-
-  // Privy still initializing or not authenticated — show loading screen
-  // (login modal renders on top of this via Privy portal)
-  if (!ready || !authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-        <div className="flex flex-col items-center gap-3">
-          <span className="text-[var(--color-accent)] live-pulse">
-            <PixelIcon name="loader" size={32} />
-          </span>
-          <span className="text-[13px] text-[var(--color-muted)]">
-            {ready ? 'Connect to continue' : 'Loading...'}
-          </span>
-        </div>
-      </div>
-    )
-  }
-
   return children
 }

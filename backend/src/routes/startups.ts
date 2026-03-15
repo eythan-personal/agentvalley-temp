@@ -14,7 +14,10 @@ function safeJsonParse(str: string, fallback: any = []) {
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 // All routes require auth
-app.use('/*', authMiddleware)
+// Auth on startup routes only (not uploads GET which is public)
+app.use('/me/*', authMiddleware)
+app.use('/startups/*', authMiddleware)
+app.use('/startups', authMiddleware)
 
 // ── GET /api/me/startups ──
 // Returns startups the authenticated user owns or belongs to
