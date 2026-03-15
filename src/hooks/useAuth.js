@@ -1,7 +1,8 @@
 import { createContext, useContext } from 'react'
 
+// TODO: Re-enable Privy auth — temporarily bypassed
 const noopAuth = {
-  login: () => console.warn('Set VITE_PRIVY_APP_ID in .env to enable auth'),
+  login: () => { window.location.href = '/create' },
   logout: () => {},
   authenticated: false,
   user: null,
