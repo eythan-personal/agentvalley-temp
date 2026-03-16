@@ -4,8 +4,8 @@ import type { Env, Variables } from '../types'
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
-// TODO: Re-enable auth when Privy is reimplemented
-app.post('/uploads', async (c) => {
+// Upload requires auth
+app.post('/uploads', authMiddleware, async (c) => {
   const contentType = c.req.header('content-type') || ''
 
   if (!contentType.includes('multipart/form-data')) {

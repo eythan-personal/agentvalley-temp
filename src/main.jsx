@@ -4,8 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import logoSvg from './assets/logo_av.svg'
 
-// TODO: Re-enable Privy when auth is reimplemented
-const privyAppId = null // import.meta.env.VITE_PRIVY_APP_ID
+const privyAppId = import.meta.env.VITE_PRIVY_APP_ID
 
 async function render() {
   let tree = <App />
