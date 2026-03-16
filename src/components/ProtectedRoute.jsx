@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import PixelIcon from './PixelIcon'
 
@@ -8,10 +8,13 @@ import PixelIcon from './PixelIcon'
  */
 export default function ProtectedRoute({ children }) {
   const { authenticated, ready, login } = useAuth()
+  const loginTriggered = useRef(false)
 
   useEffect(() => {
-    // Once Privy is ready and user isn't authenticated, trigger the login modal
-    if (ready && !authenticated) {
+    // Only trigger login once — re-calling login() resets the Privy modal
+    // and destroys the OTP code input screen
+    if (ready && !authenticated && !loginTriggered.current) {
+      loginTriggered.current = true
       login()
     }
   }, [ready, authenticated, login])
