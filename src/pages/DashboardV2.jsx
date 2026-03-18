@@ -1033,7 +1033,7 @@ export default function DashboardV2() {
   }, [selectedTask, prevTask, nextTask])
 
   // ── Loading & error states ──
-  if (loading && !startupData) {
+  if ((loading && !startupData) || !currentStartup) {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] p-6 pt-20 max-w-6xl mx-auto">
         <DashboardSkeleton />
@@ -1187,14 +1187,6 @@ export default function DashboardV2() {
                     <PixelIcon name="sliders-2" size={14} className="text-[var(--color-muted)]" />
                     Startup Settings
                   </TransitionLink>
-                  <button
-                    type="button"
-                    onClick={() => { setUserMenu(false) }}
-                    className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5"
-                  >
-                    <PixelIcon name="settings" size={14} className="text-[var(--color-muted)]" />
-                    Account Settings
-                  </button>
                   <div className="border-t border-[var(--color-border)] mt-1 pt-1">
                     <button
                       type="button"
@@ -1341,9 +1333,9 @@ export default function DashboardV2() {
                     </div>
                     <div className="rounded-xl bg-[var(--color-input)] p-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <AgentDot name={feed.agent.name} size={24} />
+                        <AgentDot name={feed?.agent?.name} size={24} />
                         <div>
-                          <span className="text-[13px] font-medium text-[var(--color-heading)]">{feed.agent.name}</span>
+                          <span className="text-[13px] font-medium text-[var(--color-heading)]">{feed?.agent?.name}</span>
                           <span className="text-[11px] text-[var(--color-muted)] ml-2">{liveTimestamp(feed.time)}</span>
                         </div>
                       </div>
@@ -1365,8 +1357,8 @@ export default function DashboardV2() {
                       Task Files ({task.files.length})
                     </div>
                     <div className="flex flex-col gap-2">
-                      {task.files.map((file, i) => (
-                        <div key={i} className="flex items-center gap-3 rounded-xl bg-[var(--color-input)] px-4 py-3">
+                      {task.files.map((file) => (
+                        <div key={file.name} className="flex items-center gap-3 rounded-xl bg-[var(--color-input)] px-4 py-3">
                           <PixelIcon name="article" size={16} className="text-[var(--color-muted)]" />
                           <div className="flex-1 min-w-0">
                             <div className="text-[13px] font-medium text-[var(--color-heading)] truncate">{file.name}</div>
@@ -2776,7 +2768,7 @@ export default function DashboardV2() {
                       <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mt-5 mb-3 block">Top Holders</span>
                       <div className="flex flex-col">
                         {tokenData.topHolders.map((h, i) => (
-                          <div key={i} className={`flex items-center gap-3 py-2.5 ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}>
+                          <div key={h.wallet} className={`flex items-center gap-3 py-2.5 ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}>
                             <span className="w-5 text-[12px] font-mono text-[var(--color-muted)] text-center shrink-0">{i + 1}</span>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
@@ -2861,9 +2853,9 @@ export default function DashboardV2() {
                           <span className="text-[12px] font-medium text-[var(--color-heading)]">{taskTitle}</span>
                         </div>
                         <div className="rounded-2xl bg-[var(--color-surface)] shadow-md shadow-black/4 border border-[var(--color-border)] overflow-hidden">
-                          {group.files.map((file, i) => (
+                          {group.files.map((file) => (
                             <div
-                              key={i}
+                              key={file.name}
                               className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}
                             >
                               <PixelIcon name="file-text" size={16} className="text-[var(--color-muted)] shrink-0" />

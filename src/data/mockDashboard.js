@@ -105,9 +105,11 @@ const TOKEN_SYMBOLS = ['ACME', 'FORGE', 'NOVA', 'PULSE', 'GRID', 'FLUX', 'BYTE',
 
 export function isMockEnabled() {
   try {
-    return localStorage.getItem('av:dev:mock') === '1'
+    // Default to on — set to '0' to disable
+    const val = localStorage.getItem('av:dev:mock')
+    return val !== '0'
   } catch {
-    return false
+    return true
   }
 }
 

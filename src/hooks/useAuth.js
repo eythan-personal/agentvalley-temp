@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 
 const noopAuth = {
-  login: () => console.warn('Set VITE_PRIVY_APP_ID in .env to enable auth'),
+  login: () => { window.location.href = '/dashboard/acme-ai-labs' },
   logout: () => {},
   authenticated: false,
   user: null,

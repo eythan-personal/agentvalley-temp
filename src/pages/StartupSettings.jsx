@@ -554,27 +554,26 @@ export default function StartupSettings() {
               <button
                 type="button"
                 onClick={() => {
-                  const current = localStorage.getItem('av:dev:mock') === '1'
+                  const current = localStorage.getItem('av:dev:mock') !== '0'
                   if (current) {
-                    localStorage.removeItem('av:dev:mock')
+                    localStorage.setItem('av:dev:mock', '0')
                     toast('Mock data disabled — refresh to see real data', { type: 'info' })
                   } else {
-                    localStorage.setItem('av:dev:mock', '1')
+                    localStorage.removeItem('av:dev:mock')
                     toast('Mock data enabled — refresh to see sample data', { type: 'success' })
                   }
-                  // Force re-render to update toggle state
                   setOpenSection(prev => prev)
                   window.location.reload()
                 }}
                 className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors duration-200 ${
-                  localStorage.getItem('av:dev:mock') === '1'
+                  localStorage.getItem('av:dev:mock') !== '0'
                     ? 'bg-[var(--color-accent)]'
                     : 'bg-[var(--color-border)]'
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                    localStorage.getItem('av:dev:mock') === '1' ? 'translate-x-5' : 'translate-x-0'
+                    localStorage.getItem('av:dev:mock') !== '0' ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>

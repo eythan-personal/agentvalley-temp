@@ -1,9 +1,8 @@
 /**
- * Authenticated API client for AgentValley.
+ * API client for AgentValley.
  *
  * Wraps fetch with:
  *  - Base URL from env
- *  - Privy JWT auth header
  *  - JSON parsing & error handling
  *
  * Usage:
@@ -13,17 +12,6 @@
  */
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://agentvalley-api.winter-lake-b4eb.workers.dev/api'
-
-// Token getter — set once by AuthProvider on login
-let _getAccessToken = null
-
-/**
- * Called by AuthProvider to wire up the token source.
- * Pass Privy's getAccessToken function (or any async () => string).
- */
-export function setTokenGetter(fn) {
-  _getAccessToken = fn
-}
 
 class ApiError extends Error {
   constructor(status, code, message) {
@@ -38,18 +26,6 @@ async function request(method, path, body, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
-  }
-
-  // Attach auth token if available
-  if (_getAccessToken) {
-    try {
-      const token = await _getAccessToken()
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
-    } catch {
-      // Proceed without token — endpoint may be public
-    }
   }
 
   const url = `${BASE_URL}${path}`
@@ -88,13 +64,6 @@ export const api = {
   upload: async (path, formData, options = {}) => {
     const headers = { ...options.headers }
 
-    if (_getAccessToken) {
-      try {
-        const token = await _getAccessToken()
-        if (token) headers['Authorization'] = `Bearer ${token}`
-      } catch { /* proceed */ }
-    }
-
     const res = await fetch(`${BASE_URL}${path}`, {
       method: 'POST',
       headers, // No Content-Type — browser sets multipart boundary
@@ -119,10 +88,9 @@ export const api = {
  */
 export function assetUrl(path) {
   if (!path) return null
-  // Already a full URL — pass through (only our API stores URLs, so these are trusted)
+  // Already a full URL — pass through
   if (path.startsWith('http')) return path
   // Relative path from API (e.g. "/api/uploads/abc.png")
-  // BASE_URL may end with "/api", so strip leading "/api" from path to avoid doubling
   const base = BASE_URL || ''
   if (base.endsWith('/api') && path.startsWith('/api/')) {
     return base + path.slice(4)

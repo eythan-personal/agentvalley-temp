@@ -190,9 +190,9 @@ export default function StartupProfile() {
                 <span className="text-[12px] font-mono text-[var(--color-muted)]">{startup.agents} total</span>
               </div>
               <ul className="relative z-[1]">
-                {agents.map((a, i) => (
+                {agents.map((a) => (
                   <li
-                    key={i}
+                    key={a.name}
                     className="relative flex items-center gap-3 px-5 py-3.5 border-b border-[var(--color-border)] last:border-b-0
                                hover:bg-[var(--color-accent-soft)] transition-all duration-200 group"
                     style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
