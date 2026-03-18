@@ -7,7 +7,7 @@ import TokenIcon from '../components/TokenIcon'
 import { useToast } from '../components/Toast'
 import { useAuth } from '../hooks/useAuth'
 import { useStartupData, useMyStartups } from '../hooks/useStartupData'
-import { TokenChart, HoldersBar, RevenueActivityChart } from '../components/DashCharts'
+import { TokenChart, HoldersBar, RevenueActivityChart } from '../components/DashboardCharts'
 import { ErrorBoundary, SectionError } from '../components/ErrorBoundary'
 import { assetUrl } from '../lib/api'
 import { DashboardSkeleton } from '../components/Skeletons'
@@ -50,7 +50,7 @@ const WORKSHOP_TABS = [
 
 const statusOrder = { 'in-progress': 0, 'queued': 1, 'completed': 2 }
 
-export default function DashboardV2() {
+export default function Dashboard() {
   const { slug } = useParams()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -1141,6 +1141,17 @@ export default function DashboardV2() {
 
             <div className="flex-1" />
 
+            {/* New Objective button */}
+            <button
+              type="button"
+              onClick={() => { setWorkshopTab('objectives'); setTimeout(() => { setIsNewMode(true) }, 150) }}
+              className="shrink-0 flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[12px] font-medium cursor-pointer
+                         bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg transition-all mr-2"
+            >
+              <PixelIcon name="plus" size={12} />
+              New Objective
+            </button>
+
             {/* Right: User avatar */}
             <div className="relative shrink-0" ref={userMenuRef}>
               <button
@@ -1300,7 +1311,7 @@ export default function DashboardV2() {
                           : 'bg-[var(--color-bg-alt)] text-[var(--color-muted)]'
                     }`}>
                       <PixelIcon name={isCompleted ? 'check' : isInProgress ? 'loader' : 'clock'} size={10} />
-                      {isCompleted ? 'Completed' : isInProgress ? 'In Progress' : 'Pending'}
+                      {isCompleted ? 'Completed' : isInProgress ? 'Working' : 'Pending'}
                     </span>
                     {task.agent && (
                       <span className="inline-flex items-center gap-1.5">
@@ -1449,101 +1460,41 @@ export default function DashboardV2() {
         {!selectedTask && workshopTab === 'objectives' && (
         <div className="max-w-[540px] mx-auto">
 
-          {/* ── Objective selector + New button ── */}
-          <div className="flex items-center gap-2.5 mb-5">
-            <div className="relative" ref={objDropdownRef}>
+          {/* ── Objective status tabs ── */}
+          <div className="flex items-center gap-1.5 mb-5 rounded-full bg-[var(--color-bg-alt)] p-1">
+            {[
+              { id: 'in-progress', label: 'In Progress', icon: 'loader', iconColor: 'text-blue-500', count: sortedObjectives.filter(o => o.status === 'in-progress').length,
+                action: () => { setStatusFilter('in-progress'); const ip = sortedObjectives.find(o => o.status === 'in-progress'); if (ip) selectObjective(ip); else { setShowCompleted(false); setIsNewMode(false); setActiveObjective(null) } }
+              },
+              { id: 'queued', label: 'Queued', icon: 'clock', iconColor: 'text-amber-500', count: queuedObjectives.length,
+                action: () => { setStatusFilter('queued'); if (queuedObjectives.length > 0) selectObjective(queuedObjectives[0]); else { setShowCompleted(false); setIsNewMode(false); setActiveObjective(null) } }
+              },
+              { id: 'completed', label: 'Completed', icon: 'check', iconColor: 'text-[var(--color-accent)]', count: completedObjectives.length,
+                action: () => {
+                  setStatusFilter('completed')
+                  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                  const apply = () => { setShowCompleted(true); setIsNewMode(false) }
+                  if (!prefersReducedMotion && timelineRef.current) {
+                    gsap.to(timelineRef.current, { opacity: 0, y: -4, duration: 0.15, ease: 'power2.in', onComplete: apply })
+                  } else { apply() }
+                }
+              },
+            ].map(tab => (
               <button
+                key={tab.id}
                 type="button"
-                onClick={() => setObjDropdown(prev => !prev)}
-                className="h-10 px-4 rounded-full bg-[var(--color-surface)] text-[14px] font-medium shadow-md shadow-black/4 border border-[var(--color-border)] flex items-center gap-2 cursor-pointer hover:shadow-md hover:shadow-black/8 transition-shadow"
+                onClick={tab.action}
+                className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full text-[13px] font-medium cursor-pointer transition-all duration-200 ${
+                  statusFilter === tab.id
+                    ? 'bg-[var(--color-surface)] text-[var(--color-heading)] shadow-sm border border-[var(--color-border)]'
+                    : 'text-[var(--color-muted)] hover:text-[var(--color-heading)]'
+                }`}
               >
-                {statusFilter === 'completed' ? (
-                  <>
-                    <PixelIcon name="check" size={14} className="text-[var(--color-accent)]" />
-                    <span className="text-[var(--color-heading)]">Completed</span>
-                  </>
-                ) : statusFilter === 'queued' ? (
-                  <>
-                    <PixelIcon name="clock" size={14} className="text-amber-500" />
-                    <span className="text-[var(--color-heading)]">Queued</span>
-                  </>
-                ) : (
-                  <>
-                    <PixelIcon name="loader" size={14} className="text-blue-500" />
-                    <span className="text-[var(--color-heading)]">In Progress</span>
-                  </>
-                )}
-                <PixelIcon name="chevron-right" size={12} className={`text-[var(--color-muted)] ${objDropdown ? 'rotate-90' : ''}`} style={{ transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+                <PixelIcon name={tab.icon} size={13} className={tab.iconColor} />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className={`text-[11px] ${statusFilter === tab.id ? 'text-[var(--color-heading)]' : 'text-[var(--color-muted)]'}`}>{tab.count}</span>
               </button>
-
-              {objDropdown && (
-                <div className="animate-menu-in absolute top-full left-0 mt-2 w-48 rounded-xl bg-[var(--color-surface)] shadow-lg shadow-black/8 border border-[var(--color-border)] py-1.5 z-50">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatusFilter('in-progress')
-                      const ip = sortedObjectives.find(o => o.status === 'in-progress')
-                      if (ip) selectObjective(ip)
-                      else { setShowCompleted(false); setIsNewMode(false); setActiveObjective(null); setObjDropdown(false) }
-                    }}
-                    className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors cursor-pointer flex items-center gap-2.5 ${
-                      statusFilter === 'in-progress' ? 'bg-[var(--color-bg-alt)]/50 text-[var(--color-heading)] font-medium' : 'text-[var(--color-body)] hover:bg-[var(--color-bg-alt)]/50'
-                    }`}
-                  >
-                    <PixelIcon name="loader" size={13} className="text-blue-500 shrink-0" />
-                    In Progress
-                    <span className="ml-auto text-[11px] text-[var(--color-muted)]">{sortedObjectives.filter(o => o.status === 'in-progress').length}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatusFilter('queued')
-                      if (queuedObjectives.length > 0) selectObjective(queuedObjectives[0])
-                      else { setShowCompleted(false); setIsNewMode(false); setActiveObjective(null); setObjDropdown(false) }
-                    }}
-                    className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors cursor-pointer flex items-center gap-2.5 ${
-                      statusFilter === 'queued' ? 'bg-[var(--color-bg-alt)]/50 text-[var(--color-heading)] font-medium' : 'text-[var(--color-body)] hover:bg-[var(--color-bg-alt)]/50'
-                    }`}
-                  >
-                    <PixelIcon name="clock" size={13} className="text-amber-500 shrink-0" />
-                    Queued
-                    <span className="ml-auto text-[11px] text-[var(--color-muted)]">{queuedObjectives.length}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatusFilter('completed')
-                      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-                      const apply = () => { setShowCompleted(true); setIsNewMode(false); setObjDropdown(false) }
-                      if (!prefersReducedMotion && timelineRef.current) {
-                        gsap.to(timelineRef.current, { opacity: 0, y: -4, duration: 0.15, ease: 'power2.in', onComplete: apply })
-                      } else { apply() }
-                    }}
-                    className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors cursor-pointer flex items-center gap-2.5 ${
-                      statusFilter === 'completed' ? 'bg-[var(--color-bg-alt)]/50 text-[var(--color-heading)] font-medium' : 'text-[var(--color-body)] hover:bg-[var(--color-bg-alt)]/50'
-                    }`}
-                  >
-                    <PixelIcon name="check" size={13} className="text-[var(--color-accent)] shrink-0" />
-                    Completed
-                    <span className="ml-auto text-[11px] text-[var(--color-muted)]">{completedObjectives.length}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1" />
-            <button
-              type="button"
-              onClick={selectNew}
-              className={`shrink-0 flex items-center gap-1.5 h-auto py-2.5 px-5 rounded-full text-[13px] font-medium transition-all cursor-pointer ${
-                isNewMode
-                  ? 'bg-[var(--color-heading)] text-[var(--color-bg)]'
-                  : 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg'
-              }`}
-            >
-              <PixelIcon name="plus" size={14} />
-              New Objective
-            </button>
+            ))}
           </div>
 
           {/* ═══ TIMELINE CONTENT ═══ */}
@@ -1578,34 +1529,37 @@ export default function DashboardV2() {
                     key={obj.id}
                     className="rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)]"
                   >
+                    {/* Chip + title */}
                     <div className="flex items-start gap-3 mb-3">
-                      <span className="w-8 h-8 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <PixelIcon name="check" size={14} className="text-[var(--color-accent)]" />
-                      </span>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-[15px] font-semibold text-[var(--color-heading)] leading-snug">{obj.title}</h3>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent)] mb-2">
+                          <PixelIcon name="check" size={10} />
+                          Completed
+                        </span>
+                        <h3 className="text-[17px] font-bold text-[var(--color-heading)] leading-snug" style={{ fontFamily: 'var(--font-display)' }}>{obj.title}</h3>
                         {obj.description && (
                           <p className="text-[13px] text-[var(--color-muted)] mt-1 leading-relaxed line-clamp-2">{obj.description}</p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 text-[12px] text-[var(--color-muted)] mb-3">
-                      <span>{obj.tasksTotal} tasks</span>
-                      <span>·</span>
-                      <span>{fileCount} files</span>
-                      <span>·</span>
-                      <span>{obj.startDate} – {obj.estCompletion}</span>
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-4 text-[12px] text-[var(--color-muted)] mb-3">
+                      <span className="flex items-center gap-1.5">
+                        <PixelIcon name="check" size={11} className="text-[var(--color-accent)]" />
+                        {obj.tasksTotal} tasks
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <PixelIcon name="folder" size={11} />
+                        {fileCount} files
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        {uniqueAgents.map((a, i) => (
-                          <AgentDot
-                            key={a.name}
-                            name={a.name}
-                            size={24}
-                            className="border-2 border-[var(--color-surface)]"
-                            style={{ marginLeft: i > 0 ? '-6px' : 0, zIndex: uniqueAgents.length - i }}
-                          />
+
+                    {/* Divider + agents + view files */}
+                    <div className="border-t border-[var(--color-border)] pt-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {uniqueAgents.map((a) => (
+                          <AgentDot key={a.name} name={a.name} size={28} />
                         ))}
                       </div>
                       <button
@@ -1626,98 +1580,7 @@ export default function DashboardV2() {
           {/* ═══ CONTENT ═══ */}
           {!showCompleted && <div>
 
-            {/* ── NEW OBJECTIVE MODE ── */}
-            {isNewMode && (
-              <>
-                <div className="tl-card flex flex-col items-center mt-4 mb-8 relative z-10">
-                  <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent)]/10 flex items-center justify-center mb-3">
-                    <PixelIcon name="target" size={22} className="text-[var(--color-accent)]" />
-                  </div>
-                  <h2 className="text-[16px] font-bold text-[var(--color-heading)] mb-1" style={{ fontFamily: 'var(--font-display)' }}>Create a new objective</h2>
-                  <p className="text-[13px] text-[var(--color-muted)] text-center leading-snug max-w-[320px]">
-                    Tell your agents what to build. They'll break it into tasks and get to work.
-                  </p>
-                </div>
-
-                {/* Objective input */}
-                <div className="tl-card mb-4 relative z-10">
-                  <div className="rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)]">
-                    <label className="text-[12px] text-[var(--color-muted)] font-mono uppercase tracking-wider mb-3 block">New objective</label>
-                    <input
-                      type="text"
-                      value={objectiveInput}
-                      onChange={e => setObjectiveInput(e.target.value)}
-                      placeholder="e.g. Launch marketing website v2"
-                      className="w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-medium
-                                 placeholder:text-[#b0adaa] placeholder:font-normal focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all mb-3"
-                      aria-label="Objective title"
-                      autoFocus
-                    />
-                    <textarea
-                      value={objectiveDescription}
-                      onChange={e => setObjectiveDescription(e.target.value)}
-                      placeholder="Describe what you want to achieve, any constraints, and what success looks like..."
-                      rows={3}
-                      className="w-full px-4 py-3 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                                 placeholder:text-[#b0adaa] focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all resize-none leading-relaxed"
-                      aria-label="Objective description"
-                    />
-                  </div>
-                </div>
-
-                {/* Agents card */}
-                <div className="tl-card mb-4 relative z-10">
-                  <div className="rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)]">
-                    <label className="text-[12px] text-[var(--color-muted)] font-mono uppercase tracking-wider mb-4 block">
-                      Agents
-                    </label>
-
-                    {/* Existing agents */}
-                    <div className="flex flex-col gap-2 mb-4">
-                      {agents.map(a => (
-                        <div key={a.name} className="flex items-center gap-3 rounded-xl bg-[var(--color-input)] px-4 py-3">
-                          <AgentDot name={a.name} size={32} />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[14px] font-medium text-[var(--color-heading)]">{a.name}</div>
-                            <div className="text-[12px] text-[var(--color-muted)]">{a.role}</div>
-                          </div>
-                          <span className="text-[11px] text-[var(--color-accent)] bg-[var(--color-accent)]/10 px-2 py-1 rounded-full font-medium">Joined</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Invite more */}
-                    <button
-                      type="button"
-                      onClick={handleInviteAgent}
-                      className="w-full h-11 rounded-xl border-2 border-dashed border-[var(--color-border)] text-[14px] font-medium text-[var(--color-muted)]
-                                 flex items-center justify-center gap-2 hover:border-[var(--color-heading)] hover:text-[var(--color-heading)] transition-colors cursor-pointer mb-3"
-                    >
-                      <PixelIcon name="plus" size={14} />
-                      Invite Another Agent
-                    </button>
-                  </div>
-                </div>
-
-                {/* Create button */}
-                <div className="tl-card relative z-10">
-                  <button
-                    type="button"
-                    onClick={handleCreateObjective}
-                    disabled={!objectiveInput.trim() || creatingObjective}
-                    className={`w-full h-12 rounded-2xl text-[14px] font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      objectiveInput.trim() && !creatingObjective
-                        ? 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg'
-                        : 'bg-[var(--color-bg-alt)] text-[var(--color-muted)] cursor-not-allowed'
-                    }`}
-                  >
-                    <PixelIcon name="zap" size={16} />
-                    Create Objective
-                  </button>
-                </div>
-
-              </>
-            )}
+            {/* New objective mode is now handled by the modal below */}
 
             {/* ── OBJECTIVE TIMELINE ── */}
             {/* ── EMPTY STATE or CREATING loading for in-progress ── */}
@@ -1869,9 +1732,6 @@ export default function DashboardV2() {
                         <div key={qObj.id} className={`tl-card relative z-10 ${deletingObjectiveId === qObj.id ? 'animate-card-exit' : ''} ${statusChanging === qObj.id ? 'animate-status-change' : ''}`}>
                           <div className="card-alive rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)]">
                             <div className="flex items-start gap-3 mb-3">
-                              <span className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                                <PixelIcon name="clock" size={15} className="text-amber-500" />
-                              </span>
                               <div className="flex-1 min-w-0">
                                 {isEditing ? (
                                   <>
@@ -1894,7 +1754,11 @@ export default function DashboardV2() {
                                   </>
                                 ) : (
                                   <>
-                                    <h3 className="text-[15px] font-semibold text-[var(--color-heading)] leading-snug">{qObj.title}</h3>
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 mb-2">
+                                      <PixelIcon name="clock" size={10} />
+                                      Queued
+                                    </span>
+                                    <h3 className="text-[17px] font-bold text-[var(--color-heading)] leading-snug" style={{ fontFamily: 'var(--font-display)' }}>{qObj.title}</h3>
                                     {qObj.description && (
                                       <p className="text-[13px] text-[var(--color-muted)] mt-1 leading-relaxed line-clamp-2">{qObj.description}</p>
                                     )}
@@ -1948,14 +1812,9 @@ export default function DashboardV2() {
                               </div>
                             ) : null}
 
-                            <div className="flex items-center gap-4 text-[12px] text-[var(--color-muted)]">
-                              <span className="flex items-center gap-1">
-                                <PixelIcon name="calendar" size={11} className="text-[var(--color-muted)]" />
-                                Est. {qObj.startDate}
-                              </span>
-                              <span className="text-[var(--color-border)]">→</span>
-                              <span>{qObj.estCompletion}</span>
-                              <span className="ml-auto">{qObj.tasksTotal} tasks planned</span>
+                            <div className="flex items-center justify-between text-[12px] text-[var(--color-muted)]">
+                              <span>{qObj.tasksTotal} tasks planned</span>
+                              <span>Starts {qObj.startDate}</span>
                             </div>
                           </div>
                         </div>
@@ -1991,14 +1850,21 @@ export default function DashboardV2() {
                     )}
                   </div>
                 ) : (
+                  <>
+                  <div className="flex items-center gap-2 mb-3">
+                    <PixelIcon name="bullseye-arrow" size={13} className="text-[var(--color-muted)]" />
+                    <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)]">
+                      Current Objective
+                    </span>
+                  </div>
                   <div className={`tl-card mb-4 relative z-10 ${deletingObjectiveId === activeObjective.id ? 'animate-card-exit' : ''} ${statusChanging === activeObjective.id ? 'animate-status-change' : ''}`}>
                     <div className="rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)]">
                       {/* Title row */}
                       <div className="flex items-start gap-3 mb-3">
                         <div className="flex-1 min-w-0">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent)] mb-2">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 mb-2">
                             <PixelIcon name="bullseye-arrow" size={10} />
-                            Objective
+                            In Progress
                           </span>
                           <h2 className="text-[17px] font-bold text-[var(--color-heading)] leading-snug" style={{ fontFamily: 'var(--font-display)' }}>
                             {activeObjective.title}
@@ -2124,6 +1990,7 @@ export default function DashboardV2() {
                       })()}
                     </div>
                   </div>
+                  </>
                 )}
 
                 {/* ── Tasks zone — lighter background (hidden for queued objectives) ── */}
@@ -2139,20 +2006,20 @@ export default function DashboardV2() {
                     <div className="flex items-center gap-2 mb-3">
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                       <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)]">
-                        Tasks In Progress ({assignedTasks.length})
+                        Working ({assignedTasks.length})
                       </span>
                     </div>
                     {assignedTasks.map(task => (
                       <div key={task.id} className="tl-card mb-3">
                         <div
-                          className="card-alive rounded-2xl bg-[var(--color-surface)] overflow-hidden shadow-md shadow-black/4 border border-[var(--color-border)] cursor-pointer hover:shadow-lg hover:shadow-black/8"
+                          className="card-alive rounded-2xl bg-[var(--color-surface)] overflow-hidden shadow-md shadow-black/4 border border-[var(--color-border)] cursor-pointer hover:shadow-lg hover:shadow-black/8 relative active-task-glow"
                           onClick={() => setSelectedTask(task)}
                         >
                           <div className="p-5">
                             <div className="flex items-center gap-2 mb-2">
                               <span className="badge-breathe inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
                                 <PixelIcon name="loader" size={10} />
-                                In Progress
+                                Working
                               </span>
                             </div>
                             <h3 className="text-[15px] font-bold text-[var(--color-heading)] mb-1" style={{ fontFamily: 'var(--font-display)' }}>
@@ -2444,25 +2311,101 @@ export default function DashboardV2() {
                   <div className="dash-panel relative rounded-2xl overflow-hidden shadow-md shadow-black/4 border border-[var(--color-border)] mb-4 bg-[var(--color-surface)]">
                     <div className="relative p-5">
                     {defaultObjective ? (
-                      <button
-                        type="button"
-                        onClick={() => { setActiveObjective(defaultObjective); setWorkshopTab('objectives') }}
-                        className="w-full text-left cursor-pointer group"
-                      >
-                        <div className="flex items-center gap-2 mb-2.5">
-                          <PixelIcon name="bullseye-arrow" size={13} className="text-[var(--color-accent)]" />
-                          <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-accent)] font-semibold">Current Objective</span>
-                          <PixelIcon name="chevron-right" size={11} className="text-[var(--color-muted)] ml-auto group-hover:text-[var(--color-accent)] transition-colors" />
-                        </div>
-                        <div className="text-[15px] font-semibold text-[var(--color-heading)] mb-2.5" style={{ fontFamily: 'var(--font-display)' }}>{defaultObjective.title}</div>
-                        <div className="flex items-center gap-3 mb-1.5">
-                          <div className="flex-1 h-3 rounded-full bg-[var(--color-bg-alt)] overflow-hidden">
-                            <div className="h-full rounded-full bg-[var(--color-accent)] progress-shimmer" style={{ width: `${defaultObjective.progress}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
-                          </div>
-                          <span className="text-[13px] font-mono font-bold text-[var(--color-heading)] shrink-0">{defaultObjective.progress}%</span>
-                        </div>
-                        <div className="text-[11px] text-[var(--color-muted)]">{defaultObjective.tasksComplete}/{defaultObjective.tasksTotal} tasks</div>
-                      </button>
+                      (() => {
+                        const objTasks_ = tasks.filter(t => t.objective === defaultObjective.title)
+                        const doneCount = objTasks_.filter(t => t.status === 'Completed').length
+                        const activeCount = objTasks_.filter(t => t.status === 'Assigned').length
+                        const waitingCount = objTasks_.filter(t => t.status === 'Pending').length
+                        const totalCount = doneCount + activeCount + waitingCount
+                        const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
+                        const uniqueAgents = []
+                        const seen = new Set()
+                        objTasks_.forEach(t => {
+                          if (t.agent && !seen.has(t.agent.name)) {
+                            seen.add(t.agent.name)
+                            const activeTask = objTasks_.find(at => at.agent?.name === t.agent.name && at.status === 'Assigned')
+                            uniqueAgents.push({ ...t.agent, activeTask })
+                          }
+                        })
+
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => { setActiveObjective(defaultObjective); setWorkshopTab('objectives') }}
+                            className="w-full text-left cursor-pointer group"
+                          >
+                            {/* Chip + title */}
+                            <div className="flex items-start gap-3 mb-3">
+                              <div className="flex-1 min-w-0">
+                                <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 mb-2">
+                                  <PixelIcon name="bullseye-arrow" size={10} />
+                                  In Progress
+                                </span>
+                                <h2 className="text-[17px] font-bold text-[var(--color-heading)] leading-snug" style={{ fontFamily: 'var(--font-display)' }}>
+                                  {defaultObjective.title}
+                                </h2>
+                              </div>
+                              <PixelIcon name="chevron-right" size={14} className="text-[var(--color-muted)] shrink-0 mt-1 group-hover:text-[var(--color-heading)] transition-colors" />
+                            </div>
+
+                            {/* Task progress */}
+                            <div className="mb-3">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-[13px] font-semibold text-[var(--color-heading)]">Task Progress</span>
+                                <span className="text-[14px] font-bold text-[var(--color-heading)] tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>{pct}%</span>
+                              </div>
+                              <div className="flex h-3 rounded-full bg-[var(--color-bg-alt)] overflow-hidden mb-3">
+                                {doneCount > 0 && (
+                                  <div className="h-full bg-[var(--color-accent)] progress-shimmer" style={{ width: `${(doneCount / totalCount) * 100}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+                                )}
+                                {activeCount > 0 && (
+                                  <div className="h-full bg-blue-400" style={{ width: `${(activeCount / totalCount) * 100}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-4 text-[12px]">
+                                <span className="flex items-center gap-1.5 text-[var(--color-accent)]">
+                                  <span className="w-2.5 h-2.5 rounded-sm bg-[var(--color-accent)]" />
+                                  <span className="font-medium">{doneCount}</span> completed
+                                </span>
+                                <span className="flex items-center gap-1.5 text-blue-500">
+                                  <span className="w-2.5 h-2.5 rounded-sm bg-blue-400" />
+                                  <span className="font-medium">{activeCount}</span> assigned
+                                </span>
+                                <span className="flex items-center gap-1.5 text-[var(--color-muted)]">
+                                  <span className="w-2.5 h-2.5 rounded-sm bg-[var(--color-bg-alt)] border border-[var(--color-border)]" />
+                                  <span className="font-medium">{waitingCount}</span> pending
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Agents */}
+                            {uniqueAgents.length > 0 && (
+                              <>
+                                <div className="border-t border-[var(--color-border)] my-4" />
+                                <div className="flex flex-col gap-2">
+                                  {uniqueAgents.map(a => (
+                                    <div key={a.name} className="flex items-center gap-2.5">
+                                      <AgentDot name={a.name} size={28} active={!!a.activeTask} />
+                                      <span className="text-[13px] font-medium text-[var(--color-heading)]">{a.name}</span>
+                                      {a.activeTask ? (
+                                        <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] truncate">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 live-pulse shrink-0" />
+                                          <span className="truncate">{a.activeTask.title}</span>
+                                        </span>
+                                      ) : (
+                                        <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)] shrink-0" />
+                                          Idle
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </button>
+                        )
+                      })()
                     ) : (
                       <button
                         type="button"
@@ -3059,6 +3002,117 @@ export default function DashboardV2() {
     </div>
     </ErrorBoundary>
 
+    {/* ── New Objective Modal ── */}
+    {isNewMode && (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+        <div
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={() => { setIsNewMode(false); setObjectiveInput(''); setObjectiveDescription('') }}
+        />
+        <div
+          role="dialog"
+          aria-label="Create new objective"
+          aria-modal="true"
+          className="relative w-full max-w-[480px] rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-2xl overflow-hidden"
+          style={{ animation: 'onboard-in 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[var(--color-border)]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
+                <PixelIcon name="bullseye-arrow" size={16} className="text-[var(--color-accent)]" />
+              </div>
+              <span className="text-[15px] font-semibold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
+                New Objective
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setIsNewMode(false); setObjectiveInput(''); setObjectiveDescription('') }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-muted)]
+                         hover:text-[var(--color-heading)] hover:bg-[var(--color-bg-alt)] transition-all cursor-pointer"
+              aria-label="Close"
+            >
+              <PixelIcon name="close" size={14} />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="px-6 py-5">
+            <div className="mb-4">
+              <label className="text-[12px] text-[var(--color-muted)] font-mono uppercase tracking-wider mb-2 block">Title</label>
+              <input
+                type="text"
+                value={objectiveInput}
+                onChange={e => setObjectiveInput(e.target.value)}
+                placeholder="e.g. Launch marketing website v2"
+                className="w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-medium
+                           placeholder:text-[#b0adaa] placeholder:font-normal focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all"
+                aria-label="Objective title"
+                autoFocus
+              />
+            </div>
+            <div className="mb-5">
+              <label className="text-[12px] text-[var(--color-muted)] font-mono uppercase tracking-wider mb-2 block">Description</label>
+              <textarea
+                value={objectiveDescription}
+                onChange={e => setObjectiveDescription(e.target.value)}
+                placeholder="Describe what you want to achieve, any constraints, and what success looks like..."
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
+                           placeholder:text-[#b0adaa] focus:outline-2 focus:outline-[var(--color-heading)]/10 transition-all resize-none leading-relaxed"
+                aria-label="Objective description"
+              />
+            </div>
+
+            {/* Agents */}
+            {agents.length > 0 && (
+              <div className="mb-5">
+                <label className="text-[12px] text-[var(--color-muted)] font-mono uppercase tracking-wider mb-3 block">Agents</label>
+                <div className="flex flex-col gap-2">
+                  {agents.map(a => (
+                    <div key={a.name} className="flex items-center gap-3 rounded-xl bg-[var(--color-input)] px-4 py-2.5">
+                      <AgentDot name={a.name} size={28} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] font-medium text-[var(--color-heading)]">{a.name}</div>
+                        <div className="text-[11px] text-[var(--color-muted)]">{a.role}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 pb-5 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => { setIsNewMode(false); setObjectiveInput(''); setObjectiveDescription('') }}
+              className="flex-1 h-11 rounded-xl text-[13px] font-medium text-[var(--color-muted)]
+                         border border-[var(--color-border)] hover:text-[var(--color-heading)] hover:border-[var(--color-muted)]
+                         transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleCreateObjective}
+              disabled={!objectiveInput.trim() || creatingObjective}
+              className={`flex-1 h-11 rounded-xl text-[13px] font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                objectiveInput.trim() && !creatingObjective
+                  ? 'bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg'
+                  : 'bg-[var(--color-bg-alt)] text-[var(--color-muted)] cursor-not-allowed'
+              }`}
+            >
+              <PixelIcon name="zap" size={14} />
+              Create Objective
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
     {/* ── Onboarding Modal ── */}
     {onboardingStep && currentStartup && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
@@ -3200,6 +3254,33 @@ export default function DashboardV2() {
       @keyframes onboard-in {
         from { opacity: 0; transform: scale(0.95) translateY(8px) }
         to { opacity: 1; transform: scale(1) translateY(0) }
+      }
+      @keyframes border-spin {
+        from { --border-angle: 0deg; }
+        to { --border-angle: 360deg; }
+      }
+      @property --border-angle {
+        syntax: '<angle>';
+        initial-value: 0deg;
+        inherits: false;
+      }
+      .active-task-glow::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: 1rem;
+        padding: 1.5px;
+        background: conic-gradient(from var(--border-angle), transparent 50%, rgb(37,99,235) 72%, rgb(96,165,250) 82%, rgb(37,99,235) 90%, transparent 100%);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        animation: border-spin 4s linear infinite;
+        pointer-events: none;
+        z-index: 1;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .active-task-glow::before { animation: none; opacity: 0; }
       }
     `}</style>
 

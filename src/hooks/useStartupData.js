@@ -3,46 +3,38 @@ import { api } from '../lib/api'
 import { useAuth } from './useAuth'
 import { isMockEnabled, generateMockDashboard, generateMockStartup } from '../data/mockDashboard'
 
+const MOCK = isMockEnabled()
+
 /**
  * Hook to fetch the user's startups list from the API.
  */
 export function useMyStartups() {
   const { ready, authenticated } = useAuth()
-  const [startups, setStartups] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const mountedRef = useRef(true)
 
-  useEffect(() => () => { mountedRef.current = false }, [])
+  // When mock is on, initialize with data immediately — no loading state
+  const [startups, setStartups] = useState(() =>
+    MOCK ? [generateMockStartup('acme-ai-labs'), generateMockStartup('neon-grid'), generateMockStartup('code-forge')] : []
+  )
+  const [loading, setLoading] = useState(!MOCK)
+  const [error, setError] = useState(null)
 
   const fetchStartups = useCallback(async () => {
+    if (MOCK) return // already initialized
     setLoading(true)
     setError(null)
-
-    if (isMockEnabled()) {
-      if (mountedRef.current) {
-        setStartups([
-          generateMockStartup('acme-ai-labs'),
-          generateMockStartup('neon-grid'),
-          generateMockStartup('code-forge'),
-        ])
-        setLoading(false)
-      }
-      return
-    }
-
     try {
       const result = await api.get('/me/startups')
-      if (mountedRef.current) setStartups(result)
+      setStartups(result)
     } catch (err) {
-      if (mountedRef.current) { setError(err); setStartups([]) }
+      setError(err)
+      setStartups([])
     } finally {
-      if (mountedRef.current) setLoading(false)
+      setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    if (isMockEnabled()) { fetchStartups(); return }
+    if (MOCK) return
     if (!ready) return
     if (!authenticated) {
       setStartups([])
@@ -57,29 +49,33 @@ export function useMyStartups() {
 
 /**
  * Hook to fetch all dashboard data for a startup by slug.
- * Uses AbortController to cancel in-flight requests on slug change or unmount.
  */
 export function useStartupData(slug) {
   const { ready, authenticated } = useAuth()
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [startup, setStartup] = useState(null)
-  const abortRef = useRef(null)
 
+  // When mock is on, initialize with data immediately
+  const [data, setData] = useState(() => MOCK && slug ? generateMockDashboard(slug) : null)
+  const [startup, setStartup] = useState(() => MOCK && slug ? generateMockStartup(slug) : null)
+  const [loading, setLoading] = useState(!MOCK)
+  const [error, setError] = useState(null)
+  const abortRef = useRef(null)
+  const prevSlugRef = useRef(slug)
+
+  // For mock mode: update data synchronously when slug changes
+  useEffect(() => {
+    if (!MOCK) return
+    if (prevSlugRef.current !== slug && slug) {
+      prevSlugRef.current = slug
+      setData(generateMockDashboard(slug))
+      setStartup(generateMockStartup(slug))
+    }
+  }, [slug])
+
+  // For API mode: fetch data
   const fetchData = useCallback(async (signal) => {
-    if (!slug) return
+    if (!slug || MOCK) return
     setLoading(true)
     setError(null)
-
-    if (isMockEnabled()) {
-      if (!signal?.aborted) {
-        setData(generateMockDashboard(slug))
-        setLoading(false)
-      }
-      return
-    }
-
     try {
       const result = await api.get(`/startups/${slug}/dashboard`, { signal })
       if (!signal?.aborted) setData(result)
@@ -91,10 +87,7 @@ export function useStartupData(slug) {
   }, [slug])
 
   const fetchStartupMeta = useCallback(async (signal) => {
-    if (isMockEnabled()) {
-      if (!signal?.aborted) setStartup(generateMockStartup(slug))
-      return
-    }
+    if (MOCK) return
 
     const fallback = {
       slug: slug || '',
@@ -118,16 +111,11 @@ export function useStartupData(slug) {
   }, [slug])
 
   useEffect(() => {
-    // Cancel any in-flight request from previous slug
+    if (MOCK) return
+
     if (abortRef.current) abortRef.current.abort()
     const controller = new AbortController()
     abortRef.current = controller
-
-    if (isMockEnabled()) {
-      fetchData(controller.signal)
-      fetchStartupMeta(controller.signal)
-      return () => controller.abort()
-    }
 
     if (!ready || !authenticated) return () => controller.abort()
 
@@ -138,11 +126,18 @@ export function useStartupData(slug) {
   }, [ready, authenticated, fetchData, fetchStartupMeta])
 
   const refetch = useCallback(() => {
+    if (MOCK) {
+      if (slug) {
+        setData(generateMockDashboard(slug))
+        setStartup(generateMockStartup(slug))
+      }
+      return
+    }
     if (abortRef.current) abortRef.current.abort()
     const controller = new AbortController()
     abortRef.current = controller
     fetchData(controller.signal)
-  }, [fetchData])
+  }, [slug, fetchData])
 
   return { data, loading, error, startup, refetch }
 }

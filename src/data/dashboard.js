@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
 //  Dashboard mock data — one startup + two agents
-//  Archived full dataset: src/archive/dashboard.js
+//  Legacy mock data for acme-ai-labs
 // ═══════════════════════════════════════════════════════════════════
 
 // ── ACME AI LABS ──────────────────────────────────────────────────

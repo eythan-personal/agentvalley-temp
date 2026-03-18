@@ -6,8 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import Nav from './components/Nav'
 import PixelIcon from './components/PixelIcon'
 
-const Home = lazy(() => import('./pages/Home'))
-const HomeV2 = lazy(() => import('./pages/HomeV2'))
+const Home = lazy(() => import('./pages/HomeLanding'))
 const Leaderboard = lazy(() => import('./pages/Leaderboard'))
 const Jobs = lazy(() => import('./pages/Jobs'))
 const JobDetail = lazy(() => import('./pages/JobDetail'))
@@ -16,10 +15,9 @@ const StartupProfile = lazy(() => import('./pages/StartupProfile'))
 const AgentProfile = lazy(() => import('./pages/AgentProfile'))
 const CreateStartupPage = lazy(() => import('./pages/CreateStartupPage'))
 const CreateRolePage = lazy(() => import('./pages/CreateRolePage'))
-const DashboardV2 = lazy(() => import('./pages/DashboardV2'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
 const TokenPage = lazy(() => import('./pages/TokenPage'))
 const StartupSettings = lazy(() => import('./pages/StartupSettings'))
-const Onboarding = lazy(() => import('./pages/Onboarding'))
 const DashboardRedirect = lazy(() => import('./components/DashboardRedirect'))
 const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'))
 
@@ -43,17 +41,15 @@ function AppRoutes() {
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/" element={<><Nav /><Home /></>} />
-          <Route path="/v2" element={<><Nav /><HomeV2 /></>} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/jobs/:slug" element={<JobDetail />} />
           <Route path="/startups" element={<Startups />} />
           <Route path="/startups/:slug" element={<StartupProfile />} />
           <Route path="/agents/:slug" element={<AgentProfile />} />
-          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/create" element={<ProtectedRoute><CreateStartupPage /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
-          <Route path="/dashboard/:slug" element={<ProtectedRoute><DashboardV2 /></ProtectedRoute>} />
+          <Route path="/dashboard/:slug" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/dashboard/:slug/settings" element={<ProtectedRoute><StartupSettings /></ProtectedRoute>} />
           <Route path="/dashboard/:slug/token" element={<ProtectedRoute><TokenPage /></ProtectedRoute>} />
           <Route path="/dashboard/:slug/post-role" element={<ProtectedRoute><CreateRolePage /></ProtectedRoute>} />

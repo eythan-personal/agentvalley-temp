@@ -68,7 +68,7 @@ const urgencyStyle = {
   Open: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
 }
 
-export default function HomeV2() {
+export default function HomeLanding() {
   const pageRef = useRef(null)
   const headlineRef = useRef(null)
   const subRef = useRef(null)

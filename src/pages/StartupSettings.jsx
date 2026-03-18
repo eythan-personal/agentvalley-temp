@@ -203,41 +203,67 @@ export default function StartupSettings() {
             WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)',
           }}
         />
-        <div className="max-w-[540px] mx-auto py-3 flex items-center relative">
-          <TransitionLink
-            to={`/dashboard/${slug}`}
-            className="h-8 px-3 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm shadow-black/4
-                       flex items-center gap-1.5 text-[13px] font-medium text-[var(--color-muted)] hover:text-[var(--color-heading)]
-                       hover:border-[var(--color-muted)] transition-all"
-          >
-            <PixelIcon name="arrow-left" size={13} />
-            Workshop
-          </TransitionLink>
+        <div className="max-w-[540px] mx-auto py-4 flex items-center relative">
+          {/* Left: Back + startup name */}
+          <div className="flex items-center gap-2.5">
+            <TransitionLink
+              to={`/dashboard/${slug}`}
+              className="w-8 h-8 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm shadow-black/4
+                         flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-heading)]
+                         hover:border-[var(--color-muted)] transition-all"
+              aria-label="Back to dashboard"
+            >
+              <PixelIcon name="arrow-left" size={14} />
+            </TransitionLink>
+            <div className="flex items-center gap-2">
+              {assetUrl(currentStartup.avatarUrl) ? (
+                <img src={assetUrl(currentStartup.avatarUrl)} alt={currentStartup.name} className="w-8 h-8 rounded-lg object-cover shrink-0" />
+              ) : (
+                <span
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                  style={{ background: currentStartup.color }}
+                >
+                  {currentStartup.initials}
+                </span>
+              )}
+              <span className="text-[14px] font-semibold text-[var(--color-heading)]">
+                Settings
+              </span>
+            </div>
+          </div>
 
           <div className="flex-1" />
 
+          {/* Right: User avatar */}
           <div className="relative shrink-0" ref={userMenuRef}>
             <button
               type="button"
               onClick={() => setUserMenu(prev => !prev)}
               className="w-8 h-8 rounded-full bg-[var(--color-heading)] text-[var(--color-bg)] flex items-center justify-center text-[11px] font-bold cursor-pointer hover:opacity-80 transition-opacity"
               aria-label="Account menu"
+              aria-expanded={userMenu}
+              aria-haspopup="true"
             >
-              {user?.wallet?.address ? user.wallet.address.slice(2, 4).toUpperCase() : 'ME'}
+              {user?.wallet?.address ? user.wallet.address.slice(2, 4).toUpperCase() : <PixelIcon name="user" size={14} />}
             </button>
             {userMenu && (
-              <div className="animate-menu-in absolute right-0 top-full mt-2 w-52 rounded-xl bg-[var(--color-surface)] shadow-lg shadow-black/10 border border-[var(--color-border)] py-1.5 z-50">
-                {user?.wallet?.address && (
-                  <div className="px-4 py-2.5 border-b border-[var(--color-border)]">
-                    <div className="text-[11px] font-mono text-[var(--color-muted)] truncate">
-                      {user.wallet.address.slice(0, 6)}...{user.wallet.address.slice(-4)}
-                    </div>
-                  </div>
-                )}
-                <button type="button" onClick={() => { navigator.clipboard.writeText(user?.wallet?.address || ''); setUserMenu(false); toast('Address copied', { type: 'success', icon: 'clipboard' }) }} className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5">
-                  <PixelIcon name="clipboard" size={14} className="text-[var(--color-muted)]" />
-                  Copy Address
-                </button>
+              <div role="menu" className="animate-menu-in absolute right-0 top-full mt-2 w-52 rounded-xl bg-[var(--color-surface)] shadow-lg shadow-black/10 border border-[var(--color-border)] py-1.5 z-50">
+                <TransitionLink
+                  to={`/dashboard/${slug}`}
+                  onClick={() => setUserMenu(false)}
+                  className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5"
+                >
+                  <PixelIcon name="home" size={14} className="text-[var(--color-muted)]" />
+                  Dashboard
+                </TransitionLink>
+                <TransitionLink
+                  to="/"
+                  onClick={() => setUserMenu(false)}
+                  className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5"
+                >
+                  <PixelIcon name="home" size={14} className="text-[var(--color-muted)]" />
+                  Homepage
+                </TransitionLink>
                 <div className="border-t border-[var(--color-border)] mt-1 pt-1">
                   <button type="button" onClick={() => { setUserMenu(false); logout() }} className="w-full text-left px-4 py-2.5 text-[13px] text-red-500 hover:bg-red-500/5 transition-colors cursor-pointer flex items-center gap-2.5">
                     <PixelIcon name="power" size={14} />
@@ -247,37 +273,6 @@ export default function StartupSettings() {
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* ── Header ── */}
-      <div className="px-4 sm:px-6 pt-6 pb-2">
-        <div className="max-w-[540px] mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            {assetUrl(currentStartup.avatarUrl) ? (
-              <img src={assetUrl(currentStartup.avatarUrl)} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" />
-            ) : (
-              <span
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-[14px] font-bold text-white shrink-0"
-                style={{ background: currentStartup.color }}
-              >
-                {currentStartup.initials}
-              </span>
-            )}
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[16px] font-semibold text-[var(--color-heading)]">{currentStartup.name}</span>
-                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                  isPaused
-                    ? 'bg-red-500/10 text-red-400'
-                    : 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]'
-                }`}>
-                  {currentStartup.status || 'Incubating'}
-                </span>
-              </div>
-            </div>
-          </div>
-          <h1 className="text-[24px] font-bold text-[var(--color-heading)] mt-4" style={{ fontFamily: 'var(--font-display)' }}>Settings</h1>
         </div>
       </div>
 

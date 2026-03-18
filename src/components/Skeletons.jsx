@@ -128,7 +128,7 @@ export function FeedSkeleton({ count = 3 }) {
   )
 }
 
-/** Full-page dashboard skeleton matching DashboardV2 layout */
+/** Full-page dashboard skeleton matching Dashboard layout */
 export function DashboardSkeleton() {
   return (
     <div className="animate-pulse" style={{ animationDuration: '2s' }}>
