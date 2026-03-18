@@ -2042,6 +2042,55 @@ export default function DashboardV2() {
                         </div>
                       </div>
 
+                      {/* Task progress */}
+                      {(() => {
+                        const doneCount = completedTasks.length
+                        const activeCount = assignedTasks.length
+                        const waitingCount = pendingTasks.length
+                        const totalCount = doneCount + activeCount + waitingCount
+                        const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
+                        return (
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-[13px] font-semibold text-[var(--color-heading)]">Task Progress</span>
+                              <span className="text-[14px] font-bold text-[var(--color-heading)] tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>{pct}%</span>
+                            </div>
+
+                            {/* Segmented progress bar */}
+                            <div className="flex h-3 rounded-full bg-[var(--color-bg-alt)] overflow-hidden mb-3">
+                              {doneCount > 0 && (
+                                <div
+                                  className="h-full bg-[var(--color-accent)] progress-shimmer"
+                                  style={{ width: `${(doneCount / totalCount) * 100}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                                />
+                              )}
+                              {activeCount > 0 && (
+                                <div
+                                  className="h-full bg-blue-400"
+                                  style={{ width: `${(activeCount / totalCount) * 100}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                                />
+                              )}
+                            </div>
+
+                            {/* Legend */}
+                            <div className="flex items-center gap-4 text-[12px]">
+                              <span className="flex items-center gap-1.5 text-[var(--color-accent)]">
+                                <span className="w-2.5 h-2.5 rounded-sm bg-[var(--color-accent)]" />
+                                <span className="font-medium">{doneCount}</span> completed
+                              </span>
+                              <span className="flex items-center gap-1.5 text-blue-500">
+                                <span className="w-2.5 h-2.5 rounded-sm bg-blue-400" />
+                                <span className="font-medium">{activeCount}</span> assigned
+                              </span>
+                              <span className="flex items-center gap-1.5 text-[var(--color-muted)]">
+                                <span className="w-2.5 h-2.5 rounded-sm bg-[var(--color-bg-alt)] border border-[var(--color-border)]" />
+                                <span className="font-medium">{waitingCount}</span> pending
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })()}
+
                       {/* Agents working on this objective */}
                       {(() => {
                         const uniqueAgents = []
@@ -2055,75 +2104,26 @@ export default function DashboardV2() {
                         })
                         if (!uniqueAgents.length) return null
                         return (
-                          <div className="flex flex-col gap-2 mb-3">
-                            {uniqueAgents.map(a => (
-                              <div key={a.name} className="flex items-center gap-2.5">
-                                <AgentDot name={a.name} size={28} active={!!a.activeTask} />
-                                <span className="text-[13px] font-medium text-[var(--color-heading)]">{a.name}</span>
-                                {a.activeTask ? (
-                                  <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] truncate">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 live-pulse shrink-0" />
-                                    <span className="truncate">{a.activeTask.title}</span>
-                                  </span>
-                                ) : (
-                                  <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)] shrink-0" />
-                                    Idle
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )
-                      })()}
-
-                      {/* Task breakdown chips */}
-                      {(() => {
-                        const doneCount = completedTasks.length
-                        const activeCount = assignedTasks.length
-                        const waitingCount = pendingTasks.length
-                        const totalCount = doneCount + activeCount + waitingCount
-                        const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
-                        return (
                           <>
-                            {/* Progress bar + stats */}
-                            <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm p-4 mb-1">
-                              <div className="flex items-center justify-between mb-3">
-                                <span className="text-[13px] font-semibold text-[var(--color-heading)]">Task Progress</span>
-                                <span className="text-[14px] font-bold text-[var(--color-heading)] tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>{pct}%</span>
-                              </div>
-
-                              {/* Segmented progress bar */}
-                              <div className="flex h-3 rounded-full bg-[var(--color-bg-alt)] overflow-hidden mb-3">
-                                {doneCount > 0 && (
-                                  <div
-                                    className="h-full bg-[var(--color-accent)] progress-shimmer"
-                                    style={{ width: `${(doneCount / totalCount) * 100}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
-                                  />
-                                )}
-                                {activeCount > 0 && (
-                                  <div
-                                    className="h-full bg-blue-400"
-                                    style={{ width: `${(activeCount / totalCount) * 100}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
-                                  />
-                                )}
-                              </div>
-
-                              {/* Legend */}
-                              <div className="flex items-center gap-4 text-[12px]">
-                                <span className="flex items-center gap-1.5 text-[var(--color-accent)]">
-                                  <span className="w-2.5 h-2.5 rounded-sm bg-[var(--color-accent)]" />
-                                  <span className="font-medium">{doneCount}</span> completed
-                                </span>
-                                <span className="flex items-center gap-1.5 text-blue-500">
-                                  <span className="w-2.5 h-2.5 rounded-sm bg-blue-400" />
-                                  <span className="font-medium">{activeCount}</span> assigned
-                                </span>
-                                <span className="flex items-center gap-1.5 text-[var(--color-muted)]">
-                                  <span className="w-2.5 h-2.5 rounded-sm bg-[var(--color-bg-alt)] border border-[var(--color-border)]" />
-                                  <span className="font-medium">{waitingCount}</span> pending
-                                </span>
-                              </div>
+                            <div className="border-t border-[var(--color-border)] my-4" />
+                            <div className="flex flex-col gap-2">
+                              {uniqueAgents.map(a => (
+                                <div key={a.name} className="flex items-center gap-2.5">
+                                  <AgentDot name={a.name} size={28} active={!!a.activeTask} />
+                                  <span className="text-[13px] font-medium text-[var(--color-heading)]">{a.name}</span>
+                                  {a.activeTask ? (
+                                    <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] truncate">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 live-pulse shrink-0" />
+                                      <span className="truncate">{a.activeTask.title}</span>
+                                    </span>
+                                  ) : (
+                                    <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)] shrink-0" />
+                                      Idle
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
                             </div>
                           </>
                         )
