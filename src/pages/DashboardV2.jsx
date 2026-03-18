@@ -136,6 +136,7 @@ export default function DashboardV2() {
   const [isNewMode, setIsNewMode] = useState(false)
   const [objectiveDescription, setObjectiveDescription] = useState('')
   const [selectedTask, setSelectedTask] = useState(null)
+  const [selectedAgent, setSelectedAgent] = useState(null)
   const [taskComment, setTaskComment] = useState('')
   const [activeFolder, setActiveFolder] = useState(null)
   const [showCompleted, setShowCompleted] = useState(false)
@@ -185,6 +186,7 @@ export default function DashboardV2() {
   const dashCompletedTasks = tasks.filter(t => t.status === 'Completed').length
   const dashActiveTasks = tasks.filter(t => t.status === 'Assigned').length
 
+
   // Agent colors for charts
   const agentsWithColors = useMemo(() =>
     agents.map(a => ({ ...a, color: agentColor(a.name) })),
@@ -202,6 +204,18 @@ export default function DashboardV2() {
     return num
   }
   const revenueNum = parseRevenue(myStartup.revenue)
+
+  // Detect fresh startup — no agents, no objectives, no revenue
+  const isFreshStartup = agents.length === 0 && objectives.length === 0 && !revenueNum
+  const [onboardingStep, setOnboardingStep] = useState(null) // null = closed, 'agents' | 'objective'
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false)
+
+  // Show onboarding modal on fresh startup (once, after data loads)
+  useEffect(() => {
+    if (isFreshStartup && !onboardingDismissed && !loading && currentStartup) {
+      setOnboardingStep('agents')
+    }
+  }, [isFreshStartup, loading, currentStartup])
 
   // Runway — realistic startup burn model
   // Startups typically spend 1.3-1.8x their revenue (burning through reserves)
@@ -1121,6 +1135,14 @@ export default function DashboardV2() {
                     <PixelIcon name="clipboard" size={14} className="text-[var(--color-muted)]" />
                     Copy Address
                   </button>
+                  <TransitionLink
+                    to={`/dashboard/${slug}/settings`}
+                    onClick={() => setUserMenu(false)}
+                    className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5"
+                  >
+                    <PixelIcon name="sliders-2" size={14} className="text-[var(--color-muted)]" />
+                    Startup Settings
+                  </TransitionLink>
                   <button
                     type="button"
                     onClick={() => { setUserMenu(false) }}
@@ -2234,7 +2256,9 @@ export default function DashboardV2() {
           {/* Header + tabs inside max-w container */}
           <div className="max-w-[540px] mx-auto">
 
-            {/* Big stats — overview shows 3 key numbers */}
+            {/* ── Fresh startup onboarding ── */}
+
+            {/* Big stats — overview shows 3 key numbers (hidden when fresh) */}
             {dashTab === 'overview' && (
               <div className="flex items-end gap-6 mb-1">
                 <div>
@@ -2362,22 +2386,28 @@ export default function DashboardV2() {
                   })()}
 
                   {/* Current objective card */}
-                  <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-4 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
+                  <div className="dash-panel relative rounded-2xl overflow-hidden shadow-md shadow-black/4 border border-[var(--color-border)] mb-4 bg-[var(--color-surface)]">
+                    <div className="relative p-4">
                     {defaultObjective ? (
-                      <>
+                      <button
+                        type="button"
+                        onClick={() => { setActiveObjective(defaultObjective); setWorkshopTab('objectives') }}
+                        className="w-full text-left cursor-pointer group"
+                      >
                         <div className="flex items-center gap-2 mb-2.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 live-pulse shrink-0" />
-                          <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Current Objective</span>
+                          <PixelIcon name="bullseye-arrow" size={13} className="text-[var(--color-accent)]" />
+                          <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-accent)] font-semibold">Current Objective</span>
+                          <PixelIcon name="chevron-right" size={11} className="text-[var(--color-muted)] ml-auto group-hover:text-[var(--color-accent)] transition-colors" />
                         </div>
-                        <div className="text-[14px] font-medium text-[var(--color-heading)] mb-2">{defaultObjective.title}</div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="flex-1 h-2 rounded-full bg-[var(--color-bg-alt)] overflow-hidden">
-                            <div className="h-full rounded-full bg-blue-500 progress-shimmer" style={{ width: `${defaultObjective.progress}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+                        <div className="text-[15px] font-semibold text-[var(--color-heading)] mb-2.5 group-hover:text-[var(--color-accent)] transition-colors" style={{ fontFamily: 'var(--font-display)' }}>{defaultObjective.title}</div>
+                        <div className="flex items-center gap-2.5 mb-1.5">
+                          <div className="flex-1 h-2.5 rounded-full bg-[var(--color-accent)]/10 overflow-hidden">
+                            <div className="h-full rounded-full bg-[var(--color-accent)] progress-shimmer" style={{ width: `${defaultObjective.progress}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
                           </div>
-                          <span className="text-[12px] font-mono font-semibold text-[var(--color-heading)] shrink-0">{defaultObjective.progress}%</span>
+                          <span className="text-[13px] font-mono font-bold text-[var(--color-accent)] shrink-0">{defaultObjective.progress}%</span>
                         </div>
                         <div className="text-[11px] text-[var(--color-muted)]">{defaultObjective.tasksComplete}/{defaultObjective.tasksTotal} tasks · est. {defaultObjective.estCompletion}</div>
-                      </>
+                      </button>
                     ) : (
                       <button
                         type="button"
@@ -2422,6 +2452,7 @@ export default function DashboardV2() {
                         </div>
                       </button>
                     )}
+                    </div>
                   </div>
 
 
@@ -2430,14 +2461,27 @@ export default function DashboardV2() {
                     <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Agents</span>
                     <div className="flex flex-col gap-3">
                       {agents.map(a => (
-                        <div key={a.name} className="flex items-center gap-3.5 rounded-2xl bg-[var(--color-bg-alt)]/60 border border-[var(--color-border)]/50 px-4 py-3.5">
-                          <AgentDot name={a.name} size={42} />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[15px] font-semibold text-[var(--color-heading)]">{a.name}</div>
-                            <div className="text-[13px] text-[var(--color-muted)]">{a.role}</div>
+                        <TransitionLink
+                          key={a.name}
+                          to={`/agents/${a.name.toLowerCase().replace(/\s+/g, '-')}`}
+                          className="w-full flex flex-col rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]/50 hover:border-[var(--color-border)] px-4 py-3.5 cursor-pointer transition-all duration-200"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <AgentDot name={a.name} size={42} active={a.status === 'working'} />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[15px] font-semibold text-[var(--color-heading)]">{a.name}</div>
+                              <div className="flex items-center gap-1.5 text-[13px] text-[var(--color-muted)]">
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${a.status === 'working' ? 'bg-[var(--color-accent)] live-pulse' : 'bg-[var(--color-muted)]/40'}`} />
+                                {a.workingOn ? (
+                                  <span className="truncate">{a.workingOn}</span>
+                                ) : (
+                                  <span>{a.role} · Idle</span>
+                                )}
+                              </div>
+                            </div>
+                            <PixelIcon name="chevron-right" size={14} className="text-[var(--color-muted)] shrink-0" />
                           </div>
-                          <span className="text-[12px] font-medium text-[var(--color-accent)] bg-[var(--color-accent)]/10 px-2.5 py-1 rounded-md shrink-0">Joined</span>
-                        </div>
+                        </TransitionLink>
                       ))}
                     </div>
                     <button
@@ -2448,6 +2492,44 @@ export default function DashboardV2() {
                       <span className="text-[16px] text-[var(--color-muted)]">+</span>
                       <span className="text-[14px] font-medium text-[var(--color-muted)]">Invite Another Agent</span>
                     </button>
+                  </div>
+
+
+                  {/* Post a Role */}
+                  <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
+                    <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Open Roles</span>
+
+                    {/* Existing roles */}
+                    {myRoles.length > 0 && (
+                      <div className="flex flex-col gap-2 mb-4">
+                        {myRoles.map(r => (
+                          <div key={r.id} className="flex items-center gap-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]/50 px-4 py-3">
+                            <div className="w-8 h-8 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center shrink-0">
+                              <PixelIcon name="target" size={14} className="text-[var(--color-accent)]" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[14px] font-semibold text-[var(--color-heading)]">{r.title}</div>
+                              <div className="text-[12px] text-[var(--color-muted)]">
+                                {r.applicants} applicant{r.applicants !== 1 ? 's' : ''} · {r.reward} tokens · {r.status}
+                              </div>
+                            </div>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
+                              r.urgency === 'Urgent' ? 'bg-red-500/10 text-red-600' : 'bg-amber-500/10 text-amber-600'
+                            }`}>
+                              {r.urgency}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <TransitionLink
+                      to={`/dashboard/${slug}/post-role`}
+                      className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--color-border)] py-4 cursor-pointer hover:border-[var(--color-accent)] hover:bg-[var(--color-accent)]/[0.02] transition-all duration-200"
+                    >
+                      <PixelIcon name="zap" size={16} className="text-[var(--color-muted)]" />
+                      <span className="text-[14px] font-medium text-[var(--color-muted)]">Post a New Role</span>
+                    </TransitionLink>
                   </div>
 
                   {/* Settings */}
@@ -2922,110 +3004,147 @@ export default function DashboardV2() {
     </div>
     </ErrorBoundary>
 
-    {/* ── Welcome Modal ── */}
-    {showWelcome && (
+    {/* ── Onboarding Modal ── */}
+    {onboardingStep && currentStartup && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-        {/* Backdrop */}
         <div
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={() => setShowWelcome(false)}
-          style={{ animation: 'fadeIn 0.3s ease-out' }}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={() => { setOnboardingStep(null); setOnboardingDismissed(true) }}
         />
 
-        {/* Modal */}
         <div
-          className="relative w-full max-w-[380px] rounded-2xl overflow-hidden shadow-2xl"
-          style={{ animation: 'modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+          className="relative w-full max-w-[420px] rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-2xl overflow-hidden"
+          style={{ animation: 'onboard-in 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
-          {/* Top accent band with pixel grid */}
-          <div className="relative h-28 bg-[var(--color-accent)] overflow-hidden">
-            <div
-              className="absolute inset-0 opacity-[0.12]"
-              style={{
-                backgroundImage: `
-                  linear-gradient(#0d2000 1px, transparent 1px),
-                  linear-gradient(90deg, #0d2000 1px, transparent 1px)
-                `,
-                backgroundSize: '6px 6px',
-              }}
-            />
-            {/* Floating pixel icons */}
-            <div className="absolute inset-0 flex items-center justify-center gap-4">
-              {['robot', 'zap', 'crown', 'coins', 'trophy'].map((icon, i) => (
-                <div
-                  key={icon}
-                  className="w-8 h-8 rounded-lg bg-[#0d2000]/15 flex items-center justify-center text-[#0d2000]"
-                  style={{
-                    animation: 'pixel-float 2.5s steps(4) infinite',
-                    animationDelay: `${i * 0.18}s`,
-                  }}
-                >
-                  <PixelIcon name={icon} size={15} />
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 pt-5 pb-0">
+            <div className="flex items-center gap-3">
+              {assetUrl(myStartup.avatar) ? (
+                <img src={assetUrl(myStartup.avatar)} alt="" className="w-9 h-9 rounded-xl object-cover border border-[var(--color-border)]" />
+              ) : (
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[12px] font-bold" style={{ background: myStartup.color || 'var(--color-accent)' }}>
+                  {(myStartup.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
                 </div>
-              ))}
+              )}
+              <div>
+                <div className="text-[15px] font-semibold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
+                  Get started
+                </div>
+                <div className="text-[11px] text-[var(--color-muted)]">{myStartup.name}</div>
+              </div>
+            </div>
+            <div className="text-[12px] text-[var(--color-muted)] font-mono">
+              {onboardingStep === 'agents' ? '1' : '2'} / 2
             </div>
           </div>
 
-          {/* Body */}
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] border-t-0 rounded-b-2xl px-7 pb-7 pt-6 text-center">
-            <h2
-              className="text-[22px] text-[var(--color-heading)] leading-tight mb-1"
-              style={{ fontFamily: 'var(--font-accent)', fontWeight: 500 }}
-            >
-              Welcome to
-            </h2>
-            <h2
-              className="text-[26px] text-[var(--color-accent)] leading-tight mb-4"
-              style={{ fontFamily: 'var(--font-accent)', fontWeight: 500 }}
-            >
-              {welcomeName || currentStartup?.name || 'your startup'}
-            </h2>
+          {/* Step indicator */}
+          <div className="flex gap-1.5 px-6 mt-4">
+            <div className={`flex-1 h-1 rounded-full transition-colors duration-300 ${onboardingStep === 'agents' || onboardingStep === 'objective' ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'}`} />
+            <div className={`flex-1 h-1 rounded-full transition-colors duration-300 ${onboardingStep === 'objective' ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'}`} />
+          </div>
 
-            <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-6 max-w-[280px] mx-auto">
-              Your startup is live. Create your first objective and your AI agents will break it into tasks and start building.
-            </p>
+          {/* Content */}
+          <div className="px-6 pt-6 pb-6">
+            {onboardingStep === 'agents' && (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/10 flex items-center justify-center">
+                    <PixelIcon name="robot" size={20} className="text-[var(--color-accent)]" />
+                  </div>
+                  <div>
+                    <div className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
+                      Invite agents to your team
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-5">
+                  Agents are AI workers that execute on your objectives. Add them now or browse the marketplace later.
+                </p>
 
-            <button
-              type="button"
-              onClick={() => {
-                setShowWelcome(false)
-                setWorkshopTab('objectives')
-                setTimeout(() => setIsNewMode(true), 150)
-              }}
-              className="w-full h-11 rounded-full text-[13px] font-semibold cursor-pointer
-                         bg-[var(--color-accent)] text-[#0d2000]
-                         hover:shadow-lg hover:shadow-[var(--color-accent)]/20
-                         transition-all duration-200
-                         inline-flex items-center justify-center gap-2"
-            >
-              <PixelIcon name="bullseye-arrow" size={15} />
-              Create Your First Objective
-            </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleInviteAgent()
+                    setOnboardingStep('objective')
+                  }}
+                  className="w-full h-11 rounded-xl text-[13px] font-semibold cursor-pointer
+                             bg-[var(--color-accent)] text-[#0d2000]
+                             hover:shadow-lg hover:shadow-[var(--color-accent)]/20
+                             transition-all duration-200
+                             flex items-center justify-center gap-2"
+                >
+                  <PixelIcon name="robot" size={15} />
+                  Add an Agent
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOnboardingStep('objective')}
+                  className="w-full mt-2 h-9 rounded-xl text-[12px] font-medium cursor-pointer
+                             text-[var(--color-muted)] hover:text-[var(--color-heading)]
+                             transition-colors flex items-center justify-center"
+                >
+                  I'll do this later
+                </button>
+              </>
+            )}
 
-            <button
-              type="button"
-              onClick={() => setShowWelcome(false)}
-              className="w-full mt-2.5 h-9 rounded-full text-[12px] font-medium cursor-pointer
-                         text-[var(--color-muted)] hover:text-[var(--color-heading)]
-                         transition-colors"
-            >
-              I'll explore first
-            </button>
+            {onboardingStep === 'objective' && (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/10 flex items-center justify-center">
+                    <PixelIcon name="bullseye-arrow" size={20} className="text-[var(--color-accent)]" />
+                  </div>
+                  <div>
+                    <div className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
+                      Create your first objective
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-5">
+                  Tell your agents what to build. They'll break it into tasks and start working autonomously.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOnboardingStep(null)
+                    setOnboardingDismissed(true)
+                    setWorkshopTab('objectives')
+                    setTimeout(() => setIsNewMode(true), 150)
+                  }}
+                  className="w-full h-11 rounded-xl text-[13px] font-semibold cursor-pointer
+                             bg-[var(--color-accent)] text-[#0d2000]
+                             hover:shadow-lg hover:shadow-[var(--color-accent)]/20
+                             transition-all duration-200
+                             flex items-center justify-center gap-2"
+                >
+                  <PixelIcon name="bullseye-arrow" size={15} />
+                  Create Objective
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setOnboardingStep(null); setOnboardingDismissed(true) }}
+                  className="w-full mt-2 h-9 rounded-xl text-[12px] font-medium cursor-pointer
+                             text-[var(--color-muted)] hover:text-[var(--color-heading)]
+                             transition-colors flex items-center justify-center"
+                >
+                  I'll explore first
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
     )}
 
     <style>{`
-      @keyframes fadeIn {
-        from { opacity: 0 }
-        to { opacity: 1 }
-      }
-      @keyframes modalIn {
-        from { opacity: 0; transform: scale(0.92) translateY(12px) }
+      @keyframes onboard-in {
+        from { opacity: 0; transform: scale(0.95) translateY(8px) }
         to { opacity: 1; transform: scale(1) translateY(0) }
       }
     `}</style>
+
     </>
   )
 }

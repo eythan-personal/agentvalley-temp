@@ -41,29 +41,31 @@ const eventColors = {
 }
 
 function HeatmapGrid({ data }) {
-  const weeks = 26
+  const weeks = 20
   const days = 7
   const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', '']
   const levels = ['bg-[#ebedf0]', 'bg-[#d4edbc]', 'bg-[#7bc96f]', 'bg-[#449e48]', 'bg-[#196127]']
+  // Use last N weeks of data
+  const offset = Math.max(0, data.length - weeks * 7)
 
   return (
-    <div className="overflow-x-auto -mx-5 px-5 scrollbar-none">
-      <div className="flex gap-[2px] sm:gap-1 min-w-0">
-        <div className="flex flex-col gap-[2px] sm:gap-[3px] pr-1 sm:pr-1.5">
+    <div className="overflow-hidden">
+      <div className="flex gap-[2px] min-w-0">
+        <div className="flex flex-col gap-[2px] pr-1 shrink-0">
           {dayLabels.map((label, i) => (
-            <span key={i} className="text-[9px] text-[var(--color-muted)] font-mono h-[9px] sm:h-[11px] leading-[9px] sm:leading-[11px]">{label}</span>
+            <span key={i} className="text-[9px] text-[var(--color-muted)] font-mono h-[9px] leading-[9px]">{label}</span>
           ))}
         </div>
-        <div className="flex gap-[3px] flex-1">
+        <div className="flex gap-[2px] flex-1 min-w-0">
           {Array.from({ length: weeks }).map((_, w) => (
-            <div key={w} className="flex flex-col gap-[3px]">
+            <div key={w} className="flex flex-col gap-[2px] flex-1 min-w-0">
               {Array.from({ length: days }).map((_, d) => {
-                const idx = w * 7 + d
+                const idx = offset + w * 7 + d
                 const val = data[idx] ?? 0
                 return (
                   <div
                     key={d}
-                    className={`w-[9px] h-[9px] sm:w-[11px] sm:h-[11px] rounded-[2px] ${levels[Math.min(val, 4)]}`}
+                    className={`w-full aspect-square rounded-[2px] ${levels[Math.min(val, 4)]}`}
                     title={`${val} contributions`}
                   />
                 )

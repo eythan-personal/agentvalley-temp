@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { api } from '../lib/api'
 import { useAuth } from './useAuth'
+import { isMockEnabled, generateMockDashboard, generateMockStartup } from '../data/mockDashboard'
 
 /**
  * Hook to fetch the user's startups list from the API.
@@ -15,6 +16,18 @@ export function useMyStartups() {
   const fetchStartups = useCallback(async () => {
     setLoading(true)
     setError(null)
+
+    // Dev mode: return mock startups list
+    if (isMockEnabled()) {
+      setStartups([
+        generateMockStartup('acme-ai-labs'),
+        generateMockStartup('neon-grid'),
+        generateMockStartup('code-forge'),
+      ])
+      setLoading(false)
+      return
+    }
+
     try {
       const result = await api.get('/me/startups')
       setStartups(result)
@@ -27,6 +40,7 @@ export function useMyStartups() {
   }, [])
 
   useEffect(() => {
+    if (isMockEnabled()) { fetchStartups(); return }
     if (!ready) return
     if (!authenticated) {
       setStartups([])
@@ -54,6 +68,13 @@ export function useStartupData(slug) {
     setLoading(true)
     setError(null)
 
+    // Dev mode: return mock data instead of hitting API
+    if (isMockEnabled()) {
+      setData(generateMockDashboard(slug))
+      setLoading(false)
+      return
+    }
+
     try {
       const result = await api.get(`/startups/${slug}/dashboard`)
       setData(result)
@@ -66,6 +87,12 @@ export function useStartupData(slug) {
 
   // Fetch startup metadata from the user's startups list
   const fetchStartupMeta = useCallback(async () => {
+    // Dev mode: return mock startup metadata
+    if (isMockEnabled()) {
+      setStartup(generateMockStartup(slug))
+      return
+    }
+
     try {
       const list = await api.get('/me/startups')
       const match = list.find(s => s.slug === slug)
@@ -99,6 +126,7 @@ export function useStartupData(slug) {
   }, [slug])
 
   useEffect(() => {
+    if (isMockEnabled()) { fetchData(); fetchStartupMeta(); return }
     if (!ready || !authenticated) return
     fetchData()
     fetchStartupMeta()

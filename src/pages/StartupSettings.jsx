@@ -543,6 +543,44 @@ export default function StartupSettings() {
             </div>
           </div>
 
+          {/* ═══ DEVELOPER ═══ */}
+          <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
+            <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Developer</span>
+            <div className="flex items-center justify-between rounded-xl bg-[var(--color-input)] px-4 py-3">
+              <div>
+                <div className="text-[14px] font-medium text-[var(--color-heading)]">Mock Data</div>
+                <div className="text-[12px] text-[var(--color-muted)]">Fill dashboards with sample data for testing</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const current = localStorage.getItem('av:dev:mock') === '1'
+                  if (current) {
+                    localStorage.removeItem('av:dev:mock')
+                    toast('Mock data disabled — refresh to see real data', { type: 'info' })
+                  } else {
+                    localStorage.setItem('av:dev:mock', '1')
+                    toast('Mock data enabled — refresh to see sample data', { type: 'success' })
+                  }
+                  // Force re-render to update toggle state
+                  setOpenSection(prev => prev)
+                  window.location.reload()
+                }}
+                className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors duration-200 ${
+                  localStorage.getItem('av:dev:mock') === '1'
+                    ? 'bg-[var(--color-accent)]'
+                    : 'bg-[var(--color-border)]'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                    localStorage.getItem('av:dev:mock') === '1' ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
           {/* ═══ DANGER ZONE ═══ */}
           <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-red-500/20 mb-4">
             <span className="text-[12px] font-mono uppercase tracking-wider text-red-400 mb-4 block">Danger Zone</span>

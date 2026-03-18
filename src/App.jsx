@@ -7,6 +7,7 @@ import Nav from './components/Nav'
 import PixelIcon from './components/PixelIcon'
 
 const Home = lazy(() => import('./pages/Home'))
+const HomeV2 = lazy(() => import('./pages/HomeV2'))
 const Leaderboard = lazy(() => import('./pages/Leaderboard'))
 const Jobs = lazy(() => import('./pages/Jobs'))
 const JobDetail = lazy(() => import('./pages/JobDetail'))
@@ -42,6 +43,7 @@ function AppRoutes() {
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/" element={<><Nav /><Home /></>} />
+          <Route path="/v2" element={<><Nav /><HomeV2 /></>} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/jobs/:slug" element={<JobDetail />} />

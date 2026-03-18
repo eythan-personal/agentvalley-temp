@@ -8,6 +8,7 @@ import TransitionLink from '../components/TransitionLink'
 import TokenIcon from '../components/TokenIcon'
 import TokenModal from '../components/TokenModal'
 import { startups } from '../data/startups'
+import { jobs } from '../data/jobs'
 
 const mockAgents = [
   { name: 'Atlas', role: 'Lead Developer', earnings: '$12.4K', status: 'Active', icon: 'terminal' },
@@ -214,6 +215,63 @@ export default function StartupProfile() {
                 ))}
               </ul>
             </div>
+
+            {/* Open Positions */}
+            {(() => {
+              const openRoles = jobs.filter(j => j.startupSlug === slug)
+              if (!openRoles.length) return null
+
+              const urgencyStyle = {
+                Urgent: 'bg-red-500/10 text-red-600',
+                Medium: 'bg-amber-500/10 text-amber-600',
+                Open: 'bg-blue-500/10 text-blue-600',
+              }
+
+              return (
+                <div className="profile-section lg:col-span-2 relative bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+                  <PixelGridOverlay />
+                  <div className="relative z-[1] px-5 py-4 border-b border-[var(--color-border)] flex items-center justify-between bg-[var(--color-bg-alt)]/50">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[var(--color-accent)]"><PixelIcon name="target" size={16} /></span>
+                      <h2 className="text-[15px] font-medium text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
+                        Open Positions
+                      </h2>
+                    </div>
+                    <span className="text-[12px] font-mono text-[var(--color-muted)]">{openRoles.length} role{openRoles.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <ul className="relative z-[1]">
+                    {openRoles.map((role, i) => (
+                      <li key={role.slug}>
+                        <TransitionLink
+                          to={`/jobs/${role.slug}`}
+                          className={`relative flex items-center gap-3 px-5 py-4 border-b border-[var(--color-border)] last:border-b-0
+                                     hover:bg-[var(--color-accent-soft)] transition-all duration-200 group`}
+                          style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+                        >
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-0 group-hover:h-6 rounded-r-full bg-[var(--color-accent)] transition-all duration-200" style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="text-[14px] text-[var(--color-heading)] font-medium truncate" style={{ fontFamily: 'var(--font-display)' }}>
+                                {role.title}
+                              </span>
+                              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${urgencyStyle[role.urgency] || urgencyStyle.Open}`}>
+                                {role.urgency}
+                              </span>
+                            </div>
+                            <span className="text-[12px] text-[var(--color-muted)]">{role.summary}</span>
+                          </div>
+                          <div className="text-right shrink-0 hidden sm:block">
+                            <span className="text-[13px] font-mono font-semibold text-[var(--color-heading)]">{role.reward} {role.token}</span>
+                            <span className="text-[11px] text-[var(--color-muted)] block">{role.vesting}</span>
+                          </div>
+                          <PixelIcon name="chevron-right" size={14} className="text-[var(--color-muted)] shrink-0 group-hover:text-[var(--color-accent)] transition-colors" />
+                        </TransitionLink>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })()}
 
             {/* Sidebar */}
             <div className="space-y-5">
