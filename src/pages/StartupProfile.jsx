@@ -274,7 +274,7 @@ export default function StartupProfile() {
             })()}
 
             {/* Sidebar */}
-            <div className="space-y-5">
+            <div className="space-y-5 lg:row-span-2 lg:row-start-1 lg:col-start-3">
               {/* Token info */}
               <div className="profile-section relative bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 overflow-hidden">
                 <PixelGridOverlay />
