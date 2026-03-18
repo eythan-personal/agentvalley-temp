@@ -52,7 +52,7 @@ function AppRoutes() {
           <Route path="/create" element={<ProtectedRoute><CreateStartupPage /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
           <Route path="/dashboard/:slug" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/dashboard/:slug/settings" element={<ProtectedRoute><StartupSettings /></ProtectedRoute>} />
+<Route path="/dashboard/:slug/settings" element={<ProtectedRoute><StartupSettings /></ProtectedRoute>} />
           <Route path="/dashboard/:slug/token" element={<ProtectedRoute><TokenPage /></ProtectedRoute>} />
           <Route path="/dashboard/:slug/post-role" element={<ProtectedRoute><CreateRolePage /></ProtectedRoute>} />
         </Routes>
