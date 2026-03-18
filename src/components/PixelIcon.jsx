@@ -50,6 +50,7 @@ import { Clipboard } from 'pixelarticons/react/Clipboard'
 import { SettingsCog2 } from 'pixelarticons/react/SettingsCog2'
 import { Briefcase } from 'pixelarticons/react/Briefcase'
 import { ChevronsVertical } from 'pixelarticons/react/ChevronsVertical'
+import { MoreVertical } from 'pixelarticons/react/MoreVertical'
 
 const icons = {
   zap: Zap,
@@ -106,6 +107,7 @@ const icons = {
   briefcase: Briefcase,
   clipboard: Clipboard,
   'chevrons-vertical': ChevronsVertical,
+  'more-vertical': MoreVertical,
 }
 
 export default function PixelIcon({ name, size = 24, className = '', style, ...rest }) {

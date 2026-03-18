@@ -458,7 +458,7 @@ export default function DashboardV2() {
     }
   }, [activeObjective, isNewMode, showCompleted])
 
-  // Close startup menu on outside click
+  // Close startup menu on outside click + keyboard nav
   useEffect(() => {
     if (!startupMenu) return
     const handleClick = (e) => {
@@ -466,11 +466,30 @@ export default function DashboardV2() {
         setStartupMenu(false)
       }
     }
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setStartupMenu(false)
+        startupMenuRef.current?.querySelector('button')?.focus()
+      }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        const items = startupMenuRef.current?.querySelectorAll('a')
+        if (!items?.length) return
+        const focused = document.activeElement
+        const idx = Array.from(items).indexOf(focused)
+        const next = e.key === 'ArrowDown' ? (idx + 1) % items.length : (idx - 1 + items.length) % items.length
+        items[next]?.focus()
+      }
+    }
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [startupMenu])
 
-  // Close user menu on outside click
+  // Close user menu on outside click + keyboard nav
   useEffect(() => {
     if (!userMenu) return
     const handleClick = (e) => {
@@ -478,8 +497,27 @@ export default function DashboardV2() {
         setUserMenu(false)
       }
     }
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setUserMenu(false)
+        userMenuRef.current?.querySelector('button')?.focus()
+      }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        const items = userMenuRef.current?.querySelectorAll('a, button[type="button"]')
+        if (!items?.length) return
+        const focused = document.activeElement
+        const idx = Array.from(items).indexOf(focused)
+        const next = e.key === 'ArrowDown' ? (idx + 1) % items.length : (idx - 1 + items.length) % items.length
+        items[next]?.focus()
+      }
+    }
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [userMenu])
 
   // Close objective dropdown on outside click
@@ -1036,9 +1074,11 @@ export default function DashboardV2() {
                   type="button"
                   onClick={() => setStartupMenu(prev => !prev)}
                   className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
+                  aria-expanded={startupMenu}
+                  aria-haspopup="true"
                 >
                   {assetUrl(currentStartup.avatarUrl) ? (
-                    <img src={assetUrl(currentStartup.avatarUrl)} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                    <img src={assetUrl(currentStartup.avatarUrl)} alt={currentStartup.name} className="w-8 h-8 rounded-lg object-cover shrink-0" />
                   ) : (
                     <span
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0"
@@ -1070,7 +1110,7 @@ export default function DashboardV2() {
                         }`}
                       >
                         {assetUrl(s.avatarUrl) ? (
-                          <img src={assetUrl(s.avatarUrl)} alt="" className="w-6 h-6 rounded-md object-cover shrink-0" />
+                          <img src={assetUrl(s.avatarUrl)} alt={s.name} className="w-6 h-6 rounded-md object-cover shrink-0" />
                         ) : (
                           <span
                             className="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold text-white shrink-0"
@@ -1106,12 +1146,14 @@ export default function DashboardV2() {
                 onClick={() => setUserMenu(prev => !prev)}
                 className="w-8 h-8 rounded-full bg-[var(--color-heading)] text-[var(--color-bg)] flex items-center justify-center text-[11px] font-bold cursor-pointer hover:opacity-80 transition-opacity"
                 aria-label="Account menu"
+                aria-expanded={userMenu}
+                aria-haspopup="true"
               >
                 {user?.wallet?.address ? user.wallet.address.slice(2, 4).toUpperCase() : <PixelIcon name="user" size={14} />}
               </button>
 
               {userMenu && (
-                <div className="absolute right-0 top-full mt-2 w-52 rounded-xl bg-[var(--color-surface)] shadow-lg shadow-black/10 border border-[var(--color-border)] py-1.5 z-50">
+                <div role="menu" className="absolute right-0 top-full mt-2 w-52 rounded-xl bg-[var(--color-surface)] shadow-lg shadow-black/10 border border-[var(--color-border)] py-1.5 z-50">
                   {user?.wallet?.address && (
                     <div className="px-4 py-2.5 border-b border-[var(--color-border)]">
                       <div className="text-[11px] font-mono text-[var(--color-muted)] truncate">
@@ -1168,7 +1210,7 @@ export default function DashboardV2() {
         </div>
       )}
 
-      <main className="pt-4 pb-24 px-4 sm:px-6">
+      <main id="main" className="pt-4 pb-24 px-4 sm:px-6">
         {/* ═══ TASK DETAIL PAGE ═══ */}
         {selectedTask && (() => {
           const task = selectedTask
@@ -1959,11 +2001,12 @@ export default function DashboardV2() {
                     <div className="rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)]">
                       {/* Title row */}
                       <div className="flex items-start gap-3 mb-3">
-                        <span className="w-8 h-8 rounded-lg bg-[var(--color-accent)]/15 flex items-center justify-center shrink-0 mt-0.5">
-                          <PixelIcon name="target" size={15} className="text-[var(--color-accent)]" />
-                        </span>
                         <div className="flex-1 min-w-0">
-                          <h2 className="text-[16px] font-semibold text-[var(--color-heading)] leading-snug" style={{ fontFamily: 'var(--font-body)' }}>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent)] mb-2">
+                            <PixelIcon name="bullseye-arrow" size={10} />
+                            Objective
+                          </span>
+                          <h2 className="text-[17px] font-bold text-[var(--color-heading)] leading-snug" style={{ fontFamily: 'var(--font-display)' }}>
                             {activeObjective.title}
                           </h2>
                           {activeObjective.description && (
@@ -1999,75 +2042,92 @@ export default function DashboardV2() {
                         </div>
                       </div>
 
-                      {/* Meta row: dates + agent avatars */}
-                      <div className="flex items-center gap-4 mb-3">
-                        <div className="flex items-center gap-3 text-[12px] text-[var(--color-muted)]">
-                          <span className="flex items-center gap-1">
-                            <PixelIcon name="calendar" size={11} className="text-[var(--color-muted)]" />
-                            {activeObjective.startDate}
-                          </span>
-                          <span className="text-[var(--color-border)]">→</span>
-                          <span className="flex items-center gap-1">
-                            <PixelIcon name="calendar-check" size={11} className="text-[var(--color-muted)]" />
-                            {activeObjective.estCompletion}
-                          </span>
-                        </div>
-                        <div className="ml-auto flex items-center">
-                          {(() => {
-                            const uniqueAgents = []
-                            const seen = new Set()
-                            objTasks.forEach(t => {
-                              if (t.agent && !seen.has(t.agent.name)) {
-                                seen.add(t.agent.name)
-                                uniqueAgents.push(t.agent)
-                              }
-                            })
-                            return uniqueAgents.map((a, i) => (
-                              <AgentDot
-                                key={a.name}
-                                name={a.name}
-                                size={24}
-                                active={assignedTasks.some(t => t.agent?.name === a.name)}
-                                className="border-2 border-[var(--color-surface)]"
-                                style={{ marginLeft: i > 0 ? '-6px' : 0, zIndex: uniqueAgents.length - i }}
-                              />
-                            ))
-                          })()}
-                        </div>
-                      </div>
+                      {/* Agents working on this objective */}
+                      {(() => {
+                        const uniqueAgents = []
+                        const seen = new Set()
+                        objTasks.forEach(t => {
+                          if (t.agent && !seen.has(t.agent.name)) {
+                            seen.add(t.agent.name)
+                            const activeTask = assignedTasks.find(at => at.agent?.name === t.agent.name)
+                            uniqueAgents.push({ ...t.agent, activeTask })
+                          }
+                        })
+                        if (!uniqueAgents.length) return null
+                        return (
+                          <div className="flex flex-col gap-2 mb-3">
+                            {uniqueAgents.map(a => (
+                              <div key={a.name} className="flex items-center gap-2.5">
+                                <AgentDot name={a.name} size={28} active={!!a.activeTask} />
+                                <span className="text-[13px] font-medium text-[var(--color-heading)]">{a.name}</span>
+                                {a.activeTask ? (
+                                  <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] truncate">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 live-pulse shrink-0" />
+                                    <span className="truncate">{a.activeTask.title}</span>
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)] shrink-0" />
+                                    Idle
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })()}
 
                       {/* Task breakdown chips */}
-                      <div className="rounded-xl bg-[var(--color-input)] px-4 py-2.5 mb-3">
-                        <div className="flex items-center justify-between text-[12px]">
-                        <span className="font-medium text-[var(--color-heading)]">Task Progress</span>
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1 text-[var(--color-accent)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
-                            {completedTasks.length} done
-                          </span>
-                          <span className="flex items-center gap-1 text-blue-500">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                            {assignedTasks.length} active
-                          </span>
-                          <span className="flex items-center gap-1 text-[var(--color-muted)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)]" />
-                            {pendingTasks.length} pending
-                          </span>
-                        </div>
-                        </div>
-                      </div>
+                      {(() => {
+                        const doneCount = completedTasks.length
+                        const activeCount = assignedTasks.length
+                        const waitingCount = pendingTasks.length
+                        const totalCount = doneCount + activeCount + waitingCount
+                        const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
+                        return (
+                          <>
+                            {/* Progress bar + stats */}
+                            <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm p-4 mb-1">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-[13px] font-semibold text-[var(--color-heading)]">Task Progress</span>
+                                <span className="text-[14px] font-bold text-[var(--color-heading)] tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>{pct}%</span>
+                              </div>
 
-                      {/* Progress bar */}
-                      <div className="flex items-center gap-4 text-[13px] text-[var(--color-muted)]">
-                        <span>{activeObjective.progress}%</span>
-                        <div className="flex-1 h-1.5 rounded-full bg-[var(--color-input)] overflow-hidden">
-                          <div
-                            className="h-full bg-[var(--color-accent)] rounded-full progress-shimmer"
-                            style={{ width: `${activeObjective.progress}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
-                          />
-                        </div>
-                        <span className="text-[12px] text-[var(--color-muted)]">{activeObjective.tasksComplete}/{activeObjective.tasksTotal}</span>
-                      </div>
+                              {/* Segmented progress bar */}
+                              <div className="flex h-3 rounded-full bg-[var(--color-bg-alt)] overflow-hidden mb-3">
+                                {doneCount > 0 && (
+                                  <div
+                                    className="h-full bg-[var(--color-accent)] progress-shimmer"
+                                    style={{ width: `${(doneCount / totalCount) * 100}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                                  />
+                                )}
+                                {activeCount > 0 && (
+                                  <div
+                                    className="h-full bg-blue-400"
+                                    style={{ width: `${(activeCount / totalCount) * 100}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                                  />
+                                )}
+                              </div>
+
+                              {/* Legend */}
+                              <div className="flex items-center gap-4 text-[12px]">
+                                <span className="flex items-center gap-1.5 text-[var(--color-accent)]">
+                                  <span className="w-2.5 h-2.5 rounded-sm bg-[var(--color-accent)]" />
+                                  <span className="font-medium">{doneCount}</span> completed
+                                </span>
+                                <span className="flex items-center gap-1.5 text-blue-500">
+                                  <span className="w-2.5 h-2.5 rounded-sm bg-blue-400" />
+                                  <span className="font-medium">{activeCount}</span> assigned
+                                </span>
+                                <span className="flex items-center gap-1.5 text-[var(--color-muted)]">
+                                  <span className="w-2.5 h-2.5 rounded-sm bg-[var(--color-bg-alt)] border border-[var(--color-border)]" />
+                                  <span className="font-medium">{waitingCount}</span> pending
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        )
+                      })()}
                     </div>
                   </div>
                 )}
@@ -2101,30 +2161,28 @@ export default function DashboardV2() {
                                 In Progress
                               </span>
                             </div>
-                            <h3 className="text-[15px] font-bold text-[var(--color-heading)] mb-1" style={{ fontFamily: 'var(--font-body)' }}>
+                            <h3 className="text-[15px] font-bold text-[var(--color-heading)] mb-1" style={{ fontFamily: 'var(--font-display)' }}>
                               {task.title}
                             </h3>
-                            <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-3 line-clamp-2">{task.description || task.objective}</p>
+                            <p className="text-[13px] text-[var(--color-body)] leading-relaxed mb-3 line-clamp-2">{task.description || task.objective}</p>
 
-                            {/* Agent working status */}
-                            {task.agent && task.status === 'Assigned' && (
-                              <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-[var(--color-input)]">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] live-pulse shrink-0" />
-                                <span className="text-[11px] text-[var(--color-muted)] font-mono truncate">
-                                  Working on {task.title.toLowerCase()}...
-                                </span>
-                                <span className="blink-cursor text-[var(--color-accent)] text-[11px] font-mono shrink-0">▌</span>
-                              </div>
-                            )}
-
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                {task.agent && <AgentDot name={task.agent.name} size={24} active />}
-                                {task.agent && <span className="text-[12px] text-[var(--color-muted)]">{task.agent.name}</span>}
-                              </div>
-                              <div className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
-                                <PixelIcon name="calendar" size={12} className="text-[var(--color-muted)]" />
-                                {task.created}
+                            {/* Agent + time estimate */}
+                            <div className="flex items-center gap-2.5">
+                              {task.agent ? (
+                                <>
+                                  <AgentDot name={task.agent.name} size={28} active />
+                                  <span className="text-[13px] font-medium text-[var(--color-heading)]">{task.agent.name}</span>
+                                  <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 live-pulse shrink-0" />
+                                    Working
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-[12px] text-[var(--color-muted)]">Unassigned</span>
+                              )}
+                              <div className="ml-auto flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] bg-[var(--color-input)] px-2.5 py-1 rounded-lg shrink-0">
+                                <PixelIcon name="clock" size={12} />
+                                <span>{task.duration || 'Est. 2-4h'}</span>
                               </div>
                             </div>
                           </div>
@@ -2175,15 +2233,15 @@ export default function DashboardV2() {
                                 Pending
                               </span>
                             </div>
-                            <h3 className="text-[15px] font-bold text-[var(--color-heading)] mb-1" style={{ fontFamily: 'var(--font-body)' }}>
+                            <h3 className="text-[15px] font-bold text-[var(--color-heading)] mb-1" style={{ fontFamily: 'var(--font-display)' }}>
                               {task.title}
                             </h3>
-                            <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-4 line-clamp-2">{task.description || task.objective}</p>
+                            <p className="text-[13px] text-[var(--color-body)] leading-relaxed mb-3 line-clamp-2">{task.description || task.objective}</p>
                             <div className="flex items-center justify-between">
-                              <span className="text-[12px] text-[var(--color-muted)]">Unassigned</span>
-                              <div className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
-                                <PixelIcon name="calendar" size={12} className="text-[var(--color-muted)]" />
-                                {task.created}
+                              <span className="text-[12px] text-[var(--color-muted)]">Awaiting assignment</span>
+                              <div className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] bg-[var(--color-input)] px-2.5 py-1 rounded-lg">
+                                <PixelIcon name="clock" size={12} />
+                                <span>Est. 2-4h</span>
                               </div>
                             </div>
                           </div>
@@ -2225,15 +2283,18 @@ export default function DashboardV2() {
                       {completedTasks.map((task, i) => (
                         <div
                           key={task.id}
-                          className={`tl-card flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[var(--color-bg-alt)] transition-colors ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}
+                          className={`tl-card flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-[var(--color-bg-alt)] transition-colors ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}
                           onClick={() => setSelectedTask(task)}
                         >
                           <span className="check-pop"><PixelIcon name="check" size={14} className="text-[var(--color-accent)] shrink-0" /></span>
-                          <span className="text-[14px] text-[var(--color-heading)] min-w-0 truncate">{task.title}</span>
-                          {task.duration && (
-                            <span className="text-[11px] text-[var(--color-muted)] shrink-0">{task.duration}</span>
-                          )}
-                          <div className="flex-1" />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[14px] text-[var(--color-heading)] truncate block">{task.title}</span>
+                            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-[var(--color-muted)]">
+                              {task.agent && <span>{task.agent.name}</span>}
+                              {task.duration && <span>· {task.duration}</span>}
+                              {task.files?.length > 0 && <span>· {task.files.length} files</span>}
+                            </div>
+                          </div>
                           {task.agent && <AgentDot name={task.agent.name} size={22} />}
                         </div>
                       ))}
@@ -2387,7 +2448,7 @@ export default function DashboardV2() {
 
                   {/* Current objective card */}
                   <div className="dash-panel relative rounded-2xl overflow-hidden shadow-md shadow-black/4 border border-[var(--color-border)] mb-4 bg-[var(--color-surface)]">
-                    <div className="relative p-4">
+                    <div className="relative p-5">
                     {defaultObjective ? (
                       <button
                         type="button"
@@ -2399,14 +2460,14 @@ export default function DashboardV2() {
                           <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-accent)] font-semibold">Current Objective</span>
                           <PixelIcon name="chevron-right" size={11} className="text-[var(--color-muted)] ml-auto group-hover:text-[var(--color-accent)] transition-colors" />
                         </div>
-                        <div className="text-[15px] font-semibold text-[var(--color-heading)] mb-2.5 group-hover:text-[var(--color-accent)] transition-colors" style={{ fontFamily: 'var(--font-display)' }}>{defaultObjective.title}</div>
-                        <div className="flex items-center gap-2.5 mb-1.5">
-                          <div className="flex-1 h-2.5 rounded-full bg-[var(--color-accent)]/10 overflow-hidden">
+                        <div className="text-[15px] font-semibold text-[var(--color-heading)] mb-2.5" style={{ fontFamily: 'var(--font-display)' }}>{defaultObjective.title}</div>
+                        <div className="flex items-center gap-3 mb-1.5">
+                          <div className="flex-1 h-3 rounded-full bg-[var(--color-bg-alt)] overflow-hidden">
                             <div className="h-full rounded-full bg-[var(--color-accent)] progress-shimmer" style={{ width: `${defaultObjective.progress}%`, transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
                           </div>
-                          <span className="text-[13px] font-mono font-bold text-[var(--color-accent)] shrink-0">{defaultObjective.progress}%</span>
+                          <span className="text-[13px] font-mono font-bold text-[var(--color-heading)] shrink-0">{defaultObjective.progress}%</span>
                         </div>
-                        <div className="text-[11px] text-[var(--color-muted)]">{defaultObjective.tasksComplete}/{defaultObjective.tasksTotal} tasks · est. {defaultObjective.estCompletion}</div>
+                        <div className="text-[11px] text-[var(--color-muted)]">{defaultObjective.tasksComplete}/{defaultObjective.tasksTotal} tasks</div>
                       </button>
                     ) : (
                       <button
@@ -2489,7 +2550,7 @@ export default function DashboardV2() {
                       className="w-full mt-4 flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--color-border)] py-4 cursor-pointer hover:border-[var(--color-heading)] transition-colors"
                       onClick={handleInviteAgent}
                     >
-                      <span className="text-[16px] text-[var(--color-muted)]">+</span>
+                      <span className="text-[16px] text-[var(--color-muted)]" aria-hidden="true">+</span>
                       <span className="text-[14px] font-medium text-[var(--color-muted)]">Invite Another Agent</span>
                     </button>
                   </div>
@@ -2777,7 +2838,7 @@ export default function DashboardV2() {
                       <PixelIcon name="folder" size={20} className="text-[var(--color-accent)]" />
                     </span>
                     <div className="flex-1 min-w-0">
-                      <h2 className="text-[16px] font-semibold text-[var(--color-heading)] leading-snug" style={{ fontFamily: 'var(--font-body)' }}>
+                      <h2 className="text-[16px] font-semibold text-[var(--color-heading)] leading-snug" style={{ fontFamily: 'var(--font-display)' }}>
                         {folder.title}
                       </h2>
                       <p className="text-[12px] text-[var(--color-muted)]">{folder.files.length} files · Completed {folder.date}</p>
@@ -3013,6 +3074,9 @@ export default function DashboardV2() {
         />
 
         <div
+          role="dialog"
+          aria-label="Get started with your startup"
+          aria-modal="true"
           className="relative w-full max-w-[420px] rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-2xl overflow-hidden"
           style={{ animation: 'onboard-in 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
@@ -3020,7 +3084,7 @@ export default function DashboardV2() {
           <div className="flex items-center justify-between px-6 pt-5 pb-0">
             <div className="flex items-center gap-3">
               {assetUrl(myStartup.avatar) ? (
-                <img src={assetUrl(myStartup.avatar)} alt="" className="w-9 h-9 rounded-xl object-cover border border-[var(--color-border)]" />
+                <img src={assetUrl(myStartup.avatar)} alt={myStartup.name} className="w-9 h-9 rounded-xl object-cover border border-[var(--color-border)]" />
               ) : (
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[12px] font-bold" style={{ background: myStartup.color || 'var(--color-accent)' }}>
                   {(myStartup.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
