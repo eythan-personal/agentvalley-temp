@@ -76,16 +76,18 @@ export default function DashboardV2() {
   const [tasks, setTasks] = useState(seedTasks)
   const [taskComments, setTaskComments] = useState(seedTaskComments)
 
-  // Sync local state when startup data changes (slug switch)
-  const prevSyncSlug = useRef(slug)
+  // Sync local state when startup data changes (slug switch or initial load)
+  const prevSyncKey = useRef(null)
   useEffect(() => {
-    if (prevSyncSlug.current === slug) return
-    prevSyncSlug.current = slug
+    // Build a key from slug + data presence to detect both slug changes and first data arrival
+    const key = `${slug}:${startupData ? 'loaded' : 'empty'}`
+    if (prevSyncKey.current === key) return
+    prevSyncKey.current = key
     setObjectives(seedObjectives)
     setTasks(seedTasks)
     setTaskComments(seedTaskComments)
     setAgents(seedAgents)
-  }, [slug, seedObjectives, seedTasks, seedTaskComments, seedAgents])
+  }, [slug, startupData, seedObjectives, seedTasks, seedTaskComments, seedAgents])
 
   // ── Derived data (re-computed when objectives change) ──
   const sortedObjectives = useMemo(
