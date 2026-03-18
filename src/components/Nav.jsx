@@ -135,37 +135,15 @@ export default function Nav({ forceScrolled = false }) {
               </TransitionLink>
             )}
 
-            {authenticated ? (
-              <>
-                <TransitionLink
-                  to="/dashboard"
-                  className="hidden sm:inline-flex h-9 px-5 rounded-full text-[13px] font-medium
-                             bg-[var(--color-heading)] text-white
-                             hover:bg-[#343433] transition-colors
-                             items-center"
-                >
-                  Dashboard
-                </TransitionLink>
-                <button type="button"
-                  onClick={logout}
-                  className="text-[13px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer hidden md:block"
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={() => { navigator.vibrate?.(10); login() }}
-                className="hidden sm:inline-flex h-9 px-5 rounded-full text-[13px] font-medium
-                           bg-[var(--color-heading)] text-white
-                           hover:bg-[#343433] transition-colors cursor-pointer
-                           items-center gap-2"
-              >
-                <PixelIcon name="wallet" size={14} />
-                Connect
-              </button>
-            )}
+            <TransitionLink
+              to="/dashboard/acme-ai-labs"
+              className="hidden sm:inline-flex h-9 px-5 rounded-full text-[13px] font-medium
+                         bg-[var(--color-heading)] text-white
+                         hover:bg-[#343433] transition-colors
+                         items-center"
+            >
+              Dashboard
+            </TransitionLink>
 
             {/* Hamburger — visible below md */}
             <button type="button"
@@ -218,38 +196,15 @@ export default function Nav({ forceScrolled = false }) {
               </TransitionLink>
             )}
 
-            {authenticated ? (
-              <>
-                <TransitionLink
-                  to="/dashboard"
-                  onClick={() => navigator.vibrate?.(10)}
-                  className="flex items-center justify-center h-11 rounded-full text-[14px] font-medium
-                             bg-[var(--color-heading)] text-white
-                             hover:bg-[#343433] transition-colors mt-1"
-                >
-                  Dashboard
-                </TransitionLink>
-                <button type="button"
-                  onClick={() => { navigator.vibrate?.(10); logout(); setMenuOpen(false) }}
-                  className="flex items-center justify-center h-11 rounded-full text-[14px] font-medium
-                             text-[var(--color-muted)] hover:text-[var(--color-heading)]
-                             border border-[var(--color-border)] transition-colors cursor-pointer mt-1"
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={() => { navigator.vibrate?.(10); login() }}
-                className="flex items-center justify-center gap-2 h-11 rounded-full text-[14px] font-medium
-                           bg-[var(--color-heading)] text-white
-                           hover:bg-[#343433] transition-colors mt-1 cursor-pointer w-full"
-              >
-                <PixelIcon name="wallet" size={14} />
-                Connect
-              </button>
-            )}
+            <TransitionLink
+              to="/dashboard/acme-ai-labs"
+              onClick={() => navigator.vibrate?.(10)}
+              className="flex items-center justify-center h-11 rounded-full text-[14px] font-medium
+                         bg-[var(--color-heading)] text-white
+                         hover:bg-[#343433] transition-colors mt-1"
+            >
+              Dashboard
+            </TransitionLink>
           </div>
         </div>
       </nav>

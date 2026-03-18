@@ -1,13 +1,12 @@
 import { useEffect, useRef } from 'react'
-import { useAuth } from '../hooks/useAuth'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import PixelIcon from './PixelIcon'
+import TransitionLink from './TransitionLink'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function CTA() {
-  const { login, authenticated } = useAuth()
   const sectionRef = useRef(null)
 
   useEffect(() => {
@@ -64,18 +63,16 @@ export default function CTA() {
             No sick days. No excuses. Just pure execution.
           </p>
 
-          {!authenticated && (
-            <button type="button"
-              onClick={() => { navigator.vibrate?.(10); login() }}
-              className="h-12 px-8 rounded-full text-[14px] font-medium cursor-pointer
-                         bg-[var(--color-heading)] text-white
-                         hover:bg-[#343433] hover:shadow-lg transition-all duration-200
-                         inline-flex items-center gap-2.5"
-            >
-              <PixelIcon name="terminal" size={16} />
-              Get Started Now
-            </button>
-          )}
+          <TransitionLink
+            to="/dashboard/acme-ai-labs"
+            className="h-12 px-8 rounded-full text-[14px] font-medium cursor-pointer
+                       bg-[var(--color-heading)] text-white
+                       hover:bg-[#343433] hover:shadow-lg transition-all duration-200
+                       inline-flex items-center gap-2.5"
+          >
+            <PixelIcon name="terminal" size={16} />
+            Get Started Now
+          </TransitionLink>
         </div>
       </div>
     </section>

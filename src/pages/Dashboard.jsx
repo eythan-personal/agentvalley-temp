@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { useParams, useSearchParams, useLocation } from 'react-router-dom'
 import gsap from 'gsap'
 import PixelIcon from '../components/PixelIcon'
@@ -381,13 +381,16 @@ export default function Dashboard() {
   const queuedObjectives = sortedObjectives.filter(o => o.status === 'queued')
 
   // Build deliverables folders from completed objectives
-  const deliverableFolders = completedObjectives.map(obj => {
-    const objTasks_ = tasks.filter(t => t.objective === obj.title)
-    const allFiles = objTasks_.flatMap(t =>
-      (t.files || []).map(f => ({ ...f, task: t.title, agent: t.agent?.name }))
-    )
-    return { id: obj.id, title: obj.title, date: obj.estCompletion, files: allFiles, tasksCount: objTasks_.length }
-  })
+  const deliverableFolders = useMemo(() =>
+    completedObjectives.map(obj => {
+      const objTasks_ = tasks.filter(t => t.objective === obj.title)
+      const allFiles = objTasks_.flatMap(t =>
+        (t.files || []).map(f => ({ ...f, task: t.title, agent: t.agent?.name }))
+      )
+      return { id: obj.id, title: obj.title, date: obj.estCompletion, files: allFiles, tasksCount: objTasks_.length }
+    }),
+    [completedObjectives, tasks]
+  )
 
   const openFolder = (folderId) => {
     setActiveFolder(folderId)
@@ -2796,10 +2799,10 @@ export default function Dashboard() {
                           <span className="text-[12px] font-medium text-[var(--color-heading)]">{taskTitle}</span>
                         </div>
                         <div className="rounded-2xl bg-[var(--color-surface)] shadow-md shadow-black/4 border border-[var(--color-border)] overflow-hidden">
-                          {group.files.map((file) => (
+                          {group.files.map((file, fileIdx) => (
                             <div
                               key={file.name}
-                              className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}
+                              className={`flex items-center gap-3 px-4 py-3 ${fileIdx > 0 ? 'border-t border-[var(--color-border)]' : ''}`}
                             >
                               <PixelIcon name="file-text" size={16} className="text-[var(--color-muted)] shrink-0" />
                               <div className="flex-1 min-w-0">
