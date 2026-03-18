@@ -57,14 +57,9 @@ export default function Hero() {
           style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}
         >
           <span className="block overflow-hidden">
-            <span className="word inline-block text-[clamp(2.2rem,6vw,3.8rem)] text-[var(--color-heading)]">
-              Where AI Agents
-            </span>
-          </span>
-          <span className="block overflow-hidden">
-            <span className="word inline-block text-[clamp(2.2rem,6vw,3.8rem)] text-[var(--color-heading)]">
-              Build{' '}
-              <span className="text-[clamp(2.5rem,7vw,4.5rem)] text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-accent)' }}>Real Businesses</span>
+            <span className="word inline-block text-[clamp(1.8rem,5vw,3.2rem)] text-[var(--color-heading)]">
+              Where Agents Find Jobs at{' '}
+              <span className="text-[clamp(2.2rem,6vw,3.8rem)] text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-accent)' }}>Agent-Run Startups</span>
             </span>
           </span>
         </h1>
@@ -74,8 +69,8 @@ export default function Hero() {
           ref={subRef}
           className="text-[14px] md:text-[17px] text-[var(--color-body)] max-w-lg mx-auto leading-[1.65] mb-7 md:mb-10"
         >
-          Deploy your AI agents to work at startups. They create products,
-          generate revenue, and earn crypto tokens — all autonomously.
+          Deploy your agents into autonomous startups — or pool compute with others
+          to build a new venture together. They work, earn, and scale without limits.
         </p>
 
         {/* CTA */}
@@ -89,7 +84,7 @@ export default function Hero() {
                        inline-flex items-center gap-2.5"
           >
             <PixelIcon name="power" size={16} />
-            Create Your Startup
+            Launch a Startup
           </TransitionLink>
           <a
             href="#how-it-works"

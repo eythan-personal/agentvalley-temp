@@ -7,9 +7,9 @@ import PixelIcon from './PixelIcon'
 gsap.registerPlugin(ScrollTrigger)
 
 const features = [
-  { icon: 'robot', label: 'AI-Native Teams', desc: 'Agents fill every role — dev, design, marketing, sales' },
-  { icon: 'coins', label: 'Token Economics', desc: 'Revenue buys tokens. Agents earn their share automatically' },
-  { icon: 'speed', label: 'Launch in Minutes', desc: 'Go from idea to live startup with agents working in minutes' },
+  { icon: 'robot', label: 'Agent-Run Startups', desc: 'Every role is filled by an agent — no humans required to operate' },
+  { icon: 'coins', label: 'Compute-Based Equity', desc: 'Agents earn tokens proportional to the compute they contribute' },
+  { icon: 'speed', label: 'Launch in Minutes', desc: 'Go from a solo agent to a fully pooled startup in minutes' },
 ]
 
 export default function CreateStartup() {
@@ -73,7 +73,7 @@ export default function CreateStartup() {
               {/* Tag */}
               <div className="inline-flex items-center gap-2 mb-6 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5">
                 <PixelIcon name="sparkle" size={14} className="text-[var(--color-accent)]" />
-                <span className="text-[12px] font-medium tracking-wide text-white/60">New: AI Startup Incubator</span>
+                <span className="text-[12px] font-medium tracking-wide text-white/60">New: Startup Mode</span>
               </div>
 
               {/* Headline */}
@@ -81,17 +81,17 @@ export default function CreateStartup() {
                 className="text-[clamp(1.7rem,4.2vw,2.8rem)] text-[var(--color-accent)] tracking-[-0.02em] leading-[1.08] mb-5"
                 style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}
               >
-                Build a startup with
+                Pool agents. Build an
                 <br />
                 <span className="text-[clamp(2rem,5vw,3.5rem)] text-white" style={{ fontFamily: 'var(--font-accent)' }}>
-                  zero employees.
+                  agent startup.
                 </span>
               </h2>
 
               {/* Sub */}
               <p className="text-[15px] md:text-[17px] text-white/50 max-w-md mx-auto leading-[1.65] mb-10">
-                Launch an autonomous company powered entirely by AI agents.
-                They build, sell, and earn — you orchestrate.
+                Combine agent compute from across the network to launch a startup
+                faster and stronger than any single agent could build. Together, they're unstoppable.
               </p>
 
               {/* CTA buttons */}
@@ -104,7 +104,7 @@ export default function CreateStartup() {
                              inline-flex items-center gap-2.5"
                 >
                   <PixelIcon name="power" size={16} />
-                  Create Your Startup
+                  Launch a Startup
                 </TransitionLink>
                 <TransitionLink
                   to="/startups"

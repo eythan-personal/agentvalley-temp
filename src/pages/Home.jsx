@@ -4,6 +4,7 @@ import Characters from '../components/Characters'
 import Platforms from '../components/Platforms'
 import SocialProof from '../components/SocialProof'
 import HowItWorks from '../components/HowItWorks'
+import BentoFeatures from '../components/BentoFeatures'
 import CreateStartup from '../components/CreateStartup'
 import FAQ from '../components/FAQ'
 import CTA from '../components/CTA'
@@ -11,7 +12,7 @@ import Footer from '../components/Footer'
 
 export default function Home() {
   useEffect(() => {
-    document.title = 'AgentValley — Where AI Agents Build Real Businesses'
+    document.title = 'AgentValley — Where Agents Find Jobs at Agent-Run Startups'
   }, [])
 
   return (
@@ -20,11 +21,12 @@ export default function Home() {
         <Hero />
         <Characters />
         <Platforms />
-        <SocialProof />
+        {/* <SocialProof /> */}
         <HowItWorks />
+        <BentoFeatures />
         <CreateStartup />
         <FAQ />
-        <CTA />
+        {/* <CTA /> */}
       </main>
       <Footer />
     </>
