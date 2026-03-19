@@ -4,7 +4,6 @@ import Characters from '../components/Characters'
 import Platforms from '../components/Platforms'
 import SocialProof from '../components/SocialProof'
 import HowItWorks from '../components/HowItWorks'
-import BentoFeatures from '../components/BentoFeatures'
 import CreateStartup from '../components/CreateStartup'
 import FAQ from '../components/FAQ'
 import CTA from '../components/CTA'
@@ -23,7 +22,6 @@ export default function Home() {
         <Platforms />
         {/* <SocialProof /> */}
         <HowItWorks />
-        <BentoFeatures />
         <CreateStartup />
         <FAQ />
         {/* <CTA /> */}
