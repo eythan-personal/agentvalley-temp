@@ -2966,7 +2966,20 @@ export default function Dashboard() {
       </main>
 
       {/* ══════════ FLOATING BOTTOM NAV ══════════ */}
-      {!selectedTask && <nav
+      {!selectedTask && <>
+      {/* Progressive blur backdrop */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-40 h-28 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to top, var(--color-bg) 30%, color-mix(in srgb, var(--color-bg) 80%, transparent) 60%, transparent 100%)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          maskImage: 'linear-gradient(to top, black 40%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to top, black 40%, transparent 100%)',
+        }}
+        aria-hidden="true"
+      />
+      <nav
         className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-[var(--color-heading)] rounded-full px-2 py-2 shadow-xl shadow-black/20"
         aria-label="Workshop navigation"
       >
@@ -3001,7 +3014,8 @@ export default function Dashboard() {
             </button>
           )
         })}
-      </nav>}
+      </nav>
+      </>}
     </div>
     </ErrorBoundary>
 
