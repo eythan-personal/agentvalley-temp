@@ -1,6 +1,20 @@
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react'
 import PixelIcon from '../PixelIcon'
 
+function useIsMobile(breakpoint = 640) {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < breakpoint : false
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`)
+    const handler = (e) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    setIsMobile(mq.matches)
+    return () => mq.removeEventListener('change', handler)
+  }, [breakpoint])
+  return isMobile
+}
+
 /**
  * Floating bottom navigation bar with add menu, sliding indicators,
  * and chat input morph when the chat tab is active.
@@ -17,6 +31,7 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
   const activeIndicatorRef = useRef(null)
   const hoverIndicatorRef = useRef(null)
   const prevTabRef = useRef(activeTab)
+  const isMobile = useIsMobile()
 
   const isChatMode = activeTab === chatTabId
 
@@ -29,15 +44,13 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
   useLayoutEffect(() => {
     const el = barRef.current
     if (!el) return
-    // Temporarily clear width and disable transition to measure natural size
     const prevWidth = el.style.width
     const prevTransition = el.style.transition
     el.style.transition = 'none'
     el.style.width = 'auto'
     const w = el.offsetWidth
     el.style.width = prevWidth
-    // Force reflow so the browser registers the restored width before re-enabling transition
-    el.offsetHeight // eslint-disable-line no-unused-expressions
+    el.offsetHeight
     el.style.transition = prevTransition
     setNavWidth(w)
   }, [tabs.length, addItems.length, avatarUrl])
@@ -105,6 +118,68 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
 
   const chatWidth = Math.min(typeof window !== 'undefined' ? window.innerWidth - 40 : 500, 540)
 
+  // Bloom animation helpers
+  const bloomOpen = 'scale 0.3s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.2s ease-out, filter 0.3s cubic-bezier(0.34, 1.3, 0.64, 1)'
+  const bloomClose = 'scale 0.15s cubic-bezier(0.4, 0, 1, 1), opacity 0.12s ease-in, filter 0.15s cubic-bezier(0.4, 0, 1, 1)'
+  const bloomStyle = (isOpen, origin) => ({
+    transformOrigin: origin,
+    scale: isOpen ? '1' : '0.85',
+    opacity: isOpen ? 1 : 0,
+    filter: isOpen ? 'blur(0px)' : 'blur(8px)',
+    transition: isOpen ? bloomOpen : bloomClose,
+    pointerEvents: isOpen ? 'auto' : 'none',
+  })
+  const menuShadow = { boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }
+
+  // Shared menu item classes
+  const menuItemClass = (danger) =>
+    `w-full text-left px-2.5 py-2.5 text-[13px] hover:bg-white/10 rounded-xl transition-[color,background-color,scale] duration-150 ease-out cursor-pointer flex items-center gap-2.5 active:scale-[0.96] ${
+      danger ? 'text-red-400 hover:text-red-300' : 'text-white/80 hover:text-white'
+    }`
+
+  // Menu content renderers (shared between desktop & mobile)
+  const renderAddMenuContent = () => (
+    <>
+      <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-white/40">Create</div>
+      {addItems.map((item, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => { setAddMenuOpen(false); item.onAction?.() }}
+          className="w-full text-left px-2.5 py-2.5 text-[13px] text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-[color,background-color,scale] duration-150 ease-out cursor-pointer flex items-center gap-2.5 active:scale-[0.96]"
+        >
+          <PixelIcon name={item.icon} size={14} className={item.iconColor || 'text-white/40'} />
+          {item.label}
+        </button>
+      ))}
+    </>
+  )
+
+  const renderProfileMenuContent = () => (
+    <>
+      {profile && (
+        <>
+          <div className="px-2.5 py-2.5">
+            <div className="text-[13px] font-semibold text-white truncate">{profile.name}</div>
+            <div className="text-[11px] text-white/40 truncate">{profile.email}</div>
+          </div>
+          <div className="border-t border-white/10 mx-2.5 my-1" />
+        </>
+      )}
+      {profileItems.map((item, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => { setProfileMenuOpen(false); item.onAction?.() }}
+          className={menuItemClass(item.danger)}
+        >
+          <PixelIcon name={item.icon} size={14} className={item.danger ? 'text-red-400/60' : 'text-white/40'} />
+          {item.label}
+        </button>
+      ))}
+    </>
+  )
+
   return (
     <>
       {/* Progressive blur backdrop */}
@@ -119,6 +194,41 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
         }}
         aria-hidden="true"
       />
+
+      {/* Mobile bottom sheet menus — full width, attached to nav */}
+      {isMobile && (
+        <>
+          {/* Add menu sheet */}
+          <div
+            className="fixed bottom-[76px] left-1/2 z-50"
+            style={{
+              width: navWidth || 'auto',
+              transform: 'translateX(-50%)',
+              ...bloomStyle(addMenuOpen, 'bottom center'),
+            }}
+            onMouseDown={e => e.stopPropagation()}
+          >
+            <div className="rounded-[20px] bg-[var(--color-heading)] py-2 px-2" style={menuShadow}>
+              {renderAddMenuContent()}
+            </div>
+          </div>
+
+          {/* Profile menu sheet */}
+          <div
+            className="fixed bottom-[76px] left-1/2 z-50"
+            style={{
+              width: navWidth || 'auto',
+              transform: 'translateX(-50%)',
+              ...bloomStyle(profileMenuOpen, 'bottom center'),
+            }}
+            onMouseDown={e => e.stopPropagation()}
+          >
+            <div className="rounded-[20px] bg-[var(--color-heading)] py-2 px-2" style={menuShadow}>
+              {renderProfileMenuContent()}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Single morphing bar */}
       <nav
@@ -176,38 +286,18 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
                   </span>
                 </button>
 
-                {/* Bloom menu */}
-                <div
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3"
-                  style={{
-                    transformOrigin: 'bottom center',
-                    scale: addMenuOpen ? '1' : '0.85',
-                    opacity: addMenuOpen ? 1 : 0,
-                    filter: addMenuOpen ? 'blur(0px)' : 'blur(8px)',
-                    transition: addMenuOpen
-                      ? 'scale 0.3s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.2s ease-out, filter 0.3s cubic-bezier(0.34, 1.3, 0.64, 1)'
-                      : 'scale 0.15s cubic-bezier(0.4, 0, 1, 1), opacity 0.12s ease-in, filter 0.15s cubic-bezier(0.4, 0, 1, 1)',
-                    pointerEvents: addMenuOpen ? 'auto' : 'none',
-                  }}
-                  onMouseDown={e => e.stopPropagation()}
-                >
-                  <div className="rounded-[20px] bg-[var(--color-heading)] py-2 px-2 w-52"
-                    style={{ boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }}
+                {/* Desktop bloom menu */}
+                {!isMobile && (
+                  <div
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3"
+                    style={bloomStyle(addMenuOpen, 'bottom center')}
+                    onMouseDown={e => e.stopPropagation()}
                   >
-                    <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-white/40">Create</div>
-                    {addItems.map((item, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => { setAddMenuOpen(false); item.onAction?.() }}
-                        className="w-full text-left px-2.5 py-2.5 text-[13px] text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-[color,background-color,scale] duration-150 ease-out cursor-pointer flex items-center gap-2.5 active:scale-[0.96]"
-                      >
-                        <PixelIcon name={item.icon} size={14} className={item.iconColor || 'text-white/40'} />
-                        {item.label}
-                      </button>
-                    ))}
+                    <div className="rounded-[20px] bg-[var(--color-heading)] py-2 px-2 w-52" style={menuShadow}>
+                      {renderAddMenuContent()}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               <div className="w-px h-6 bg-white/10 mx-0.5" />
             </>
@@ -276,47 +366,19 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
                 >
                   <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                 </button>
-                <div
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3"
-                  style={{
-                    transformOrigin: 'bottom center',
-                    scale: profileMenuOpen ? '1' : '0.85',
-                    opacity: profileMenuOpen ? 1 : 0,
-                    filter: profileMenuOpen ? 'blur(0px)' : 'blur(8px)',
-                    transition: profileMenuOpen
-                      ? 'scale 0.3s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.2s ease-out, filter 0.3s cubic-bezier(0.34, 1.3, 0.64, 1)'
-                      : 'scale 0.15s cubic-bezier(0.4, 0, 1, 1), opacity 0.12s ease-in, filter 0.15s cubic-bezier(0.4, 0, 1, 1)',
-                    pointerEvents: profileMenuOpen ? 'auto' : 'none',
-                  }}
-                  onMouseDown={e => e.stopPropagation()}
-                >
-                  <div className="rounded-[20px] bg-[var(--color-heading)] py-2 px-2 w-56"
-                    style={{ boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }}
+
+                {/* Desktop bloom menu */}
+                {!isMobile && (
+                  <div
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3"
+                    style={bloomStyle(profileMenuOpen, 'bottom center')}
+                    onMouseDown={e => e.stopPropagation()}
                   >
-                    {profile && (
-                      <>
-                        <div className="px-2.5 py-2.5">
-                          <div className="text-[13px] font-semibold text-white truncate">{profile.name}</div>
-                          <div className="text-[11px] text-white/40 truncate">{profile.email}</div>
-                        </div>
-                        <div className="border-t border-white/10 mx-2.5 my-1" />
-                      </>
-                    )}
-                    {profileItems.map((item, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => { setProfileMenuOpen(false); item.onAction?.() }}
-                        className={`w-full text-left px-2.5 py-2.5 text-[13px] hover:bg-white/10 rounded-xl transition-[color,background-color,scale] duration-150 ease-out cursor-pointer flex items-center gap-2.5 active:scale-[0.96] ${
-                          item.danger ? 'text-red-400 hover:text-red-300' : 'text-white/80 hover:text-white'
-                        }`}
-                      >
-                        <PixelIcon name={item.icon} size={14} className={item.danger ? 'text-red-400/60' : 'text-white/40'} />
-                        {item.label}
-                      </button>
-                    ))}
+                    <div className="rounded-[20px] bg-[var(--color-heading)] py-2 px-2 w-56" style={menuShadow}>
+                      {renderProfileMenuContent()}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </>
           )}
