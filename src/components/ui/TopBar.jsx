@@ -48,6 +48,20 @@ export function TopBar({ currentStartup, startups = [], onStartupChange, avatarU
   const menuShadow = { boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }
 
   return (
+    <>
+    {/* Progressive blur backdrop */}
+    <div
+      className="fixed top-0 left-0 right-0 z-40 h-24 pointer-events-none"
+      style={{
+        background: 'linear-gradient(to bottom, var(--color-bg) 30%, color-mix(in srgb, var(--color-bg) 80%, transparent) 60%, transparent 100%)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+      }}
+      aria-hidden="true"
+    />
+
     <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4">
       {/* Startup switcher — left */}
       {currentStartup && (
@@ -171,5 +185,6 @@ export function TopBar({ currentStartup, startups = [], onStartupChange, avatarU
         </div>
       )}
     </div>
+    </>
   )
 }
