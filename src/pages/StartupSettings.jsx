@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useStartupData } from '../hooks/useStartupData'
 import { api, assetUrl } from '../lib/api'
 import { useToast } from '../components/Toast'
+import { ToggleSwitch, DashCard, CardLabel } from '../components/ui'
 
 const CATEGORIES = ['AI/ML', 'DeFi', 'Gaming', 'Social', 'Infrastructure', 'DAO', 'NFT', 'Other']
 
@@ -281,8 +282,8 @@ export default function StartupSettings() {
         <div className="max-w-[540px] mx-auto">
 
           {/* ═══ GENERAL ═══ */}
-          <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
-            <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">General</span>
+          <DashCard className="dash-panel mb-4">
+            <CardLabel>General</CardLabel>
             <div className="flex flex-col gap-2">
 
               {/* ── Edit Profile ── */}
@@ -515,18 +516,10 @@ export default function StartupSettings() {
                           <div className="text-[14px] font-medium text-[var(--color-heading)]">{item.label}</div>
                           <div className="text-[12px] text-[var(--color-muted)]">{item.desc}</div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setNotifications(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
-                          className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
-                            notifications[item.key] ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'
-                          }`}
-                        >
-                          <span
-                            className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform"
-                            style={{ transform: notifications[item.key] ? 'translateX(20px)' : 'translateX(0)' }}
-                          />
-                        </button>
+                        <ToggleSwitch
+                          checked={notifications[item.key]}
+                          onChange={() => setNotifications(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
+                        />
                       </div>
                     ))}
                     <p className="text-[11px] text-[var(--color-muted)] mt-1 px-1">
@@ -536,19 +529,19 @@ export default function StartupSettings() {
                 )}
               </div>
             </div>
-          </div>
+          </DashCard>
 
           {/* ═══ DEVELOPER ═══ */}
-          <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
-            <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Developer</span>
+          <DashCard className="dash-panel mb-4">
+            <CardLabel>Developer</CardLabel>
             <div className="flex items-center justify-between rounded-xl bg-[var(--color-input)] px-4 py-3">
               <div>
                 <div className="text-[14px] font-medium text-[var(--color-heading)]">Mock Data</div>
                 <div className="text-[12px] text-[var(--color-muted)]">Fill dashboards with sample data for testing</div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
+              <ToggleSwitch
+                checked={localStorage.getItem('av:dev:mock') !== '0'}
+                onChange={() => {
                   const current = localStorage.getItem('av:dev:mock') !== '0'
                   if (current) {
                     localStorage.setItem('av:dev:mock', '0')
@@ -560,23 +553,12 @@ export default function StartupSettings() {
                   setOpenSection(prev => prev)
                   window.location.reload()
                 }}
-                className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors duration-200 ${
-                  localStorage.getItem('av:dev:mock') !== '0'
-                    ? 'bg-[var(--color-accent)]'
-                    : 'bg-[var(--color-border)]'
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                    localStorage.getItem('av:dev:mock') !== '0' ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
+              />
             </div>
-          </div>
+          </DashCard>
 
           {/* ═══ DANGER ZONE ═══ */}
-          <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-red-500/20 mb-4">
+          <DashCard className="dash-panel mb-4 !border-red-500/20">
             <span className="text-[12px] font-mono uppercase tracking-wider text-red-400 mb-4 block">Danger Zone</span>
             <div className="flex flex-col gap-2">
               {/* Pause */}
@@ -636,7 +618,7 @@ export default function StartupSettings() {
                 )}
               </div>
             </div>
-          </div>
+          </DashCard>
 
         </div>
       </div>

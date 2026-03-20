@@ -11,28 +11,15 @@ import { TokenChart, HoldersBar, RevenueActivityChart } from '../components/Dash
 import { ErrorBoundary, SectionError } from '../components/ErrorBoundary'
 import { assetUrl } from '../lib/api'
 import { DashboardSkeleton } from '../components/Skeletons'
+import { AgentDot, StatusBadge, DashCard, CardLabel, SegmentedProgress } from '../components/ui'
 
-// Generate a color from agent name (deterministic hash → hue)
+// Keep agentColor for chart usage
 function agentColor(name) {
   if (!name) return '#999'
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
   const hue = Math.abs(hash) % 360
   return `hsl(${hue}, 65%, 50%)`
-}
-
-function AgentDot({ name, size = 28, className = '', style = {}, active = false }) {
-  const bg = agentColor(name)
-  const initials = name ? name.slice(0, 2).toUpperCase() : '??'
-  return (
-    <span
-      className={`inline-flex items-center justify-center rounded-full shrink-0 ${active ? 'agent-active-ring' : ''} ${className}`}
-      style={{ width: size, height: size, background: bg, color: '#fff', fontSize: size * 0.38, fontWeight: 700, letterSpacing: '-0.02em', ...style }}
-      title={name}
-    >
-      {initials}
-    </span>
-  )
 }
 
 
@@ -2459,7 +2446,7 @@ export default function Dashboard() {
 
                   {/* Agents */}
                   <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
-                    <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Agents</span>
+                    <CardLabel>Agents</CardLabel>
                     <div className="flex flex-col gap-3">
                       {agents.map(a => (
                         <TransitionLink
@@ -2498,7 +2485,7 @@ export default function Dashboard() {
 
                   {/* Post a Role */}
                   <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
-                    <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Open Roles</span>
+                    <CardLabel>Open Roles</CardLabel>
 
                     {/* Existing roles */}
                     {myRoles.length > 0 && (
@@ -2656,7 +2643,7 @@ export default function Dashboard() {
 
                   {/* Supply + Price range */}
                   <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
-                    <span className="text-[12px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 block">Supply</span>
+                    <CardLabel>Supply</CardLabel>
 
                     {/* Supply bar */}
                     <div className="flex items-center gap-3 mb-2">

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
+import { PrimaryButton, SecondaryButton, ConnectButton, TextInput, TextArea, SelectInput, ToggleSwitch, DashCard, CardLabel } from '../components/ui'
 import logoSvg from '../assets/logo_av.svg'
 
 const STEPS = [
@@ -154,7 +155,7 @@ export default function OnboardingFlow() {
 
           {/* ═══ STEP 0 — Sign In ═══ */}
           {step === 0 && (
-            <div className="dash-panel rounded-2xl bg-[var(--color-surface)] shadow-md shadow-black/4 border border-[var(--color-border)] p-6 sm:p-8">
+            <DashCard className="p-6 sm:p-8">
               <div className="flex flex-col items-center">
                 <div style={{ animation: 'pixel-float 2.5s steps(4) infinite' }}>
                   <img src={logoSvg} alt="" width={48} height={48} />
@@ -206,12 +207,12 @@ export default function OnboardingFlow() {
                   <a href="#" className="underline underline-offset-2 hover:text-[var(--color-heading)]">Privacy Policy</a>
                 </p>
               </div>
-            </div>
+            </DashCard>
           )}
 
           {/* ═══ STEP 1 — Your Startup ═══ */}
           {step === 1 && (
-            <div className="dash-panel rounded-2xl bg-[var(--color-surface)] shadow-md shadow-black/4 border border-[var(--color-border)] mb-4 overflow-hidden">
+            <DashCard className="mb-4 overflow-hidden p-0">
               {/* Banner — bleeds to card edges */}
               <div className="relative mb-10">
                 <button type="button" onClick={() => bannerInputRef.current?.click()}
@@ -263,23 +264,26 @@ export default function OnboardingFlow() {
 
               {/* Form fields */}
               <div className="px-5 pb-5 space-y-5">
-                <div>
-                  <label htmlFor="s-name" className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2 block">
-                    Startup Name <span className="text-[var(--color-accent)]">*</span>
-                  </label>
-                  <input id="s-name" type="text" value={form.name} onChange={e => update('name', e.target.value)} placeholder="e.g. CodeForge Labs" autoFocus
-                    className="w-full h-12 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-medium placeholder:text-[#b0adaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all" />
-                </div>
-                <div>
-                  <label htmlFor="s-desc" className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2 block">
-                    What does it do? <span className="text-[var(--color-accent)]">*</span>
-                  </label>
-                  <textarea id="s-desc" value={form.description} onChange={e => update('description', e.target.value)}
-                    placeholder="Describe your startup in a sentence or two. Keep it snappy — the agents are listening." rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] placeholder:text-[#b0adaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all resize-none leading-relaxed" />
-                </div>
+                <TextInput
+                  id="s-name"
+                  label="Startup Name"
+                  required
+                  value={form.name}
+                  onChange={e => update('name', e.target.value)}
+                  placeholder="e.g. CodeForge Labs"
+                  autoFocus
+                />
+                <TextArea
+                  id="s-desc"
+                  label="What does it do?"
+                  required
+                  value={form.description}
+                  onChange={e => update('description', e.target.value)}
+                  placeholder="Describe your startup in a sentence or two. Keep it snappy — the agents are listening."
+                  rows={3}
+                />
               </div>
-            </div>
+            </DashCard>
           )}
 
           {/* ═══ STEP 2 — Fork ═══ */}
@@ -356,7 +360,7 @@ export default function OnboardingFlow() {
               <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
 
               {form.importFiles.length > 0 && (
-                <div className="dash-panel rounded-2xl bg-[var(--color-surface)] shadow-md shadow-black/4 border border-[var(--color-border)] overflow-hidden mb-4">
+                <DashCard className="overflow-hidden mb-4 p-0">
                   {form.importFiles.map((f, i) => (
                     <div key={i} className={`flex items-center gap-2.5 px-5 py-3 ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}>
                       <PixelIcon name="file-text" size={13} className="text-[var(--color-muted)]" />
@@ -373,11 +377,11 @@ export default function OnboardingFlow() {
                       </button>
                     </div>
                   ))}
-                </div>
+                </DashCard>
               )}
 
               {/* Connections */}
-              <div className="dash-panel rounded-2xl bg-[var(--color-surface)] shadow-md shadow-black/4 border border-[var(--color-border)] overflow-hidden">
+              <DashCard className="overflow-hidden p-0">
                 {/* GitHub */}
                 <div className={`w-full flex items-center gap-3.5 px-5 py-4 border-b border-[var(--color-border)] transition-colors ${
                   form.importMethod === 'github' ? 'bg-[var(--color-accent)]/[0.03]' : ''
@@ -389,12 +393,9 @@ export default function OnboardingFlow() {
                     <div className="text-[14px] font-semibold">GitHub</div>
                     <div className="text-[12px] text-[var(--color-muted)]">Import a repository</div>
                   </div>
-                  <button type="button" onClick={() => update('importMethod', form.importMethod === 'github' ? 'import' : 'github')}
-                    className={`h-8 px-4 rounded-full text-[11px] font-semibold cursor-pointer transition-all ${
-                      form.importMethod === 'github' ? 'bg-[var(--color-accent)] text-[#0d2000]' : 'bg-[var(--color-heading)] text-white hover:shadow-md'
-                    }`}>
+                  <ConnectButton connected={form.importMethod === 'github'} onClick={() => update('importMethod', form.importMethod === 'github' ? 'import' : 'github')}>
                     {form.importMethod === 'github' ? 'Connected' : 'Connect'}
-                  </button>
+                  </ConnectButton>
                 </div>
 
                 {/* Vercel */}
@@ -408,14 +409,11 @@ export default function OnboardingFlow() {
                     <div className="text-[14px] font-semibold">Vercel</div>
                     <div className="text-[12px] text-[var(--color-muted)]">Import a deployed project</div>
                   </div>
-                  <button type="button" onClick={() => update('importMethod', form.importMethod === 'vercel' ? 'import' : 'vercel')}
-                    className={`h-8 px-4 rounded-full text-[11px] font-semibold cursor-pointer transition-all ${
-                      form.importMethod === 'vercel' ? 'bg-[var(--color-accent)] text-[#0d2000]' : 'bg-[var(--color-heading)] text-white hover:shadow-md'
-                    }`}>
+                  <ConnectButton connected={form.importMethod === 'vercel'} onClick={() => update('importMethod', form.importMethod === 'vercel' ? 'import' : 'vercel')}>
                     {form.importMethod === 'vercel' ? 'Connected' : 'Connect'}
-                  </button>
+                  </ConnectButton>
                 </div>
-              </div>
+              </DashCard>
               </>
             )}
           </>)}
@@ -428,21 +426,14 @@ export default function OnboardingFlow() {
             </div>
 
             {/* Launch a Token toggle */}
-            <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
+            <DashCard className="mb-4">
               <div className="flex items-center gap-3 mb-1">
                 <PixelIcon name="coins" size={16} className="text-[var(--color-accent)]" />
                 <div className="flex-1">
                   <div className="text-[14px] font-semibold">Launch a Token</div>
                   <div className="text-[12px] text-[var(--color-muted)]">Create a token with revenue buyback</div>
                 </div>
-                <button type="button" onClick={() => update('tokenMode', form.tokenMode === 'create' ? null : 'create')}
-                  className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors duration-200 ${
-                    form.tokenMode === 'create' ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'
-                  }`}>
-                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                    form.tokenMode === 'create' ? 'translate-x-5' : 'translate-x-0'
-                  }`} />
-                </button>
+                <ToggleSwitch checked={form.tokenMode === 'create'} onChange={() => update('tokenMode', form.tokenMode === 'create' ? null : 'create')} />
               </div>
 
               {/* Token details — shown when toggled on */}
@@ -465,30 +456,25 @@ export default function OnboardingFlow() {
                       <input ref={tokenIconInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
                         const f = e.target.files?.[0]; if (!f) return; tokenIconFileRef.current = f; update('tokenIcon', URL.createObjectURL(f))
                       }} />
-                      <input type="text" value={form.tokenName} onChange={e => update('tokenName', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))} placeholder="e.g. FORGE" autoFocus
-                        className="flex-1 h-12 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-mono font-medium placeholder:text-[#b0adaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all" />
+                      <TextInput
+                        value={form.tokenName}
+                        onChange={e => update('tokenName', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
+                        placeholder="e.g. FORGE"
+                        autoFocus
+                        className="flex-1 font-mono"
+                      />
                     </div>
                     <p className="text-[11px] text-[var(--color-muted)] mt-1.5">Click the icon to upload a custom token image</p>
                   </div>
 
                   {/* Vesting schedule */}
-                  <div>
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2 block">
-                      Vesting Schedule <span className="text-[var(--color-accent)]">*</span>
-                    </label>
-                    <select
-                      value={form.tokenVesting}
-                      onChange={e => update('tokenVesting', e.target.value)}
-                      className="w-full h-12 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all appearance-none cursor-pointer"
-                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8582' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
-                    >
-                      <option value="" disabled>How patient are your token holders?</option>
-                      {VESTING_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
-                    </select>
-                  </div>
+                  <SelectInput label="Vesting Schedule" required value={form.tokenVesting} onChange={e => update('tokenVesting', e.target.value)}>
+                    <option value="" disabled>How patient are your token holders?</option>
+                    {VESTING_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+                  </SelectInput>
                 </div>
               )}
-            </div>
+            </DashCard>
 
             {/* Info note when token is off */}
             {form.tokenMode !== 'create' && (
@@ -501,21 +487,14 @@ export default function OnboardingFlow() {
             )}
 
             {/* Raise USDC — hidden for now */}
-            {false && <div className="dash-panel rounded-2xl bg-[var(--color-surface)] p-5 shadow-md shadow-black/4 border border-[var(--color-border)] mb-4">
+            {false && <DashCard className="mb-4">
               <div className="flex items-center gap-3 mb-1">
                 <PixelIcon name="chart-bar" size={16} className="text-blue-600" />
                 <div className="flex-1">
                   <div className="text-[14px] font-semibold">Raise USDC</div>
                   <div className="text-[12px] text-[var(--color-muted)]">Set a community funding target</div>
                 </div>
-                <button type="button" onClick={() => update('tokenMode', form.tokenMode === 'raise' ? null : 'raise')}
-                  className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors duration-200 ${
-                    form.tokenMode === 'raise' ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'
-                  }`}>
-                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                    form.tokenMode === 'raise' ? 'translate-x-5' : 'translate-x-0'
-                  }`} />
-                </button>
+                <ToggleSwitch checked={form.tokenMode === 'raise'} onChange={() => update('tokenMode', form.tokenMode === 'raise' ? null : 'raise')} />
               </div>
 
               {form.tokenMode === 'raise' && (
@@ -525,12 +504,17 @@ export default function OnboardingFlow() {
                   </label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-[14px] font-mono">$</span>
-                    <input type="text" value={form.raiseTarget} onChange={e => update('raiseTarget', e.target.value.replace(/[^0-9,]/g, ''))} placeholder="50,000" autoFocus
-                      className="w-full h-12 pl-8 pr-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-mono placeholder:text-[#b0adaa] outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 transition-all" />
+                    <TextInput
+                      value={form.raiseTarget}
+                      onChange={e => update('raiseTarget', e.target.value.replace(/[^0-9,]/g, ''))}
+                      placeholder="50,000"
+                      autoFocus
+                      className="pl-8 font-mono"
+                    />
                   </div>
                 </div>
               )}
-            </div>}
+            </DashCard>}
           </>)}
 
           {/* ═══ STEP 4 — Launch ═══ */}
@@ -541,7 +525,7 @@ export default function OnboardingFlow() {
             </div>
 
             {/* Startup preview card */}
-            <div className="dash-panel rounded-2xl bg-[var(--color-surface)] shadow-md shadow-black/4 border border-[var(--color-border)] overflow-hidden mb-4">
+            <DashCard className="overflow-hidden mb-4 p-0">
               {/* Banner preview */}
               <div className="h-24 relative" style={{ background: form.banner ? undefined : `linear-gradient(135deg, var(--color-accent) 0%, #7bc96f 100%)` }}>
                 {form.banner && <img src={form.banner} alt="" className="w-full h-full object-cover" />}
@@ -600,44 +584,25 @@ export default function OnboardingFlow() {
                         {form.visibility === 'open' ? 'Anyone can discover and invest' : 'Invite-only — hidden from directory'}
                       </div>
                     </div>
-                    <button type="button" onClick={() => update('visibility', form.visibility === 'open' ? 'private' : 'open')}
-                      className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors duration-200 ${
-                        form.visibility === 'open' ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'
-                      }`}>
-                      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                        form.visibility === 'open' ? 'translate-x-5' : 'translate-x-0'
-                      }`} />
-                    </button>
+                    <ToggleSwitch checked={form.visibility === 'open'} onChange={() => update('visibility', form.visibility === 'open' ? 'private' : 'open')} />
                   </div>
                 </div>
               </div>
-            </div>
+            </DashCard>
 
             {/* Launch button */}
-            <button
-              type="button"
-              onClick={handleLaunch}
-              disabled={submitting}
-              className="w-full h-14 rounded-2xl text-[15px] font-semibold bg-[var(--color-accent)] text-[#0d2000]
-                         hover:shadow-lg hover:shadow-[var(--color-accent)]/20 transition-all cursor-pointer
-                         flex items-center justify-center gap-2.5 disabled:opacity-60"
-            >
-              {submitting ? (
-                <><PixelIcon name="loader" size={18} className="live-pulse" /> Launching...</>
-              ) : (
-                <><PixelIcon name="power" size={18} /> Launch Startup</>
-              )}
-            </button>
+            <PrimaryButton size="xl" icon={submitting ? undefined : 'power'} loading={submitting} onClick={handleLaunch} disabled={submitting} className="w-full">
+              {submitting ? 'Launching...' : 'Launch Startup'}
+            </PrimaryButton>
 
           </>)}
 
           {/* ── Action buttons ── */}
           {step > 0 && step !== 4 && !(step === 2 && (!form.importMethod || form.importMethod === 'skip')) && (
             <div className="flex items-center gap-2 mt-5">
-              <button type="button" onClick={() => { if (step === 2) { update('importMethod', null) } else { back() } }}
-                className="h-12 px-6 rounded-2xl text-[14px] font-medium text-[var(--color-muted)] border border-[var(--color-border)] hover:text-[var(--color-heading)] hover:border-[var(--color-muted)] transition-all cursor-pointer">
+              <SecondaryButton onClick={() => { if (step === 2) { update('importMethod', null) } else { back() } }}>
                 Back
-              </button>
+              </SecondaryButton>
               <div className="flex-1" />
               {step < STEPS.length - 1 ? (
                 <button type="button" onClick={next} disabled={!canContinue()}
@@ -647,10 +612,9 @@ export default function OnboardingFlow() {
                   Continue <PixelIcon name="chevron-right" size={12} />
                 </button>
               ) : (
-                <button type="button" onClick={handleLaunch} disabled={submitting}
-                  className="h-12 px-8 rounded-2xl text-[14px] font-semibold bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60">
-                  {submitting ? <><PixelIcon name="loader" size={14} className="live-pulse" /> Launching...</> : <><PixelIcon name="power" size={14} /> Launch Startup</>}
-                </button>
+                <PrimaryButton icon={submitting ? undefined : 'power'} loading={submitting} onClick={handleLaunch} disabled={submitting}>
+                  {submitting ? 'Launching...' : 'Launch Startup'}
+                </PrimaryButton>
               )}
             </div>
           )}

@@ -16,6 +16,7 @@ const StartupProfile = lazy(() => import('./pages/StartupProfile'))
 const AgentProfile = lazy(() => import('./pages/AgentProfile'))
 const CreateStartupPage = lazy(() => import('./pages/CreateStartupPage'))
 const OnboardingFlow = lazy(() => import('./pages/OnboardingFlow'))
+const DesignSystem = lazy(() => import('./pages/DesignSystem'))
 const OnboardingV2 = lazy(() => import('./pages/OnboardingV2'))
 const CreateRolePage = lazy(() => import('./pages/CreateRolePage'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -53,6 +54,7 @@ function AppRoutes() {
           <Route path="/agents/:slug" element={<AgentProfile />} />
           <Route path="/create" element={<ProtectedRoute><CreateStartupPage /></ProtectedRoute>} />
           <Route path="/onboarding" element={<OnboardingFlow />} />
+          <Route path="/design-system" element={<DesignSystem />} />
           <Route path="/onboarding/v2" element={<OnboardingV2 />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
           <Route path="/dashboard/:slug" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

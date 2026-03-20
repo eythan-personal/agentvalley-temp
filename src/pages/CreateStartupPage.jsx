@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import PixelIcon from '../components/PixelIcon'
+import { TextInput, TextArea, SelectInput } from '../components/ui'
 import TokenIcon from '../components/TokenIcon'
 import TransitionLink from '../components/TransitionLink'
 import { useAuth } from '../hooks/useAuth'
@@ -19,8 +20,6 @@ const vestingOptions = [
   '6 months, cliff at 2mo then 25%',
   '12 months, cliff at 3mo then 11%',
 ]
-
-const selectArrow = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8582' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`
 
 const steps = [
   { title: 'Your Startup', desc: 'Give your startup a face, a name, and a reason to exist.' },
@@ -367,46 +366,38 @@ export default function CreateStartupPage() {
                 </div>
 
                 <div className="mb-5">
-                  <label htmlFor="startup-name" className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2 block">
-                    Startup Name <span className="text-[var(--color-accent)]">*</span>
-                  </label>
-                  <input
+                  <TextInput
                     id="startup-name"
-                    type="text"
+                    label="Startup Name"
+                    required
                     placeholder="e.g. Acme Industries"
                     value={form.name}
                     onChange={(e) => update('name', e.target.value)}
                     onBlur={() => markTouched('name')}
                     autoFocus
+                    error={fieldError('name')}
                     aria-required="true"
                     aria-invalid={!!fieldError('name')}
                     aria-describedby={fieldError('name') ? 'name-error' : undefined}
-                    className={`w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-medium
-                               placeholder:text-[#b0adaa] outline-none focus:ring-2 transition-all ${
-                               fieldError('name') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
+                    className="h-11"
                   />
-                  {fieldError('name') && <p id="name-error" className="text-[11px] text-red-400 mt-1.5">{fieldError('name')}</p>}
                 </div>
 
                 <div className="mb-5">
-                  <label htmlFor="startup-desc" className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2 block">
-                    What does this startup do? <span className="text-[var(--color-accent)]">*</span>
-                  </label>
-                  <textarea
+                  <TextArea
                     id="startup-desc"
+                    label="What does this startup do?"
+                    required
                     placeholder="Describe your startup in a sentence or two. Keep it snappy — the agents are listening."
                     value={form.description}
                     onChange={(e) => update('description', e.target.value)}
                     onBlur={() => markTouched('description')}
                     rows={3}
+                    error={fieldError('description')}
                     aria-required="true"
                     aria-invalid={!!fieldError('description')}
                     aria-describedby={fieldError('description') ? 'desc-error' : undefined}
-                    className={`w-full px-4 py-3 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                               placeholder:text-[#b0adaa] outline-none focus:ring-2 transition-all resize-none ${
-                               fieldError('description') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
                   />
-                  {fieldError('description') && <p id="desc-error" className="text-[11px] text-red-400 mt-1.5">{fieldError('description')}</p>}
                 </div>
 
                 <div className="mb-5">
@@ -414,48 +405,41 @@ export default function CreateStartupPage() {
                     Website <span className="normal-case tracking-normal text-[var(--color-muted)]">(optional)</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" aria-hidden="true">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-muted)] z-10" aria-hidden="true">
                       <PixelIcon name="globe" size={14} />
                     </span>
-                    <input
+                    <TextInput
                       id="startup-website"
-                      type="text"
                       placeholder="yourstartup.com"
                       value={form.website}
                       onChange={(e) => update('website', e.target.value)}
                       onBlur={() => markTouched('website')}
+                      error={fieldError('website')}
                       aria-invalid={!!fieldError('website')}
                       aria-describedby={fieldError('website') ? 'website-error' : undefined}
-                      className={`w-full h-11 pl-9 pr-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                                 placeholder:text-[#b0adaa] outline-none focus:ring-2 transition-all ${
-                                 fieldError('website') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
+                      className="h-11 pl-9"
                     />
                   </div>
-                  {fieldError('website') && <p id="website-error" className="text-[11px] text-red-400 mt-1.5">{fieldError('website')}</p>}
                 </div>
 
                 <div>
-                  <label htmlFor="startup-category" className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2 block">
-                    Category <span className="text-[var(--color-accent)]">*</span>
-                  </label>
-                  <select
+                  <SelectInput
                     id="startup-category"
+                    label="Category"
+                    required
                     value={form.category}
                     onChange={(e) => { update('category', e.target.value); markTouched('category') }}
                     onBlur={() => markTouched('category')}
+                    error={fieldError('category')}
                     aria-required="true"
                     aria-invalid={!!fieldError('category')}
-                    className={`w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                               outline-none focus:ring-2 transition-all appearance-none cursor-pointer ${
-                               fieldError('category') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
-                    style={{ backgroundImage: selectArrow, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
+                    className="h-11"
                   >
                     <option value="" disabled>Select a category</option>
                     {categories.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
-                  </select>
-                  {fieldError('category') && <p className="text-[11px] text-red-400 mt-1.5">{fieldError('category')}</p>}
+                  </SelectInput>
                 </div>
               </div>
             )}
@@ -519,9 +503,8 @@ export default function CreateStartupPage() {
                             </span>
                           </div>
                         </button>
-                        <div className="relative flex-1">
-                          <input
-                            type="text"
+                        <div className="flex-1">
+                          <TextInput
                             id="token-name"
                             placeholder="ACME"
                             maxLength={8}
@@ -529,41 +512,35 @@ export default function CreateStartupPage() {
                             onChange={(e) => update('tokenName', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
                             onBlur={() => markTouched('tokenName')}
                             autoFocus
+                            error={fieldError('tokenName')}
                             aria-required="true"
                             aria-invalid={!!fieldError('tokenName')}
                             aria-describedby={fieldError('tokenName') ? 'token-error' : undefined}
-                            className={`w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)] font-mono font-medium
-                                       placeholder:text-[#b0adaa] outline-none focus:ring-2 transition-all uppercase ${
-                                       fieldError('tokenName') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
+                            className="h-11 font-mono uppercase"
                           />
                         </div>
                       </div>
-                      {fieldError('tokenName') && <p id="token-error" className="text-[11px] text-red-400 mt-1.5">{fieldError('tokenName')}</p>}
                       {!fieldError('tokenName') && <span className="text-[11px] text-[var(--color-muted)] mt-1.5 block">Click the icon to upload a custom token image</span>}
                     </div>
 
                     <div className="mb-5">
-                      <label htmlFor="vesting-schedule" className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2 block">
-                        Vesting Schedule <span className="text-[var(--color-accent)]">*</span>
-                      </label>
-                      <select
+                      <SelectInput
                         id="vesting-schedule"
+                        label="Vesting Schedule"
+                        required
                         value={form.vesting}
                         onChange={(e) => { update('vesting', e.target.value); markTouched('vesting') }}
                         onBlur={() => markTouched('vesting')}
+                        error={fieldError('vesting')}
                         aria-required="true"
                         aria-invalid={!!fieldError('vesting')}
-                        className={`w-full h-11 px-4 rounded-xl bg-[var(--color-input)] text-[14px] text-[var(--color-heading)]
-                                   outline-none focus:ring-2 transition-all appearance-none cursor-pointer ${
-                                   fieldError('vesting') ? 'ring-2 ring-red-400/40 focus:ring-red-400/40' : 'focus:ring-[var(--color-accent)]/30'}`}
-                        style={{ backgroundImage: selectArrow, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
+                        className="h-11"
                       >
                         <option value="" disabled>How patient are your token holders?</option>
                         {vestingOptions.map((v) => (
                           <option key={v} value={v}>{v}</option>
                         ))}
-                      </select>
-                      {fieldError('vesting') && <p className="text-[11px] text-red-400 mt-1.5">{fieldError('vesting')}</p>}
+                      </SelectInput>
                     </div>
 
                     {/* Info card */}
