@@ -30,14 +30,14 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
   const tabsContainerRef = useRef(null)
   const activeIndicatorRef = useRef(null)
   const hoverIndicatorRef = useRef(null)
-  const prevTabRef = useRef(activeTab)
+  const [chatInputOpen, setChatInputOpen] = useState(false)
   const isMobile = useIsMobile()
 
-  const isChatMode = activeTab === chatTabId
+  const isChatMode = activeTab === chatTabId && chatInputOpen
 
-  // Track previous non-chat tab
+  // Open chat input when chat tab is selected
   useEffect(() => {
-    if (activeTab !== chatTabId) prevTabRef.current = activeTab
+    if (activeTab === chatTabId) setChatInputOpen(true)
   }, [activeTab, chatTabId])
 
   // Measure nav's natural width
@@ -400,9 +400,9 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
         >
           <button
             type="button"
-            onClick={() => { navigator.vibrate?.(10); onTabChange?.(prevTabRef.current || tabs[0]?.id) }}
+            onClick={() => { navigator.vibrate?.(10); setChatInputOpen(false) }}
             className="flex items-center justify-center w-11 h-11 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-[color,background-color,scale] duration-150 ease-out cursor-pointer active:scale-[0.96] flex-shrink-0"
-            aria-label="Back to navigation"
+            aria-label="Collapse chat input"
           >
             <PixelIcon name="arrow-left" size={18} />
           </button>
