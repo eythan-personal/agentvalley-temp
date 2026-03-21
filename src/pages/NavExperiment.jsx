@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import NumberFlow from '@number-flow/react'
 import PixelIcon from '../components/PixelIcon'
 import { BottomNav, TopBar, AgentDot, CommandPalette, ObjectiveCard, QueuedObjectiveCard } from '../components/ui'
@@ -574,63 +575,18 @@ function ObjectivesTab() {
     { id: 'obj-5', type: 'queued', title: 'Migrate user auth to passkey-based login', taskCount: 12, estDuration: '4-5 days' },
     { id: 'obj-6', type: 'queued', title: 'Create API documentation with interactive examples', taskCount: 7, estDuration: '2 days' },
   ])
-  const [dragIdx, setDragIdx] = useState(null)
-  const [dragOverIdx, setDragOverIdx] = useState(null)
-  const cardRefs = useRef({})
-  const draggingRef = useRef(false)
-
-  const handleGrab = useCallback((startIdx) => {
-    if (draggingRef.current) return
-    draggingRef.current = true
-    setDragIdx(startIdx)
-
-    const onMove = (e) => {
-      const y = e.clientY || (e.touches && e.touches[0]?.clientY)
-      if (y == null) return
-
-      let closest = null
-      let closestDist = Infinity
-      Object.entries(cardRefs.current).forEach(([i, el]) => {
-        if (!el) return
-        const idx = parseInt(i)
-        if (idx === startIdx) return
-        const rect = el.getBoundingClientRect()
-        const mid = rect.top + rect.height / 2
-        const dist = Math.abs(y - mid)
-        if (dist < closestDist) {
-          closestDist = dist
-          closest = idx
-        }
-      })
-      setDragOverIdx(closest)
-    }
-
-    const onUp = () => {
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
-      window.removeEventListener('touchmove', onMove)
-      window.removeEventListener('touchend', onUp)
-
-      setDragOverIdx(overIdx => {
-        if (overIdx !== null && overIdx !== startIdx) {
-          setObjectives(prev => {
-            const copy = [...prev]
-            const [item] = copy.splice(startIdx, 1)
-            copy.splice(overIdx, 0, item)
-            return copy
-          })
-        }
-        return null
-      })
-      setDragIdx(null)
-      draggingRef.current = false
-    }
-
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
-    window.addEventListener('touchmove', onMove, { passive: false })
-    window.addEventListener('touchend', onUp)
-  }, [])
+  const handleDragEnd = (result) => {
+    if (!result.destination) return
+    const from = result.source.index
+    const to = result.destination.index
+    if (from === to) return
+    setObjectives(prev => {
+      const copy = [...prev]
+      const [item] = copy.splice(from, 1)
+      copy.splice(to, 0, item)
+      return copy
+    })
+  }
 
   return (
     <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-24 sm:pt-[20vh] pb-32">
@@ -666,66 +622,57 @@ function ObjectivesTab() {
       </div>
 
       {/* Draggable objectives list */}
-      <div className="mb-6">
-        {objectives.map((obj, idx) => {
-          const queuePosition = objectives.slice(0, idx + 1).filter(o => o.type === 'queued').length
-          const isDragging = dragIdx === idx
-          const isTarget = dragOverIdx === idx && dragIdx !== null && dragIdx !== idx
-
-          return (
-            <div key={obj.id} className="pb-3">
-              {/* Drop zone — shows above this card when dragging over it */}
-              <div
-                className="overflow-hidden transition-[max-height,opacity] duration-300 ease-out"
-                style={{
-                  maxHeight: isTarget ? 80 : 0,
-                  opacity: isTarget ? 1 : 0,
-                }}
-              >
-                <div className="mb-3 rounded-2xl border-2 border-dashed border-[var(--color-accent)]/30 bg-[var(--color-accent)]/5 flex items-center justify-center"
-                  style={{ height: 72 }}
-                >
-                  <span className="text-[12px] text-[var(--color-accent)]/60 font-medium">Drop here</span>
-                </div>
-              </div>
-
-              {/* Card */}
-              <div
-                ref={el => cardRefs.current[idx] = el}
-                onMouseDown={(e) => { if (!e.target.closest('button')) { e.preventDefault(); handleGrab(idx) } }}
-                onTouchStart={(e) => { if (!e.target.closest('button')) { handleGrab(idx) } }}
-                onDragStart={(e) => e.preventDefault()}
-                className="transition-[opacity,transform] duration-200 ease-out select-none"
-                style={{
-                  cursor: isDragging ? 'grabbing' : dragIdx !== null ? 'default' : 'grab',
-                  opacity: isDragging ? 0.25 : 1,
-                  transform: isDragging ? 'scale(0.97)' : 'scale(1)',
-                }}
-              >
-                {obj.type === 'active' ? (
-                  <ObjectiveCard
-                    title={obj.title}
-                    percent={obj.progress}
-                    completed={obj.completed}
-                    inProgress={obj.inProgress}
-                    review={obj.review}
-                    pending={obj.pending}
-                    total={obj.total}
-                    agents={obj.agents}
-                  />
-                ) : (
-                  <QueuedObjectiveCard
-                    title={obj.title}
-                    taskCount={obj.taskCount}
-                    estDuration={obj.estDuration}
-                    position={queuePosition}
-                  />
-                )}
-              </div>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="objectives">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="mb-6 space-y-3"
+            >
+              {objectives.map((obj, idx) => {
+                const queuePosition = objectives.slice(0, idx + 1).filter(o => o.type === 'queued').length
+                return (
+                  <Draggable key={obj.id} draggableId={obj.id} index={idx}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        style={{
+                          ...provided.draggableProps.style,
+                          opacity: snapshot.isDragging ? 0.9 : 1,
+                        }}
+                      >
+                        {obj.type === 'active' ? (
+                          <ObjectiveCard
+                            title={obj.title}
+                            percent={obj.progress}
+                            completed={obj.completed}
+                            inProgress={obj.inProgress}
+                            review={obj.review}
+                            pending={obj.pending}
+                            total={obj.total}
+                            agents={obj.agents}
+                          />
+                        ) : (
+                          <QueuedObjectiveCard
+                            title={obj.title}
+                            taskCount={obj.taskCount}
+                            estDuration={obj.estDuration}
+                            position={queuePosition}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
+                )
+              })}
+              {provided.placeholder}
             </div>
-          )
-        })}
-      </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
     </div>
   )
