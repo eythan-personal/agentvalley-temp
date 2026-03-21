@@ -878,7 +878,11 @@ function AgentsTab() {
   const [selectedAgent, setSelectedAgent] = useState(null)
   const [jumpingAgent, setJumpingAgent] = useState(null)
   const [wavingAgent, setWavingAgent] = useState(null)
-  const [animKey, setAnimKey] = useState(0) // force re-mount for animations
+  const [animKey, setAnimKey] = useState(0)
+  const [officeMode, setOfficeMode] = useState(false)
+  const [officeTransition, setOfficeTransition] = useState('idle') // idle, exiting, entering, active
+  const canvasRef = useRef(null)
+  const agentsRef = useRef(null)
 
   // Live events every 30s
   useEffect(() => {
@@ -916,6 +920,152 @@ function AgentsTab() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [filterOpen])
 
+  // Office mode transition
+  const toggleOffice = () => {
+    if (officeMode) {
+      setOfficeTransition('exiting')
+      agentsRef.current = null
+      setTimeout(() => { setOfficeMode(false); setOfficeTransition('idle') }, 600)
+    } else {
+      setOfficeTransition('exiting')
+      setTimeout(() => { setOfficeMode(true); setOfficeTransition('entering') }, 500)
+      setTimeout(() => setOfficeTransition('active'), 1200)
+    }
+  }
+
+  // Isometric office canvas
+  useEffect(() => {
+    if (!officeMode || officeTransition !== 'active') return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    const dpr = window.devicePixelRatio || 1
+    const cw = window.innerWidth
+    const ch = window.innerHeight - 60
+    canvas.width = cw * dpr
+    canvas.height = ch * dpr
+    canvas.style.width = cw + 'px'
+    canvas.style.height = ch + 'px'
+    ctx.scale(dpr, dpr)
+    ctx.imageSmoothingEnabled = false
+
+    const GRID = 10
+    const TW = Math.floor((cw * 0.9) / GRID)
+    const TH = Math.floor(TW * 0.42)
+    const ox = cw / 2
+    // Position so bottom point is just below viewport
+    // Bottom point y = oy + GRID * TH, so oy = ch - GRID * TH + some overflow
+    const oy = ch - GRID * TH + TH * 2
+
+    const toIso = (gx, gy) => ({
+      x: (gx - gy) * (TW / 2) + ox,
+      y: (gx + gy) * (TH / 2) + oy,
+    })
+
+    // Load character images
+    const charImgs = {}
+    const loadPromises = AGENTS.map(name => new Promise(resolve => {
+      const img = new Image()
+      img.src = AGENT_CHARS[name]
+      img.onload = () => { charImgs[name] = img; resolve() }
+    }))
+
+    const desks = [{ gx: 3, gy: 3 }, { gx: 6, gy: 3 }, { gx: 3, gy: 6 }, { gx: 6, gy: 6 }, { gx: 5, gy: 5 }]
+
+    if (!agentsRef.current) {
+      agentsRef.current = AGENTS.map((name, i) => ({
+        name, gx: desks[i].gx, gy: desks[i].gy,
+        tx: desks[i].gx, ty: desks[i].gy,
+        timer: Math.random() * 200 + 100,
+        spawned: false, spawnDelay: i * 15, spawnTick: 0, spawnScale: 0,
+      }))
+    }
+
+    let animId
+
+    Promise.all(loadPromises).then(() => {
+      function update() {
+        const agents = agentsRef.current
+        if (!agents) return
+        agents.forEach(a => {
+          if (!a.spawned) {
+            a.spawnTick++
+            if (a.spawnTick > a.spawnDelay) {
+              a.spawned = true
+              a.spawnScale = 0
+            }
+            return
+          }
+          if (a.spawnScale < 1) a.spawnScale = Math.min(a.spawnScale + 0.08, 1)
+          a.timer--
+          if (a.timer <= 0) {
+            a.tx = 1 + Math.floor(Math.random() * (GRID - 2))
+            a.ty = 1 + Math.floor(Math.random() * (GRID - 2))
+            a.timer = Math.random() * 250 + 100
+          }
+          const speed = 0.02
+          if (Math.abs(a.tx - a.gx) > 0.05) a.gx += Math.sign(a.tx - a.gx) * speed
+          else a.gx = a.tx
+          if (Math.abs(a.ty - a.gy) > 0.05) a.gy += Math.sign(a.ty - a.gy) * speed
+          else a.gy = a.ty
+        })
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, cw, ch)
+        for (let gy = 0; gy < GRID; gy++) {
+          for (let gx = 0; gx < GRID; gx++) {
+            const { x, y } = toIso(gx, gy)
+            ctx.beginPath()
+            ctx.moveTo(x, y); ctx.lineTo(x + TW / 2, y + TH / 2); ctx.lineTo(x, y + TH); ctx.lineTo(x - TW / 2, y + TH / 2)
+            ctx.closePath()
+            ctx.fillStyle = (gx + gy) % 2 === 0 ? '#F0EDE8' : '#E8E5E0'
+            ctx.fill()
+            ctx.strokeStyle = '#DDD8D2'
+            ctx.lineWidth = 0.5
+            ctx.stroke()
+          }
+        }
+        desks.forEach(d => {
+          const { x, y } = toIso(d.gx, d.gy)
+          const ds = TW / 4
+          ctx.fillStyle = '#A0907A'
+          ctx.fillRect(x - ds * 2.5, y - ds * 1.5, ds * 5, ds)
+          ctx.fillStyle = '#333'
+          ctx.fillRect(x - ds, y - ds * 3.2, ds * 2, ds * 1.8)
+          ctx.fillStyle = '#5588CC'
+          ctx.fillRect(x - ds * 0.9, y - ds * 3.1, ds * 1.8, ds * 1.4)
+        })
+        const agents = [...(agentsRef.current || [])].sort((a, b) => (a.gx + a.gy) - (b.gx + b.gy))
+        agents.forEach(a => {
+          if (!a.spawned || a.spawnScale <= 0) return
+          const { x, y } = toIso(a.gx, a.gy)
+          const img = charImgs[a.name]
+          if (!img) return
+          const s = a.spawnScale
+          const charH = TW * 0.7 * s
+          const charW = (img.width / img.height) * charH
+          ctx.globalAlpha = s
+          ctx.fillStyle = 'rgba(0,0,0,0.06)'
+          ctx.beginPath()
+          ctx.ellipse(x, y + charH * 0.15, TW * 0.15 * s, TH * 0.15 * s, 0, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.drawImage(img, x - charW / 2, y - charH + charH * 0.15, charW, charH)
+          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-heading').trim() || '#171717'
+          ctx.font = `600 ${Math.max(10, TW * 0.1) * s}px sans-serif`
+          ctx.textAlign = 'center'
+          ctx.fillText(a.name, x, y - charH - 2)
+          ctx.globalAlpha = 1
+        })
+      }
+
+      function loop() { update(); draw(); animId = requestAnimationFrame(loop) }
+      loop()
+    })
+
+    return () => { if (animId) cancelAnimationFrame(animId) }
+  }, [officeMode, officeTransition])
+
   const allFeed = [...liveEvents, ...FEED]
   const filteredFeed = allFeed.filter(item => {
     if (item.type === 'collapse') return showAll ? false : true
@@ -930,18 +1080,47 @@ function AgentsTab() {
   return (
     <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-20 pb-32">
       {/* Office view toggle */}
-      <div className="flex justify-center mb-12">
+      <div className="flex justify-center mb-12 relative z-40">
         <button
           type="button"
+          onClick={toggleOffice}
           className="text-[12px] font-medium text-[var(--color-muted)] hover:text-[var(--color-heading)] bg-[var(--color-bg-alt)] hover:bg-[var(--color-border)] px-4 py-2 rounded-xl transition-[background-color,color,scale] duration-150 ease-out cursor-pointer active:scale-[0.96] flex items-center gap-2"
         >
           <PixelIcon name="grid" size={14} aria-hidden="true" />
-          Office View
+          {officeMode ? 'List View' : 'Office View'}
         </button>
       </div>
 
-      {/* Characters */}
-      <div className="flex items-end justify-between mb-8 px-16">
+      {/* Office canvas view */}
+      {officeMode && (
+        <div
+          className="fixed inset-0 z-30 flex items-center justify-center"
+          style={{
+            opacity: officeTransition === 'active' ? 1 : 0,
+            transition: 'opacity 0.4s ease-out 0.1s',
+            pointerEvents: officeTransition === 'active' ? 'auto' : 'none',
+            top: 60,
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            style={{ imageRendering: 'pixelated' }}
+          />
+        </div>
+      )}
+
+      {/* Characters — hidden in office mode */}
+      <div
+        className="flex items-end justify-between mb-8 px-16"
+        style={{
+          opacity: (officeTransition === 'exiting' || officeMode) ? 0 : 1,
+          transform: (officeTransition === 'exiting' || officeMode) ? 'translateY(-40px)' : 'translateY(0)',
+          transition: 'opacity 0.3s ease-in, transform 0.3s ease-in',
+          pointerEvents: officeMode ? 'none' : 'auto',
+          position: officeMode ? 'absolute' : 'relative',
+          left: officeMode ? '-9999px' : undefined,
+        }}
+      >
         {AGENTS.map(name => (
           <button
             key={name}
@@ -975,6 +1154,15 @@ function AgentsTab() {
           </button>
         ))}
       </div>
+
+      {/* Activity section — hidden in office mode */}
+      <div style={{
+        opacity: (officeTransition === 'exiting' || officeMode) ? 0 : 1,
+        transform: (officeTransition === 'exiting' || officeMode) ? 'translateY(40px)' : 'translateY(0)',
+        transition: 'opacity 0.3s ease-in 0.1s, transform 0.3s ease-in 0.1s',
+        pointerEvents: officeMode ? 'none' : 'auto',
+        display: officeMode && officeTransition === 'active' ? 'none' : undefined,
+      }}>
 
       {/* Selected agent info */}
       {selectedAgent && (
@@ -1140,6 +1328,7 @@ function AgentsTab() {
             </div>
           )
         })}
+      </div>
       </div>
     </div>
   )
