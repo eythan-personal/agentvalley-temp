@@ -54,6 +54,9 @@ import { ChevronsVertical } from 'pixelarticons/react/ChevronsVertical'
 import { MoreVertical } from 'pixelarticons/react/MoreVertical'
 import { SortVertical } from 'pixelarticons/react/SortVertical'
 import { User } from 'pixelarticons/react/User'
+import { Moon } from 'pixelarticons/react/Moon'
+import { Lightbulb } from 'pixelarticons/react/Lightbulb'
+import { Upload } from 'pixelarticons/react/Upload'
 
 const icons = {
   zap: Zap,
@@ -82,6 +85,9 @@ const icons = {
   grid: Grid3x3,
   home: Home,
   sliders: SortVertical,
+  moon: Moon,
+  sun: Lightbulb,
+  upload: Upload,
   list: Bulletlist,
   menu: Menu,
   close: Cancel,

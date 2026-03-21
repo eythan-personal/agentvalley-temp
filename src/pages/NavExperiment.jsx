@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import NumberFlow from '@number-flow/react'
 import PixelIcon from '../components/PixelIcon'
-import { BottomNav, TopBar, AgentDot } from '../components/ui'
+import { BottomNav, TopBar, AgentDot, CommandPalette } from '../components/ui'
 
 const TABS = [
   { id: 'dashboard', label: 'Startup Overview', icon: 'home' },
@@ -18,12 +18,14 @@ const STARTUPS = [
 
 const AGENTS = ['Scout', 'Forge', 'Relay', 'Cipher', 'Beacon']
 
+// Timeline icon color — single neutral tone, agents provide the color
+const TL = { iconColor: 'text-[var(--color-muted)]', iconBg: 'bg-[var(--color-bg-alt)]' }
+
 const FEED = [
   {
     type: 'file',
     icon: 'plus',
-    iconColor: 'text-[#7B8FA1]',
-    iconBg: 'bg-[#E8EAED]',
+    ...TL,
     agent: 'Scout',
     time: '2 hours ago',
     content: <><span className="font-semibold">Scout</span> Added <span className="font-semibold">competitor_analysis.csv</span></>,
@@ -31,8 +33,7 @@ const FEED = [
   {
     type: 'task',
     icon: 'clipboard',
-    iconColor: 'text-[#5B8DEF]',
-    iconBg: 'bg-[#E0EAFF]',
+    ...TL,
     agent: 'Forge',
     time: '4 hours ago',
     content: <><span className="font-semibold">Forge</span> Completed task <span className="font-semibold">TSK-035</span></>,
@@ -41,8 +42,7 @@ const FEED = [
   {
     type: 'review',
     icon: 'message',
-    iconColor: 'text-[#5B8DEF]',
-    iconBg: 'bg-[#E0EAFF]',
+    ...TL,
     agent: 'Cipher',
     time: '5 hours ago',
     content: <><span className="font-semibold">Cipher</span> Requested review on <span className="font-semibold">TSK-038</span></>,
@@ -57,8 +57,7 @@ const FEED = [
   {
     type: 'comment',
     icon: 'message',
-    iconColor: 'text-[#5B8DEF]',
-    iconBg: 'bg-[#E0EAFF]',
+    ...TL,
     agent: 'Beacon',
     time: '1 day ago',
     content: <><span className="font-semibold">Beacon</span> Mentioned you in a comment on <span className="font-semibold">TSK-032</span></>,
@@ -69,8 +68,7 @@ const FEED = [
   {
     type: 'assign',
     icon: 'arrow-right',
-    iconColor: 'text-[#7B8FA1]',
-    iconBg: 'bg-[#E8EAED]',
+    ...TL,
     agent: 'Relay',
     time: '2 days ago',
     content: <><span className="font-semibold">Relay</span> was assigned to <span className="font-semibold">Deploy staging environment</span></>,
@@ -78,8 +76,7 @@ const FEED = [
   {
     type: 'tag',
     icon: 'plus',
-    iconColor: 'text-[#7B8FA1]',
-    iconBg: 'bg-[#E8EAED]',
+    ...TL,
     agent: 'Cipher',
     time: '3 days ago',
     content: <><span className="font-semibold">Cipher</span> Applied <span className="font-semibold">Urgent</span> tag</>,
@@ -87,8 +84,7 @@ const FEED = [
   {
     type: 'closed',
     icon: 'close',
-    iconColor: 'text-[#9B7B6B]',
-    iconBg: 'bg-[#EEDFDA]',
+    ...TL,
     agent: 'Scout',
     time: '4 days ago',
     content: <>Objective closed by <span className="font-semibold">Scout</span></>,
@@ -105,7 +101,7 @@ function Sparkline({ data, color = 'var(--color-heading)', width = 100, height =
   ).join(' ')
   const fillPoints = `0,${height} ${points} ${width},${height}`
   return (
-    <svg width={width} height={height} className="flex-shrink-0">
+    <svg width={width} height={height} className="flex-shrink-0" role="img" aria-label="Task trend chart">
       <defs>
         <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.12" />
@@ -122,7 +118,7 @@ function Sparkline({ data, color = 'var(--color-heading)', width = 100, height =
 function MiniBar({ values, color = 'var(--color-muted)', width = 28, height = 18 }) {
   const max = Math.max(...values)
   return (
-    <svg width={width} height={height} className="flex-shrink-0">
+    <svg width={width} height={height} className="flex-shrink-0" role="img" aria-label="Mini bar chart">
       {values.map((v, i) => {
         const barH = (v / max) * (height - 2)
         const barW = (width / values.length) - 1.5
@@ -138,34 +134,34 @@ function MiniBar({ values, color = 'var(--color-muted)', width = 28, height = 18
 // Timeline action icon — matches AgentDot size (28px)
 function ActionIcon({ icon, iconColor, iconBg }) {
   return (
-    <div className={`w-7 h-7 rounded-full ${iconBg} flex items-center justify-center flex-shrink-0`}>
-      <PixelIcon name={icon} size={12} className={iconColor} />
+    <div className={`w-7 h-7 rounded-full ${iconBg} flex items-center justify-center flex-shrink-0 ring-2 ring-[var(--color-bg)]`}>
+      <PixelIcon name={icon} size={12} className={iconColor} aria-hidden="true" />
     </div>
   )
 }
 
 const LIVE_EVENTS = [
   (agent) => ({
-    type: 'task', icon: 'clipboard', iconColor: 'text-[#5B8DEF]', iconBg: 'bg-[#E0EAFF]', agent,
+    type: 'task', icon: 'clipboard', ...TL, agent,
     content: <><span className="font-semibold">{agent}</span> Completed task <span className="font-semibold">TSK-{String(Math.floor(Math.random() * 900) + 100)}</span></>,
   }),
   (agent) => ({
-    type: 'file', icon: 'plus', iconColor: 'text-[#7B8FA1]', iconBg: 'bg-[#E8EAED]', agent,
+    type: 'file', icon: 'plus', ...TL, agent,
     content: <><span className="font-semibold">{agent}</span> Added <span className="font-semibold">{['report.pdf', 'metrics.csv', 'schema.sql', 'config.yaml', 'readme.md'][Math.floor(Math.random() * 5)]}</span></>,
   }),
   (agent) => ({
-    type: 'comment', icon: 'message', iconColor: 'text-[#5B8DEF]', iconBg: 'bg-[#E0EAFF]', agent,
+    type: 'comment', icon: 'message', ...TL, agent,
     content: <><span className="font-semibold">{agent}</span> Left a comment on <span className="font-semibold">TSK-{String(Math.floor(Math.random() * 900) + 100)}</span></>,
     detail: ['Looks good, shipping this.', 'Found an edge case — adding a fix now.', 'Dependencies updated, re-running tests.', 'Blocked by upstream API changes.'][Math.floor(Math.random() * 4)],
   }),
   (agent) => ({
-    type: 'review', icon: 'message', iconColor: 'text-[#5B8DEF]', iconBg: 'bg-[#E0EAFF]', agent,
+    type: 'review', icon: 'message', ...TL, agent,
     content: <><span className="font-semibold">{agent}</span> Requested review on <span className="font-semibold">TSK-{String(Math.floor(Math.random() * 900) + 100)}</span></>,
     detail: ['Changes to the auth flow need a second pair of eyes.', 'New endpoint added — please verify the schema.', 'Refactored the caching layer, need perf review.'][Math.floor(Math.random() * 3)],
     needsReview: true,
   }),
   (agent) => ({
-    type: 'assign', icon: 'arrow-right', iconColor: 'text-[#7B8FA1]', iconBg: 'bg-[#E8EAED]', agent,
+    type: 'assign', icon: 'arrow-right', ...TL, agent,
     content: <><span className="font-semibold">{agent}</span> was assigned to <span className="font-semibold">{['Update search index', 'Fix webhook retry logic', 'Migrate to new CDN', 'Audit rate limits'][Math.floor(Math.random() * 4)]}</span></>,
   }),
 ]
@@ -176,6 +172,7 @@ function OverviewTab({ startup }) {
   const [filterBy, setFilterBy] = useState('all')
   const [liveEvents, setLiveEvents] = useState([])
   const [paused, setPaused] = useState(false)
+  const [reviewDismissed, setReviewDismissed] = useState(false)
   const taskCountRef = useRef(42)
 
   // Add a new event every 30 seconds
@@ -214,6 +211,17 @@ function OverviewTab({ startup }) {
   const needsReview = mounted ? 5 + liveEvents.filter(e => e.needsReview).length : 0
   const completed = mounted ? 28 + liveEvents.filter(e => e.type === 'task').length : 0
 
+  // Current objective task breakdown
+  const objTotal = 10
+  const objCompleted = mounted ? 3 : 0
+  const objInProgress = mounted ? 2 : 0
+  const objReview = mounted ? 2 : 0
+  const objPending = mounted ? objTotal - objCompleted - objInProgress - objReview : 0
+  const objPercent = mounted ? Math.round(((objCompleted + objInProgress * 0.5 + objReview * 0.75) / objTotal) * 100) : 0
+  const objCompletedPct = mounted ? `${Math.round((objCompleted / objTotal) * 100)}%` : '0%'
+  const objInProgressPct = mounted ? `${Math.round((objInProgress / objTotal) * 100)}%` : '0%'
+  const objReviewPct = mounted ? `${Math.round((objReview / objTotal) * 100)}%` : '0%'
+
   const allFeed = [...liveEvents, ...FEED]
 
   const filteredFeed = allFeed.filter(item => {
@@ -244,20 +252,21 @@ function OverviewTab({ startup }) {
           <button
             type="button"
             onClick={() => setPaused(prev => !prev)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-medium cursor-pointer transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.96] ${
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-medium cursor-pointer transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 ${
               paused
                 ? 'bg-[var(--color-accent)] text-[#0d2000] hover:bg-[var(--color-accent)]/90'
                 : 'bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)]'
             }`}
           >
-            <PixelIcon name={paused ? 'power' : 'clock'} size={13} />
+            <PixelIcon name={paused ? 'power' : 'clock'} size={13} aria-hidden="true" />
             {paused ? 'Resume' : 'Pause'}
           </button>
           <button
             type="button"
-            className="flex items-center justify-center w-9 h-9 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96]"
+            aria-label="Settings"
+            className="flex items-center justify-center w-9 h-9 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
           >
-            <PixelIcon name="settings" size={14} />
+            <PixelIcon name="settings" size={14} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -266,38 +275,52 @@ function OverviewTab({ startup }) {
       <div className="relative z-10 rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5" style={{ outline: '1px solid rgba(0,0,0,0.08)', outlineOffset: '0px' }}>
         {/* Current objective */}
         <div className="px-6 py-5">
-          <div className="flex items-start justify-between gap-6 mb-1 sm:mb-4">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Current Objective</div>
-            <NumberFlow value={mounted ? 68 : 0} suffix="%" className="hidden sm:block text-[32px] font-bold leading-none tabular-nums text-[var(--color-heading)] flex-shrink-0" style={{ fontFamily: 'var(--font-display)' }} />
+          <div className="flex items-start justify-between gap-6 mb-4">
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Current Objective</div>
+              <h2 className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
+                Scrape competitor pricing &amp; generate weekly analysis report
+              </h2>
+            </div>
+            <NumberFlow value={objPercent} suffix="%" className="hidden sm:block text-[32px] font-bold leading-none tabular-nums text-[var(--color-heading)] flex-shrink-0 -mt-1" style={{ fontFamily: 'var(--font-display)' }} />
           </div>
-          <h2 className="text-[16px] font-bold text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>
-            Scrape competitor pricing &amp; generate weekly analysis report
-          </h2>
 
           {/* Task progress */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-medium text-[var(--color-body)] flex items-center gap-2">
               Task Progress
-              <NumberFlow value={mounted ? 68 : 0} suffix="%" className="sm:hidden text-[13px] font-bold tabular-nums text-[var(--color-heading)]" />
+              <NumberFlow value={objPercent} suffix="%" className="sm:hidden text-[13px] font-bold tabular-nums text-[var(--color-heading)]" />
             </span>
             <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] hidden sm:block">Started 2h ago · ETA 45min</span>
           </div>
-          <div className="flex h-2.5 rounded-full overflow-hidden bg-[var(--color-border)] mb-3">
-            <div className="bg-[var(--color-accent)] rounded-l-full" style={{ width: mounted ? '50%' : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s' }} />
-            <div className="bg-[#5B8DEF]" style={{ width: mounted ? '18%' : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.35s' }} />
+          <div
+            className="flex h-2.5 rounded-full overflow-hidden bg-[var(--color-border)] mb-3"
+            role="progressbar"
+            aria-valuenow={objPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Objective progress"
+          >
+            <div className="bg-[var(--color-accent)] rounded-l-full" style={{ width: mounted ? objCompletedPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s' }} />
+            <div className="bg-[#60A5FA]" style={{ width: mounted ? objInProgressPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.35s' }} />
+            <div className="bg-amber-400" style={{ width: mounted ? objReviewPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s' }} />
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 flex-wrap">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
-              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={mounted ? 3 : 0} className="text-[11px] tabular-nums" /> completed</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" aria-hidden="true" />
+              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objCompleted} className="text-[11px] tabular-nums" /> completed</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#5B8DEF]" />
-              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={mounted ? 1 : 0} className="text-[11px] tabular-nums" /> in progress</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#60A5FA]" aria-hidden="true" />
+              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objInProgress} className="text-[11px] tabular-nums" /> in progress</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)]" />
-              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={mounted ? 2 : 0} className="text-[11px] tabular-nums" /> pending</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" aria-hidden="true" />
+              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objReview} className="text-[11px] tabular-nums" /> needs review</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)]" aria-hidden="true" />
+              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objPending} className="text-[11px] tabular-nums" /> pending</span>
             </div>
           </div>
 
@@ -314,13 +337,39 @@ function OverviewTab({ startup }) {
               {paused ? 'Paused' : 'Active'}
             </span>
           </div>
+
+          {/* Review banner */}
+          {objReview > 0 && !reviewDismissed && (
+            <div className="mt-4 -mx-6 -mb-5 px-5 py-3.5 bg-amber-50 rounded-b-2xl border-t border-amber-200/60 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" aria-hidden="true" />
+                <span className="text-[12px] text-amber-800">
+                  {objReview} {objReview === 1 ? 'agent is' : 'agents are'} waiting for review of their work
+                </span>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setReviewDismissed(true)}
+                  className="text-[11px] text-amber-600/70 hover:text-amber-800 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 rounded"
+                >
+                  Dismiss
+                </button>
+                <button
+                  type="button"
+                  className="px-3.5 py-1.5 text-[12px] font-semibold text-amber-800 bg-amber-200/60 rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out hover:bg-amber-200 active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+                >
+                  Review
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
 
       {/* Stats shelf — tucked under the objective card */}
       <div className="relative -mt-4 rounded-b-2xl px-6 pt-7 pb-5 mb-8" style={{ backgroundColor: 'color-mix(in srgb, var(--color-bg-alt) 50%, var(--color-bg))' }}>
-        {/* Mobile: horizontal scroll pills, Desktop: single row */}
         {/* Desktop */}
         <div className="hidden sm:flex items-end gap-0">
           <div className="flex items-end gap-5 pr-8 flex-1">
@@ -335,8 +384,11 @@ function OverviewTab({ startup }) {
             <NumberFlow value={inProgress} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
           </div>
           <div className="px-8 border-l border-[var(--color-border)]">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Needs Review</div>
-            <NumberFlow value={needsReview} className="text-[28px] font-bold leading-none tabular-nums text-amber-500" style={{ fontFamily: 'var(--font-display)' }} />
+            <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Avg Task Time</div>
+            <div className="flex items-baseline gap-1">
+              <NumberFlow value={mounted ? 14 : 0} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
+              <span className="text-[13px] font-medium text-[var(--color-muted)]">min</span>
+            </div>
           </div>
           <div className="px-8 border-l border-[var(--color-border)]">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Completed (24h)</div>
@@ -359,13 +411,16 @@ function OverviewTab({ startup }) {
           {[
             { label: 'Tasks', value: totalTasks },
             { label: 'In Progress', value: inProgress },
-            { label: 'Review', value: needsReview, amber: true },
+            { label: 'Avg Time', value: 14, suffix: 'm' },
             { label: 'Done (24h)', value: completed },
             { label: 'Team', value: AGENTS.length },
           ].map((stat, i) => (
             <div key={i} className="flex-shrink-0 rounded-xl bg-[var(--color-bg)] px-4 py-3 min-w-[90px]">
               <div className="text-[9px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">{stat.label}</div>
-              <NumberFlow value={stat.value} className={`text-[20px] font-bold leading-none tabular-nums ${stat.amber ? 'text-amber-500' : ''}`} style={{ fontFamily: 'var(--font-display)' }} />
+              <div className="flex items-baseline gap-0.5">
+                <NumberFlow value={stat.value} className="text-[20px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
+                {stat.suffix && <span className="text-[11px] font-medium text-[var(--color-muted)]">{stat.suffix}</span>}
+              </div>
             </div>
           ))}
         </div>
@@ -379,21 +434,24 @@ function OverviewTab({ startup }) {
           <div className="flex items-center gap-3">
             <button
               type="button"
+              role="switch"
+              aria-checked={showAll}
               onClick={() => setShowAll(prev => !prev)}
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 rounded-lg"
             >
               <span className="text-[13px] text-[var(--color-muted)]">Show all activity</span>
-              <span className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${showAll ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'}`}>
+              <span className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${showAll ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'}`} aria-hidden="true">
                 <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${showAll ? 'translate-x-4' : ''}`} />
               </span>
             </button>
             <div className="relative">
               <button
                 type="button"
+                aria-label="Filter activity"
                 onClick={() => setFilterOpen(prev => !prev)}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${filterOpen || filterBy !== 'all' ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'hover:bg-[var(--color-bg-alt)] text-[var(--color-muted)]'}`}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 ${filterOpen || filterBy !== 'all' ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'hover:bg-[var(--color-bg-alt)] text-[var(--color-muted)]'}`}
               >
-                <PixelIcon name="sliders" size={16} />
+                <PixelIcon name="sliders" size={16} aria-hidden="true" />
               </button>
               {/* Filter dropdown */}
               <div
@@ -410,7 +468,7 @@ function OverviewTab({ startup }) {
                 className="absolute top-full right-0 mt-2 z-50"
                 onMouseDown={e => e.stopPropagation()}
               >
-                <div className="rounded-[16px] bg-[var(--color-heading)] py-2 px-2 w-44" style={{ boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }}>
+                <div className="rounded-[16px] bg-[var(--color-nav)] py-2 px-2 w-44" role="menu" style={{ boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }}>
                   <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-white/40">Filter by</div>
                   {[
                     { id: 'all', label: 'All activity' },
@@ -421,8 +479,9 @@ function OverviewTab({ startup }) {
                     <button
                       key={opt.id}
                       type="button"
+                      role="menuitem"
                       onClick={() => { setFilterBy(opt.id); setFilterOpen(false) }}
-                      className={`w-full text-left px-2.5 py-2 text-[13px] rounded-xl transition-[color,background-color] duration-150 cursor-pointer ${
+                      className={`w-full text-left px-2.5 py-2 text-[13px] rounded-xl transition-[color,background-color] duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 ${
                         filterBy === opt.id ? 'bg-white/10 text-white font-medium' : 'text-white/70 hover:text-white hover:bg-white/10'
                       }`}
                     >
@@ -444,12 +503,18 @@ function OverviewTab({ startup }) {
             return (
               <div key={i} className="relative flex items-center gap-3 py-3">
                 {/* Timeline line */}
-                <div className="absolute left-[13px] top-0 bottom-0 w-px bg-[var(--color-border)]" />
+                <div className="absolute left-[13px] top-0 bottom-0 w-px bg-[var(--color-border)]" aria-hidden="true" />
                 {/* Connector icon */}
                 <div className="relative z-10 w-7 h-7 rounded-full bg-[var(--color-bg)] flex items-center justify-center flex-shrink-0 border border-[var(--color-border)]">
-                  <PixelIcon name="chevrons-vertical" size={12} className="text-[var(--color-accent)]" />
+                  <PixelIcon name="chevrons-vertical" size={12} className="text-[var(--color-accent)]" aria-hidden="true" />
                 </div>
-                <span className="text-[13px] text-[var(--color-accent)] font-medium cursor-pointer hover:underline">{item.text}</span>
+                <button
+                  type="button"
+                  onClick={() => setShowAll(true)}
+                  className="text-[13px] text-[var(--color-accent)] font-medium cursor-pointer hover:underline focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 rounded bg-transparent border-none p-0"
+                >
+                  {item.text}
+                </button>
               </div>
             )
           }
@@ -457,17 +522,26 @@ function OverviewTab({ startup }) {
           const hasCard = !!item.detail
 
           return (
-            <div key={i} className={`relative flex gap-3 py-3 group ${!hasCard ? 'cursor-pointer' : ''}`} style={!hasCard ? { borderRadius: 12 } : undefined}>
+            <div
+              key={i}
+              className={`relative flex gap-3 py-3 group ${!hasCard ? 'cursor-pointer' : ''}`}
+              style={!hasCard ? { borderRadius: 12 } : undefined}
+              {...(!hasCard ? {
+                role: 'button',
+                tabIndex: 0,
+                onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); /* activate item */ } },
+              } : {})}
+            >
               {/* Hover highlight for non-card items */}
               {!hasCard && (
-                <div className="absolute -inset-x-2 -inset-y-0.5 rounded-xl bg-[var(--color-bg-alt)] opacity-0 group-hover:opacity-100 transition-opacity duration-100" />
+                <div className="absolute -inset-x-2 -inset-y-0.5 rounded-xl bg-[var(--color-bg-alt)] opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-100" aria-hidden="true" />
               )}
               {/* Timeline line — runs full height except on last item */}
               {!isLast && (
-                <div className="absolute left-[13px] top-0 bottom-0 w-px bg-[var(--color-border)]" />
+                <div className="absolute left-[13px] top-0 bottom-0 w-px bg-[var(--color-border)]" aria-hidden="true" />
               )}
               {/* Line above (connects from previous) */}
-              <div className="absolute left-[13px] top-0 h-3 w-px bg-[var(--color-border)]" />
+              <div className="absolute left-[13px] top-0 h-3 w-px bg-[var(--color-border)]" aria-hidden="true" />
 
               {/* Action icon — sits on the line */}
               <div className="relative z-10">
@@ -485,8 +559,8 @@ function OverviewTab({ startup }) {
                   <span className="text-[12px] text-[var(--color-muted)] flex-shrink-0">· {item.time}</span>
                   {/* Go link on hover — only for non-card items */}
                   {!hasCard && (
-                    <span className="ml-auto flex items-center gap-1 text-[12px] text-[var(--color-muted)] opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0">
-                      Go <PixelIcon name="arrow-right" size={12} />
+                    <span className="ml-auto flex items-center gap-1 text-[12px] text-[var(--color-muted)] opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-150 flex-shrink-0" aria-hidden="true">
+                      Go <PixelIcon name="arrow-right" size={12} aria-hidden="true" />
                     </span>
                   )}
                 </div>
@@ -498,7 +572,7 @@ function OverviewTab({ startup }) {
                     {item.needsReview && (
                       <button
                         type="button"
-                        className="px-4 py-1.5 text-[12px] font-semibold text-amber-800 bg-amber-100 rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out hover:bg-amber-200 active:scale-[0.96] flex-shrink-0"
+                        className="px-4 py-1.5 text-[12px] font-semibold text-amber-800 bg-amber-100 rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out hover:bg-amber-200 active:scale-[0.96] flex-shrink-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
                       >
                         Review
                       </button>
@@ -506,7 +580,7 @@ function OverviewTab({ startup }) {
                     {item.mention && (
                       <button
                         type="button"
-                        className="px-4 py-1.5 text-[12px] font-semibold text-[var(--color-heading)] bg-[var(--color-bg-alt)] rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out hover:bg-[var(--color-border)] active:scale-[0.96] flex-shrink-0"
+                        className="px-4 py-1.5 text-[12px] font-semibold text-[var(--color-heading)] bg-[var(--color-bg-alt)] rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out hover:bg-[var(--color-border)] active:scale-[0.96] flex-shrink-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
                       >
                         Go
                       </button>
@@ -516,8 +590,11 @@ function OverviewTab({ startup }) {
 
                 {/* Thread replies */}
                 {item.thread && (
-                  <div className="mt-2.5 ml-8 flex items-center gap-2 cursor-pointer group/thread">
-                    <PixelIcon name="repeat" size={12} className="text-[var(--color-muted)]" />
+                  <button
+                    type="button"
+                    className="mt-2.5 ml-8 flex items-center gap-2 cursor-pointer group/thread bg-transparent border-none p-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 rounded"
+                  >
+                    <PixelIcon name="repeat" size={12} className="text-[var(--color-muted)]" aria-hidden="true" />
                     <div className="flex -space-x-1.5">
                       {item.thread.agents.map(name => (
                         <AgentDot key={name} name={name} size={20} className="ring-2 ring-[var(--color-bg)]" />
@@ -526,7 +603,7 @@ function OverviewTab({ startup }) {
                     <span className="text-[12px] text-[var(--color-muted)] group-hover/thread:text-[var(--color-heading)] transition-colors">
                       View {item.thread.count} more replies
                     </span>
-                  </div>
+                  </button>
                 )}
               </div>
             </div>
@@ -542,7 +619,7 @@ function PlaceholderTab({ tab }) {
     <div className="max-w-[540px] mx-auto px-4 sm:px-6 pt-24 pb-32">
       <div className="rounded-2xl bg-[var(--color-surface)] shadow-md shadow-black/4 border border-[var(--color-border)] p-8 text-center">
         <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent)]/10 flex items-center justify-center mx-auto mb-4">
-          <PixelIcon name={tab.icon} size={28} className="text-[var(--color-accent)]" />
+          <PixelIcon name={tab.icon} size={28} className="text-[var(--color-accent)]" aria-hidden="true" />
         </div>
         <div className="text-[18px] font-bold mb-1" style={{ fontFamily: 'var(--font-display)' }}>
           {tab.label}
@@ -558,13 +635,27 @@ function PlaceholderTab({ tab }) {
 export default function NavExperiment() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [currentSlug, setCurrentSlug] = useState('acme-ai-labs')
+  const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => { document.title = 'Nav Experiment — AgentValley' }, [])
+
+  // Cmd+K to open search
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen(prev => !prev)
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [])
 
   const currentStartup = STARTUPS.find(s => s.slug === currentSlug)
 
   const addItems = [
     { label: 'New Objective', icon: 'bullseye-arrow', iconColor: 'text-[var(--color-accent)]', onAction: () => console.log('New Objective') },
+    { label: 'Upload File', icon: 'upload', iconColor: 'text-[#60A5FA]', onAction: () => console.log('Upload File') },
     { label: 'Invite Agent', icon: 'robot', iconColor: 'text-blue-500', onAction: () => console.log('Invite Agent') },
     { label: 'Post a Role', icon: 'target', iconColor: 'text-amber-500', onAction: () => console.log('Post Role') },
   ]
@@ -585,13 +676,22 @@ export default function NavExperiment() {
           { label: 'Feedback', icon: 'mail', onAction: () => console.log('Feedback') },
           { label: 'Log out', icon: 'logout', danger: true, onAction: () => console.log('Logout') },
         ]}
+        onSearchOpen={() => setSearchOpen(true)}
       />
 
-      {activeTab === 'dashboard' ? (
-        <OverviewTab startup={currentStartup} />
-      ) : (
-        <PlaceholderTab tab={activeTabData} />
-      )}
+      <CommandPalette
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onAction={(item) => console.log('Command:', item)}
+      />
+
+      <main>
+        {activeTab === 'dashboard' ? (
+          <OverviewTab startup={currentStartup} />
+        ) : (
+          <PlaceholderTab tab={activeTabData} />
+        )}
+      </main>
 
       <BottomNav
         tabs={TABS}

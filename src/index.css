@@ -23,6 +23,7 @@
     --color-border: #E8E8E8;
     --color-input: #f7f7f7;
     --color-pixel: #171717;
+    --color-nav: #171717;
     --font-display: 'Sora', sans-serif;
     --font-accent: 'PP Mondwest', serif;
     --font-body: 'Sora', sans-serif;
@@ -154,6 +155,7 @@
   --color-input: #343434;
   --color-accent-soft: #1a3a0a;
   --color-pixel: #f0f0f0;
+  --color-nav: #1e1e1e;
 }
 
 [data-theme="dark"] ::selection {
@@ -287,6 +289,16 @@
 
 .card-alive:hover {
   transform: translateY(-2px);
+}
+
+/* Command palette entry */
+@keyframes commandIn {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.96) translateY(-8px); filter: blur(4px); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); filter: blur(0px); }
+}
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 /* Marquee scroll for long text */

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
-import { useParams, useSearchParams, useLocation } from 'react-router-dom'
+import { useParams, useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import PixelIcon from '../components/PixelIcon'
 import TransitionLink from '../components/TransitionLink'
@@ -39,6 +39,7 @@ const statusOrder = { 'in-progress': 0, 'queued': 1, 'completed': 2 }
 
 export default function Dashboard() {
   const { slug } = useParams()
+  const navigate = useNavigate()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: startupData, startup: currentStartup, loading, error, refetch } = useStartupData(slug)
@@ -89,6 +90,7 @@ export default function Dashboard() {
   const toast = useToast()
   const { logout, authenticated, user } = useAuth()
   const [userMenu, setUserMenu] = useState(false)
+  const [addMenuOpen, setAddMenuOpen] = useState(false)
   const userMenuRef = useRef(null)
   const [startupMenu, setStartupMenu] = useState(false)
   const startupMenuRef = useRef(null)
@@ -512,6 +514,16 @@ export default function Dashboard() {
     }
   }, [userMenu])
 
+  // Close add menu on outside click
+  useEffect(() => {
+    if (!addMenuOpen) return
+    const handleClick = () => setAddMenuOpen(false)
+    const handleKey = (e) => { if (e.key === 'Escape') setAddMenuOpen(false) }
+    setTimeout(() => document.addEventListener('mousedown', handleClick), 0)
+    document.addEventListener('keydown', handleKey)
+    return () => { document.removeEventListener('mousedown', handleClick); document.removeEventListener('keydown', handleKey) }
+  }, [addMenuOpen])
+
   // Close objective dropdown on outside click
   useEffect(() => {
     if (!objDropdown) return
@@ -524,24 +536,7 @@ export default function Dashboard() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [objDropdown])
 
-  // Animate nav pill on tab switch or when nav re-mounts after task detail closes
-  useEffect(() => {
-    if (!navPillRef.current) return
-    const tabIdx = WORKSHOP_TABS.findIndex(t => t.id === workshopTab)
-    if (tabIdx < 0) return
-    // Each button is 44px (w-11) + 4px gap
-    const offset = tabIdx * 48
-    if (selectedTask) return // nav is hidden, skip
-    gsap.set(navPillRef.current, { x: offset })
-  }, [selectedTask])
-
-  useEffect(() => {
-    if (!navPillRef.current) return
-    const tabIdx = WORKSHOP_TABS.findIndex(t => t.id === workshopTab)
-    if (tabIdx < 0) return
-    const offset = tabIdx * 48
-    gsap.to(navPillRef.current, { x: offset, duration: 0.25, ease: 'power2.out' })
-  }, [workshopTab])
+  // Nav pill animation removed — vertical sidebar uses bg highlight instead
 
   // Live time display helper
   const liveTimestamp = (base) => {
@@ -1130,17 +1125,6 @@ export default function Dashboard() {
             </div>
 
             <div className="flex-1" />
-
-            {/* New Objective button */}
-            <button
-              type="button"
-              onClick={() => { setWorkshopTab('objectives'); setTimeout(() => { setIsNewMode(true) }, 150) }}
-              className="shrink-0 flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[12px] font-medium cursor-pointer
-                         bg-[var(--color-accent)] text-[#0d2000] hover:shadow-lg transition-all mr-2"
-            >
-              <PixelIcon name="plus" size={12} />
-              New Objective
-            </button>
 
             {/* Right: User avatar */}
             <div className="relative shrink-0" ref={userMenuRef}>
@@ -2967,15 +2951,61 @@ export default function Dashboard() {
         aria-hidden="true"
       />
       <nav
-        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-[var(--color-heading)] rounded-full px-2 py-2 shadow-xl shadow-black/20"
+        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-[var(--color-heading)] rounded-2xl px-2 py-2 shadow-xl shadow-black/20"
         aria-label="Workshop navigation"
       >
-        {/* Sliding active pill */}
-        <span
-          ref={navPillRef}
-          className="absolute left-2 top-2 w-11 h-11 rounded-full bg-[var(--color-accent)]/15 pointer-events-none"
-          aria-hidden="true"
-        />
+        {/* Add button */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => { navigator.vibrate?.(10); setAddMenuOpen(prev => !prev) }}
+            className={`flex items-center justify-center w-11 h-11 rounded-xl cursor-pointer transition-all duration-200 ${
+              addMenuOpen
+                ? 'bg-[var(--color-accent)] text-[#0d2000]'
+                : 'bg-white text-[var(--color-heading)] hover:bg-[var(--color-accent)] hover:text-[#0d2000]'
+            }`}
+            aria-label={addMenuOpen ? 'Close menu' : 'Add new'}
+            aria-expanded={addMenuOpen}
+          >
+            <PixelIcon name={addMenuOpen ? 'close' : 'plus'} size={18} />
+          </button>
+
+          {/* Add menu popout — opens upward */}
+          {addMenuOpen && (
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 animate-menu-in">
+              <div className="rounded-xl bg-[var(--color-surface)] shadow-xl shadow-black/10 border border-[var(--color-border)] py-1.5 w-56">
+                <div className="px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Create</div>
+                <button type="button" onClick={() => { setAddMenuOpen(false); setWorkshopTab('objectives'); setTimeout(() => setIsNewMode(true), 150) }}
+                  className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5">
+                  <PixelIcon name="bullseye-arrow" size={14} className="text-[var(--color-accent)]" />
+                  New Objective
+                </button>
+                <button type="button" onClick={() => { setAddMenuOpen(false); handleInviteAgent() }}
+                  className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5">
+                  <PixelIcon name="robot" size={14} className="text-blue-500" />
+                  Invite Agent
+                </button>
+                <button type="button" onClick={() => { setAddMenuOpen(false); navigate(`/dashboard/${slug}/post-role`) }}
+                  className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5">
+                  <PixelIcon name="target" size={14} className="text-amber-500" />
+                  Post a Role
+                </button>
+                <div className="border-t border-[var(--color-border)] mt-1 pt-1">
+                  <button type="button" onClick={() => { setAddMenuOpen(false); navigate(`/dashboard/${slug}/settings`) }}
+                    className="w-full text-left px-4 py-2.5 text-[13px] text-[var(--color-body)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer flex items-center gap-2.5">
+                    <PixelIcon name="settings" size={14} className="text-[var(--color-muted)]" />
+                    Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="w-px h-6 bg-white/10 mx-0.5" />
+
+        {/* Tab buttons */}
         {WORKSHOP_TABS.map(tab => {
           const isActive = workshopTab === tab.id
           const notifCount = tabNotifications.current[tab.id] || 0
@@ -2983,7 +3013,7 @@ export default function Dashboard() {
             <button
               key={tab.id}
               type="button"
-              onClick={() => { navigator.vibrate?.(10); setWorkshopTab(tab.id) }}
+              onClick={() => { navigator.vibrate?.(10); setWorkshopTab(tab.id); setAddMenuOpen(false) }}
               className={`relative z-10 flex items-center justify-center w-11 h-11 rounded-full cursor-pointer transition-colors duration-150 ${
                 isActive
                   ? 'text-[var(--color-accent)]'
