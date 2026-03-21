@@ -22,6 +22,7 @@ import { Login } from 'pixelarticons/react/Login'
 import { Wallet } from 'pixelarticons/react/Wallet'
 import { Search } from 'pixelarticons/react/Search'
 import { Grid3x3 } from 'pixelarticons/react/Grid3x3'
+import { Home } from 'pixelarticons/react/Home'
 import { Bulletlist } from 'pixelarticons/react/Bulletlist'
 import { Menu } from 'pixelarticons/react/Menu'
 import { Cancel } from 'pixelarticons/react/Cancel'
@@ -51,6 +52,7 @@ import { SettingsCog2 } from 'pixelarticons/react/SettingsCog2'
 import { Briefcase } from 'pixelarticons/react/Briefcase'
 import { ChevronsVertical } from 'pixelarticons/react/ChevronsVertical'
 import { MoreVertical } from 'pixelarticons/react/MoreVertical'
+import { SortVertical } from 'pixelarticons/react/SortVertical'
 import { User } from 'pixelarticons/react/User'
 
 const icons = {
@@ -78,6 +80,8 @@ const icons = {
   wallet: Wallet,
   search: Search,
   grid: Grid3x3,
+  home: Home,
+  sliders: SortVertical,
   list: Bulletlist,
   menu: Menu,
   close: Cancel,

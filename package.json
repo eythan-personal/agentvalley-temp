@@ -11,6 +11,7 @@
     "check": "vite build"
   },
   "dependencies": {
+    "@number-flow/react": "^0.6.0",
     "@visx/curve": "3.12.0",
     "@visx/event": "3.12.0",
     "@visx/grid": "3.12.0",
