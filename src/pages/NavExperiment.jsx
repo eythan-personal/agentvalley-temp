@@ -567,22 +567,59 @@ const TASKS = [
   { id: 'TSK-032', title: 'Configure monitoring alerts', status: 'completed', agent: 'Beacon', completedAt: '1 day ago' },
 ]
 
-function SortableObjective({ obj, idx, queuePosition }) {
+function LoadingObjectiveCard({ title }) {
+  return (
+    <div className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5" style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
+      <div className="px-6 py-5">
+        <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Current Objective</div>
+        <h2 className="text-[16px] font-bold text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>{title}</h2>
+
+        <div className="flex items-center justify-between mb-2">
+          <div className="h-3 w-24 rounded bg-[var(--color-border)] animate-pulse" />
+          <div className="h-6 w-12 rounded bg-[var(--color-border)] animate-pulse" />
+        </div>
+        <div className="h-2.5 rounded-full bg-[var(--color-border)] mb-3 overflow-hidden">
+          <div className="h-full w-full animate-[shimmer_1.5s_infinite]" style={{
+            background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-alt) 50%, transparent 100%)',
+            backgroundSize: '200% 100%',
+          }} />
+        </div>
+        <div className="flex items-center gap-5 mb-4">
+          <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
+          <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
+          <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
+        </div>
+
+        <div className="border-t border-[var(--color-border)] pt-4 flex items-center gap-3">
+          <div className="w-6 h-6 rounded-full bg-[var(--color-border)] animate-pulse" />
+          <div className="w-6 h-6 rounded-full bg-[var(--color-border)] animate-pulse -ml-3" />
+          <div className="h-3 w-40 rounded bg-[var(--color-border)] animate-pulse" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SortableObjective({ obj, idx, queuePosition, loading }) {
   const { ref, isDragging } = useSortable({ id: obj.id, index: idx })
 
   return (
     <div ref={ref} style={{ opacity: isDragging ? 0.5 : 1, cursor: 'grab' }}>
       {obj.type === 'active' ? (
-        <ObjectiveCard
-          title={obj.title}
-          percent={obj.progress}
-          completed={obj.completed}
-          inProgress={obj.inProgress}
-          review={obj.review}
-          pending={obj.pending}
-          total={obj.total}
-          agents={obj.agents}
-        />
+        loading ? (
+          <LoadingObjectiveCard title={obj.title} />
+        ) : (
+          <ObjectiveCard
+            title={obj.title}
+            percent={obj.progress || 0}
+            completed={obj.completed || 0}
+            inProgress={obj.inProgress || 0}
+            review={obj.review || 0}
+            pending={obj.pending || 0}
+            total={obj.total || obj.taskCount || 0}
+            agents={obj.agents || []}
+          />
+        )
       ) : (
         <QueuedObjectiveCard
           title={obj.title}
@@ -604,6 +641,8 @@ function ObjectivesTab() {
     { id: 'obj-5', type: 'queued', title: 'Migrate user auth to passkey-based login', taskCount: 12, estDuration: '4-5 days' },
     { id: 'obj-6', type: 'queued', title: 'Create API documentation with interactive examples', taskCount: 7, estDuration: '2 days' },
   ])
+  const [loadingObjective, setLoadingObjective] = useState(false)
+
   const handleDragEnd = (event) => {
     const { source, target } = event.operation
     if (!source || !target) return
@@ -614,7 +653,18 @@ function ObjectivesTab() {
       const copy = [...prev]
       const [item] = copy.splice(fromIdx, 1)
       copy.splice(toIdx, 0, item)
-      return copy
+      const updated = copy.map((obj, i) => ({
+        ...obj,
+        type: i === 0 ? 'active' : 'queued',
+      }))
+
+      // If a new objective moved to position 0, show loading state
+      if (toIdx === 0 && fromIdx !== 0) {
+        setLoadingObjective(true)
+        setTimeout(() => setLoadingObjective(false), 2000)
+      }
+
+      return updated
     })
   }
 
@@ -657,7 +707,7 @@ function ObjectivesTab() {
           {objectives.map((obj, idx) => {
             const queuePosition = objectives.slice(0, idx + 1).filter(o => o.type === 'queued').length
             return (
-              <SortableObjective key={obj.id} obj={obj} idx={idx} queuePosition={queuePosition} />
+              <SortableObjective key={obj.id} obj={obj} idx={idx} queuePosition={queuePosition} loading={idx === 0 && loadingObjective} />
             )
           })}
         </div>

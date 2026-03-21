@@ -327,6 +327,12 @@
   100% { transform: translateY(0); }
 }
 
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Marquee scroll for long text */
 @keyframes marquee {
   0% { transform: translateX(0); }
