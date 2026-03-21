@@ -11,6 +11,7 @@
     "check": "vite build"
   },
   "dependencies": {
+    "@dnd-kit/react": "^0.3.2",
     "@hello-pangea/dnd": "^18.0.1",
     "@number-flow/react": "^0.6.0",
     "@visx/curve": "3.12.0",

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
+import { DragDropProvider } from '@dnd-kit/react'
+import { useSortable } from '@dnd-kit/react/sortable'
 import NumberFlow from '@number-flow/react'
 import PixelIcon from '../components/PixelIcon'
 import { BottomNav, TopBar, AgentDot, CommandPalette, ObjectiveCard, QueuedObjectiveCard } from '../components/ui'
@@ -566,6 +567,34 @@ const TASKS = [
   { id: 'TSK-032', title: 'Configure monitoring alerts', status: 'completed', agent: 'Beacon', completedAt: '1 day ago' },
 ]
 
+function SortableObjective({ obj, idx, queuePosition }) {
+  const { ref, isDragging } = useSortable({ id: obj.id, index: idx })
+
+  return (
+    <div ref={ref} style={{ opacity: isDragging ? 0.5 : 1, cursor: 'grab' }}>
+      {obj.type === 'active' ? (
+        <ObjectiveCard
+          title={obj.title}
+          percent={obj.progress}
+          completed={obj.completed}
+          inProgress={obj.inProgress}
+          review={obj.review}
+          pending={obj.pending}
+          total={obj.total}
+          agents={obj.agents}
+        />
+      ) : (
+        <QueuedObjectiveCard
+          title={obj.title}
+          taskCount={obj.taskCount}
+          estDuration={obj.estDuration}
+          position={queuePosition}
+        />
+      )}
+    </div>
+  )
+}
+
 function ObjectivesTab() {
   const [objectives, setObjectives] = useState([
     { id: 'obj-1', type: 'active', ...OBJECTIVE },
@@ -575,15 +604,16 @@ function ObjectivesTab() {
     { id: 'obj-5', type: 'queued', title: 'Migrate user auth to passkey-based login', taskCount: 12, estDuration: '4-5 days' },
     { id: 'obj-6', type: 'queued', title: 'Create API documentation with interactive examples', taskCount: 7, estDuration: '2 days' },
   ])
-  const handleDragEnd = (result) => {
-    if (!result.destination) return
-    const from = result.source.index
-    const to = result.destination.index
-    if (from === to) return
+  const handleDragEnd = (event) => {
+    const { source, target } = event.operation
+    if (!source || !target) return
     setObjectives(prev => {
+      const fromIdx = prev.findIndex(o => o.id === source.id)
+      const toIdx = prev.findIndex(o => o.id === target.id)
+      if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return prev
       const copy = [...prev]
-      const [item] = copy.splice(from, 1)
-      copy.splice(to, 0, item)
+      const [item] = copy.splice(fromIdx, 1)
+      copy.splice(toIdx, 0, item)
       return copy
     })
   }
@@ -622,57 +652,16 @@ function ObjectivesTab() {
       </div>
 
       {/* Draggable objectives list */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="objectives">
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="mb-6 space-y-3"
-            >
-              {objectives.map((obj, idx) => {
-                const queuePosition = objectives.slice(0, idx + 1).filter(o => o.type === 'queued').length
-                return (
-                  <Draggable key={obj.id} draggableId={obj.id} index={idx}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        style={{
-                          ...provided.draggableProps.style,
-                          opacity: snapshot.isDragging ? 0.9 : 1,
-                        }}
-                      >
-                        {obj.type === 'active' ? (
-                          <ObjectiveCard
-                            title={obj.title}
-                            percent={obj.progress}
-                            completed={obj.completed}
-                            inProgress={obj.inProgress}
-                            review={obj.review}
-                            pending={obj.pending}
-                            total={obj.total}
-                            agents={obj.agents}
-                          />
-                        ) : (
-                          <QueuedObjectiveCard
-                            title={obj.title}
-                            taskCount={obj.taskCount}
-                            estDuration={obj.estDuration}
-                            position={queuePosition}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </Draggable>
-                )
-              })}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <DragDropProvider onDragEnd={handleDragEnd}>
+        <div className="mb-6 space-y-3">
+          {objectives.map((obj, idx) => {
+            const queuePosition = objectives.slice(0, idx + 1).filter(o => o.type === 'queued').length
+            return (
+              <SortableObjective key={obj.id} obj={obj} idx={idx} queuePosition={queuePosition} />
+            )
+          })}
+        </div>
+      </DragDropProvider>
 
     </div>
   )
