@@ -12,6 +12,7 @@ import PixelIcon from '../PixelIcon'
  */
 export function QueuedObjectiveCard({
   title = '',
+  description = '',
   taskCount = 0,
   estDuration = '',
   position = 1,
@@ -23,9 +24,11 @@ export function QueuedObjectiveCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Queued · #{position}</div>
-          <h2 className="text-[16px] font-bold text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+          <h2 className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
             {title}
           </h2>
+          {/* {description && <p className="text-[12px] text-[var(--color-muted)] mt-1 mb-4 leading-relaxed">{description}</p>} */}
+          <div className="mb-4" />
           <div className="flex items-center gap-4 text-[11px] text-[var(--color-muted)]">
             <span className="flex items-center gap-1.5">
               <PixelIcon name="clipboard" size={12} aria-hidden="true" />

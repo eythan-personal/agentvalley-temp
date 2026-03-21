@@ -548,6 +548,7 @@ function OverviewTab({ startup, onTabChange }) {
 const OBJECTIVE = {
   id: 'OBJ-001',
   title: 'Scrape competitor pricing & generate weekly analysis report',
+  description: 'Collect pricing data from top 5 competitors weekly, normalize into a unified schema, generate comparison charts and an executive summary with actionable insights.',
   status: 'in_progress',
   progress: 45,
   completed: 3,
@@ -582,7 +583,7 @@ function LoadingObjectiveCard({ title }) {
   useEffect(() => {
     const stepInterval = setInterval(() => {
       setStep(s => Math.min(s + 1, LOADING_STEPS.length - 1))
-    }, 500)
+    }, 1200)
     const dotInterval = setInterval(() => setDotTick(t => t + 1), 120)
     return () => { clearInterval(stepInterval); clearInterval(dotInterval) }
   }, [])
@@ -595,41 +596,62 @@ function LoadingObjectiveCard({ title }) {
   return (
     <div className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5" style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
       <div className="px-6 py-5">
-        <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Current Objective</div>
-        <h2 className="text-[16px] font-bold text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>{title}</h2>
-
-        {/* Loading step text */}
-        <div className="flex items-center gap-2 mb-3">
-          <svg className="w-4 h-4 flex-shrink-0 animate-spin" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="8" stroke="var(--color-border)" strokeWidth="2" />
-            <path d="M10 2a8 8 0 0 1 8 8" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          <span className="text-[13px] text-[var(--color-body)]">{LOADING_STEPS[step]}</span>
+        {/* Match ObjectiveCard header */}
+        <div className="flex items-start justify-between gap-6 mb-4">
+          <div>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Current Objective</div>
+            <h2 className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{title}</h2>
+          </div>
+          <div className="hidden sm:block text-[32px] font-bold leading-none tabular-nums text-[var(--color-border)] flex-shrink-0 -mt-1 animate-pulse" style={{ fontFamily: 'var(--font-display)' }}>—%</div>
         </div>
 
-        {/* Shimmer progress bar */}
+        {/* Match ObjectiveCard progress section */}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[11px] font-medium text-[var(--color-body)] flex items-center gap-2">Task Progress</span>
+          <div className="h-3 w-32 rounded bg-[var(--color-border)] animate-pulse" />
+        </div>
         <div className="h-2.5 rounded-full bg-[var(--color-border)] mb-3 overflow-hidden">
-          <div className="h-full animate-[shimmer_1.5s_infinite]" style={{
-            width: `${((step + 1) / LOADING_STEPS.length) * 100}%`,
-            background: 'linear-gradient(90deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 50%, transparent) 50%, var(--color-accent) 100%)',
+          <div className="h-full w-full animate-[shimmer_1.5s_infinite]" style={{
+            background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-alt) 50%, transparent 100%)',
             backgroundSize: '200% 100%',
-            transition: 'width 0.5s ease-out',
           }} />
         </div>
-
-        {/* Skeleton stats */}
-        <div className="flex items-center gap-5 mb-4">
-          <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
-          <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
-          <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
+        {/* Match ObjectiveCard legend */}
+        <div className="flex items-center gap-5 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)]" />
+            <div className="h-3 w-16 rounded bg-[var(--color-border)] animate-pulse" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)]" />
+            <div className="h-3 w-16 rounded bg-[var(--color-border)] animate-pulse" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)]" />
+            <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)]" />
+            <div className="h-3 w-14 rounded bg-[var(--color-border)] animate-pulse" />
+          </div>
         </div>
 
-        {/* Bottom row — "Thinking" with dot matrix */}
-        <div className="border-t border-[var(--color-border)] pt-4 flex items-center justify-between">
+        {/* Match ObjectiveCard agent row */}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--color-border)]">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 rounded-full bg-[var(--color-border)] animate-pulse" />
-            <div className="w-6 h-6 rounded-full bg-[var(--color-border)] animate-pulse -ml-3" />
-            <div className="h-3 w-32 rounded bg-[var(--color-border)] animate-pulse" />
+            {/* Radial progress */}
+            <svg className="w-6 h-6 flex-shrink-0 -rotate-90" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="var(--color-border)" strokeWidth="2" />
+              <circle
+                cx="12" cy="12" r="10"
+                stroke="var(--color-accent)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeDasharray={`${((step + 1) / LOADING_STEPS.length) * 62.8} 62.8`}
+                style={{ transition: 'stroke-dasharray 0.8s ease-out' }}
+              />
+            </svg>
+            <span className="text-[11px] text-[var(--color-muted)]">{LOADING_STEPS[step]}</span>
           </div>
           <div className="flex items-center gap-2">
             {/* Dot matrix loader */}
@@ -652,7 +674,7 @@ function LoadingObjectiveCard({ title }) {
                 )
               })}
             </div>
-            <span className="text-[11px] font-medium text-[var(--color-muted)]">Thinking</span>
+            <span className="text-[11px] text-[var(--color-muted)]">Thinking</span>
           </div>
         </div>
       </div>
@@ -660,29 +682,33 @@ function LoadingObjectiveCard({ title }) {
   )
 }
 
-function SortableObjective({ obj, idx, queuePosition, loading }) {
+function SortableObjective({ obj, idx, queuePosition, loading, analyzing, onClick }) {
   const { ref, isDragging } = useSortable({ id: obj.id, index: idx })
 
   return (
-    <div ref={ref} style={{ opacity: isDragging ? 0.5 : 1, cursor: 'grab' }}>
+    <div ref={ref} onClick={() => !isDragging && onClick?.(obj)} style={{ opacity: isDragging ? 0.5 : 1, cursor: 'pointer' }} className="hover:opacity-90 transition-opacity">
       {obj.type === 'active' ? (
         loading ? (
           <LoadingObjectiveCard title={obj.title} />
         ) : (
           <ObjectiveCard
             title={obj.title}
-            percent={obj.progress || 0}
-            completed={obj.completed || 0}
-            inProgress={obj.inProgress || 0}
-            review={obj.review || 0}
-            pending={obj.pending || 0}
+            description={obj.description}
+            percent={analyzing ? 0 : (obj.progress || 0)}
+            completed={analyzing ? 0 : (obj.completed || 0)}
+            inProgress={analyzing ? 0 : (obj.inProgress || 2)}
+            review={analyzing ? 0 : (obj.review || 0)}
+            pending={analyzing ? 0 : (obj.pending || 0)}
             total={obj.total || obj.taskCount || 0}
-            agents={obj.agents || []}
+            agents={obj.agents || ['Scout', 'Forge']}
+            analyzing={analyzing}
+            animate={!analyzing}
           />
         )
       ) : (
         <QueuedObjectiveCard
           title={obj.title}
+          description={obj.description}
           taskCount={obj.taskCount}
           estDuration={obj.estDuration}
           position={queuePosition}
@@ -695,13 +721,15 @@ function SortableObjective({ obj, idx, queuePosition, loading }) {
 function ObjectivesTab() {
   const [objectives, setObjectives] = useState([
     { id: 'obj-1', type: 'active', ...OBJECTIVE },
-    { id: 'obj-2', type: 'queued', title: 'Build investor dashboard with real-time metrics', taskCount: 8, estDuration: '2-3 days' },
-    { id: 'obj-3', type: 'queued', title: 'Automate weekly email digest for stakeholders', taskCount: 5, estDuration: '1-2 days' },
-    { id: 'obj-4', type: 'queued', title: 'Set up CI/CD pipeline for staging deployments', taskCount: 6, estDuration: '1 day' },
-    { id: 'obj-5', type: 'queued', title: 'Migrate user auth to passkey-based login', taskCount: 12, estDuration: '4-5 days' },
-    { id: 'obj-6', type: 'queued', title: 'Create API documentation with interactive examples', taskCount: 7, estDuration: '2 days' },
+    { id: 'obj-2', type: 'queued', title: 'Build investor dashboard with real-time metrics', description: 'Create a live dashboard showing MRR, burn rate, runway, and user growth with auto-refreshing charts for investor meetings.', taskCount: 8, estDuration: '2-3 days' },
+    { id: 'obj-3', type: 'queued', title: 'Automate weekly email digest for stakeholders', description: 'Generate and send a weekly summary email with key metrics, completed objectives, and upcoming priorities.', taskCount: 5, estDuration: '1-2 days' },
+    { id: 'obj-4', type: 'queued', title: 'Set up CI/CD pipeline for staging deployments', description: 'Configure GitHub Actions to auto-deploy to staging on PR merge, with preview environments for each branch.', taskCount: 6, estDuration: '1 day' },
+    { id: 'obj-5', type: 'queued', title: 'Migrate user auth to passkey-based login', description: 'Replace password-based auth with WebAuthn passkeys, including migration flow for existing users and fallback options.', taskCount: 12, estDuration: '4-5 days' },
+    { id: 'obj-6', type: 'queued', title: 'Create API documentation with interactive examples', description: 'Build an OpenAPI spec with auto-generated docs, runnable code samples, and a sandbox environment for testing endpoints.', taskCount: 7, estDuration: '2 days' },
   ])
   const [loadingObjective, setLoadingObjective] = useState(false)
+  const [analyzingObjective, setAnalyzingObjective] = useState(false)
+  const [selectedObjective, setSelectedObjective] = useState(null)
 
   const handleDragEnd = (event) => {
     if (event.canceled) return
@@ -725,7 +753,11 @@ function ObjectivesTab() {
       // If a new objective moved to position 0, show loading state
       if (toIdx === 0 && fromIdx !== 0) {
         setLoadingObjective(true)
-        setTimeout(() => setLoadingObjective(false), 2500)
+        setTimeout(() => {
+          setLoadingObjective(false)
+          setAnalyzingObjective(true)
+          setTimeout(() => setAnalyzingObjective(false), 3000)
+        }, 5500)
       }
 
       return updated
@@ -765,17 +797,166 @@ function ObjectivesTab() {
         </div>
       </div>
 
-      {/* Draggable objectives list */}
-      <DragDropProvider onDragEnd={handleDragEnd}>
-        <div className="mb-6 space-y-3">
-          {objectives.map((obj, idx) => {
-            const queuePosition = objectives.slice(0, idx + 1).filter(o => o.type === 'queued').length
-            return (
-              <SortableObjective key={obj.id} obj={obj} idx={idx} queuePosition={queuePosition} loading={idx === 0 && loadingObjective} />
-            )
-          })}
+      {/* Back button — only in task view */}
+      {selectedObjective && (
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => setSelectedObjective(null)}
+            className="flex items-center gap-2 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer"
+          >
+            <PixelIcon name="arrow-left" size={14} aria-hidden="true" />
+            Back to objectives
+          </button>
         </div>
-      </DragDropProvider>
+      )}
+
+      {selectedObjective ? (
+        <>
+          {/* Compact active objective in task view */}
+          {selectedObjective.type === 'active' && (
+            <ObjectiveCard
+              title={selectedObjective.title}
+              percent={selectedObjective.progress || 0}
+              completed={selectedObjective.completed || 0}
+              inProgress={selectedObjective.inProgress || 0}
+              review={selectedObjective.review || 0}
+              pending={selectedObjective.pending || 0}
+              total={selectedObjective.total || 0}
+              agents={selectedObjective.agents || ['Scout', 'Forge']}
+              compact={true}
+              className="mb-6"
+            />
+          )}
+
+          {/* Queued objective detail */}
+          {selectedObjective.type !== 'active' && (
+            <QueuedObjectiveCard
+              title={selectedObjective.title}
+              description={selectedObjective.description}
+              taskCount={selectedObjective.taskCount}
+              estDuration={selectedObjective.estDuration}
+              position={0}
+              className="mb-6"
+            />
+          )}
+
+          {/* Tasks */}
+          {selectedObjective.type === 'active' ? (
+            <div className="space-y-6">
+              {/* Working */}
+              {TASKS.filter(t => t.status === 'working').length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'oklch(0.77 0.12 253.03)' }} />
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">
+                      Working ({TASKS.filter(t => t.status === 'working').length})
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    {TASKS.filter(t => t.status === 'working').map(task => (
+                      <div key={task.id} className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ outline: '1px solid var(--color-border)' }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-mono text-[var(--color-muted)]">{task.id}</span>
+                          <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded-md" style={{ backgroundColor: 'color-mix(in srgb, oklch(0.77 0.12 253.03) 12%, var(--color-surface))', color: 'oklch(0.77 0.12 253.03)' }}>Working</span>
+                        </div>
+                        <h3 className="text-[14px] font-semibold text-[var(--color-heading)] mb-2">{task.title}</h3>
+                        {task.detail && <p className="text-[12px] text-[var(--color-muted)] mb-3 leading-relaxed">{task.detail}</p>}
+                        <div className="flex items-center justify-between pt-3 border-t border-[var(--color-border)]">
+                          <div className="flex items-center gap-2">
+                            <AgentDot name={task.agent} size={22} thinking={true} />
+                            <span className="text-[12px] text-[var(--color-body)]">{task.agent}</span>
+                          </div>
+                          <div className="flex items-center gap-4 text-[var(--color-muted)]">
+                            <button type="button" className="flex items-center gap-1 text-[12px] hover:text-[var(--color-heading)] transition-colors cursor-pointer">
+                              <PixelIcon name="thumbs-up" size={14} aria-hidden="true" /> {task.votes?.up || 0}
+                            </button>
+                            <button type="button" className="flex items-center gap-1 text-[12px] hover:text-[var(--color-heading)] transition-colors cursor-pointer">
+                              <PixelIcon name="thumbs-down" size={14} aria-hidden="true" /> {task.votes?.down || 0}
+                            </button>
+                            <button type="button" className="hover:text-[var(--color-heading)] transition-colors cursor-pointer">
+                              <PixelIcon name="message" size={14} aria-hidden="true" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Pending */}
+              {TASKS.filter(t => t.status === 'pending').length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-[var(--color-muted)]" />
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">
+                      Up Next ({TASKS.filter(t => t.status === 'pending').length})
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    {TASKS.filter(t => t.status === 'pending').map(task => (
+                      <div key={task.id} className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ outline: '1px solid var(--color-border)' }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-mono text-[var(--color-muted)]">{task.id}</span>
+                          <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded-md bg-[var(--color-bg-alt)] text-[var(--color-muted)]">Pending</span>
+                        </div>
+                        <h3 className="text-[14px] font-semibold text-[var(--color-heading)] mb-2">{task.title}</h3>
+                        <span className="text-[11px] text-[var(--color-muted)] flex items-center gap-1.5">
+                          <PixelIcon name="clock" size={12} aria-hidden="true" /> Awaiting assignment
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Completed */}
+              {TASKS.filter(t => t.status === 'completed').length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-[var(--color-accent)]" />
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">
+                      Completed ({TASKS.filter(t => t.status === 'completed').length})
+                    </span>
+                  </div>
+                  <div className="rounded-2xl bg-[var(--color-surface)] divide-y divide-[var(--color-border)]" style={{ outline: '1px solid var(--color-border)' }}>
+                    {TASKS.filter(t => t.status === 'completed').map(task => (
+                      <div key={task.id} className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-[var(--color-bg-alt)] transition-colors">
+                        <PixelIcon name="check" size={16} className="text-[var(--color-accent)] flex-shrink-0" aria-hidden="true" />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-[13px] font-semibold text-[var(--color-heading)]">{task.title}</h3>
+                          <span className="text-[11px] text-[var(--color-muted)]">{task.agent}</span>
+                        </div>
+                        <AgentDot name={task.agent} size={24} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-[var(--color-surface)] p-8 text-center" style={{ outline: '1px solid var(--color-border)' }}>
+              <PixelIcon name="clock" size={28} className="text-[var(--color-muted)] mx-auto mb-3" />
+              <div className="text-[13px] text-[var(--color-muted)]">Tasks will be generated when this objective becomes active</div>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Draggable objectives list */}
+          <DragDropProvider onDragEnd={handleDragEnd}>
+            <div className="mb-6 space-y-3">
+              {objectives.map((obj, idx) => {
+                const queuePosition = objectives.slice(0, idx + 1).filter(o => o.type === 'queued').length
+                return (
+                  <SortableObjective key={obj.id} obj={obj} idx={idx} queuePosition={queuePosition} loading={idx === 0 && loadingObjective} analyzing={idx === 0 && analyzingObjective} onClick={(o) => setSelectedObjective(o)} />
+                )
+              })}
+            </div>
+          </DragDropProvider>
+        </>
+      )}
 
     </div>
   )

@@ -18,9 +18,13 @@ const AGENT_COLORS = [
 
 function hashName(name) {
   if (!name) return 0
-  let hash = 0
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  return Math.abs(hash)
+  let h = 0xDEAD
+  for (let i = 0; i < name.length; i++) {
+    h ^= name.charCodeAt(i)
+    h = Math.imul(h, 0x5bd1e995)
+    h ^= h >>> 15
+  }
+  return Math.abs(h)
 }
 
 function oklch(l, c, h) {
@@ -60,10 +64,18 @@ function getAgentGradient(name) {
   }
 }
 
-export function AgentDot({ name, size = 28, active = false, className = '', style = {} }) {
+export function AgentDot({ name, size = 28, active = false, thinking = false, className = '', style = {} }) {
   const hash = hashName(name)
   const gradient = getAgentGradient(name)
-  const uid = `ag-${hash % 9999}`
+  // Use name directly for unique SVG IDs (no collisions)
+  const safeName = (name || 'x').replace(/[^a-zA-Z0-9]/g, '')
+  const uid = `ag-${safeName}-${hash}`
+  const thinkUid = `ag-t-${safeName}-${hash}`
+
+  const [baseL, baseC, baseH] = AGENT_COLORS[hash % AGENT_COLORS.length]
+  const thinkBright = oklch(Math.min(baseL + 0.3, 0.97), baseC * 0.4, baseH)
+  const thinkMid = oklch(baseL, baseC * 1.2, baseH)
+  const thinkDeep = oklch(Math.max(baseL - 0.25, 0.25), baseC * 1.3, (baseH + 10) % 360)
 
   return (
     <span
@@ -73,7 +85,20 @@ export function AgentDot({ name, size = 28, active = false, className = '', styl
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <defs>
-          {gradient.radial ? (
+          {thinking ? (
+            <radialGradient id={thinkUid} cx="50%" cy="50%" r="60%">
+              <stop offset="0%" stopColor={thinkBright}>
+                <animate attributeName="offset" values="0%;40%;0%" dur={`${2.5 + (hash % 10) * 0.1}s`} repeatCount="indefinite" />
+              </stop>
+              <stop offset="45%" stopColor={thinkMid}>
+                <animate attributeName="offset" values="45%;75%;45%" dur={`${2 + (hash % 8) * 0.15}s`} repeatCount="indefinite" />
+              </stop>
+              <stop offset="100%" stopColor={thinkDeep} />
+              <animate attributeName="cx" values={`${20 + hash % 15}%;${65 + hash % 15}%;${20 + hash % 15}%`} dur={`${3.5 + (hash % 7) * 0.15}s`} repeatCount="indefinite" />
+              <animate attributeName="cy" values={`${20 + hash % 10}%;${60 + hash % 15}%;${20 + hash % 10}%`} dur={`${3 + (hash % 9) * 0.12}s`} repeatCount="indefinite" />
+              <animate attributeName="r" values={`${35 + hash % 10}%;${85 + hash % 10}%;${35 + hash % 10}%`} dur={`${2.5 + (hash % 6) * 0.2}s`} repeatCount="indefinite" />
+            </radialGradient>
+          ) : gradient.radial ? (
             <radialGradient id={uid} cx="30%" cy="30%" r="70%">
               <stop offset="0%" stopColor={gradient.stops[0]} />
               <stop offset="50%" stopColor={gradient.stops[1]} />
@@ -89,7 +114,7 @@ export function AgentDot({ name, size = 28, active = false, className = '', styl
             </linearGradient>
           )}
         </defs>
-        <circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#${uid})`} />
+        <circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#${thinking ? thinkUid : uid})`} />
       </svg>
     </span>
   )
