@@ -838,20 +838,36 @@ function ObjectivesTab() {
 
   return (
     <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-24 sm:pt-[20vh] pb-32">
-      {/* Greeting + controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <div>
-          <h1 className="text-[18px] font-bold leading-tight text-balance" style={{ fontFamily: 'var(--font-display)' }}>
-            {(() => {
-              const h = new Date().getHours()
-              return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
-            })()}, Eythan
-          </h1>
-          <div className="text-[12px] text-[var(--color-muted)] mt-0.5">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+      {/* Breadcrumbs + controls */}
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <nav className="flex items-center gap-2 text-[12px] font-mono min-w-0">
+          <button
+            type="button"
+            onClick={() => { setSelectedObjective(null); setSelectedTask(null) }}
+            className={`cursor-pointer transition-colors whitespace-nowrap ${!selectedObjective ? 'text-[var(--color-heading)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-heading)]'}`}
+          >
+            Objectives
+          </button>
+          {selectedObjective && (
+            <>
+              <span className="text-[var(--color-border)]">/</span>
+              <button
+                type="button"
+                onClick={() => setSelectedTask(null)}
+                className={`cursor-pointer transition-colors truncate max-w-[250px] ${!selectedTask ? 'text-[var(--color-heading)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-heading)]'}`}
+              >
+                {selectedObjective.title}
+              </button>
+            </>
+          )}
+          {selectedTask && (
+            <>
+              <span className="text-[var(--color-border)]">/</span>
+              <span className="text-[var(--color-heading)] font-semibold whitespace-nowrap">{selectedTask.id}</span>
+            </>
+          )}
+        </nav>
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             type="button"
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-medium cursor-pointer transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.96] bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)]"
@@ -869,38 +885,8 @@ function ObjectivesTab() {
         </div>
       </div>
 
-      {/* Back button — only in task view */}
-      {selectedObjective && (
-        <div className="mb-4">
-          <button
-            type="button"
-            onClick={() => setSelectedObjective(null)}
-            className="flex items-center gap-2 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer"
-          >
-            <PixelIcon name="arrow-left" size={14} aria-hidden="true" />
-            Back to objectives
-          </button>
-        </div>
-      )}
-
       {selectedObjective ? (
         <>
-          {/* Compact active objective */}
-          {selectedObjective.type === 'active' && (
-            <ObjectiveCard
-              title={selectedObjective.title}
-              percent={selectedObjective.progress || 0}
-              completed={selectedObjective.completed || 0}
-              inProgress={selectedObjective.inProgress || 0}
-              review={selectedObjective.review || 0}
-              pending={selectedObjective.pending || 0}
-              total={selectedObjective.total || 0}
-              agents={selectedObjective.agents || ['Scout', 'Forge']}
-              compact={true}
-              className="mb-6"
-            />
-          )}
-
           {/* Queued objective detail */}
           {selectedObjective.type !== 'active' && (
             <QueuedObjectiveCard
@@ -916,18 +902,6 @@ function ObjectivesTab() {
           {/* Tasks */}
           {selectedTask ? (
             <>
-              {/* Task detail view */}
-              <div className="mb-4">
-                <button
-                  type="button"
-                  onClick={() => setSelectedTask(null)}
-                  className="flex items-center gap-2 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer"
-                >
-                  <PixelIcon name="arrow-left" size={14} aria-hidden="true" />
-                  Back to tasks
-                </button>
-              </div>
-
               <div className="rounded-2xl bg-[var(--color-surface)] p-6 mb-6" style={{ outline: '1px solid var(--color-border)' }}>
                 {/* Header meta */}
                 <div className="grid grid-cols-3 gap-4 mb-6 text-[12px]">
