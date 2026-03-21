@@ -226,9 +226,9 @@ function OverviewTab({ startup }) {
   })
 
   return (
-    <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-[20vh] pb-32">
+    <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-24 sm:pt-[20vh] pb-32">
       {/* Greeting + controls */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
           <h1 className="text-[18px] font-bold leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
             {(() => {
@@ -266,20 +266,21 @@ function OverviewTab({ startup }) {
       <div className="relative z-10 rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5" style={{ outline: '1px solid rgba(0,0,0,0.08)', outlineOffset: '0px' }}>
         {/* Current objective */}
         <div className="px-6 py-5">
-          <div className="flex items-start justify-between gap-6 mb-4">
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Current Objective</div>
-              <h2 className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
-                Scrape competitor pricing &amp; generate weekly analysis report
-              </h2>
-            </div>
-            <NumberFlow value={mounted ? 68 : 0} suffix="%" className="text-[32px] font-bold leading-none tabular-nums text-[var(--color-heading)] flex-shrink-0" style={{ fontFamily: 'var(--font-display)' }} />
+          <div className="flex items-start justify-between gap-6 mb-1 sm:mb-4">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Current Objective</div>
+            <NumberFlow value={mounted ? 68 : 0} suffix="%" className="hidden sm:block text-[32px] font-bold leading-none tabular-nums text-[var(--color-heading)] flex-shrink-0" style={{ fontFamily: 'var(--font-display)' }} />
           </div>
+          <h2 className="text-[16px] font-bold text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+            Scrape competitor pricing &amp; generate weekly analysis report
+          </h2>
 
           {/* Task progress */}
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-medium text-[var(--color-body)]">Task Progress</span>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Started 2h ago · ETA 45min</span>
+            <span className="text-[11px] font-medium text-[var(--color-body)] flex items-center gap-2">
+              Task Progress
+              <NumberFlow value={mounted ? 68 : 0} suffix="%" className="sm:hidden text-[13px] font-bold tabular-nums text-[var(--color-heading)]" />
+            </span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] hidden sm:block">Started 2h ago · ETA 45min</span>
           </div>
           <div className="flex h-2.5 rounded-full overflow-hidden bg-[var(--color-border)] mb-3">
             <div className="bg-[var(--color-accent)] rounded-l-full" style={{ width: mounted ? '50%' : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s' }} />
@@ -319,37 +320,29 @@ function OverviewTab({ startup }) {
 
       {/* Stats shelf — tucked under the objective card */}
       <div className="relative -mt-4 rounded-b-2xl px-6 pt-7 pb-5 mb-8" style={{ backgroundColor: 'color-mix(in srgb, var(--color-bg-alt) 50%, var(--color-bg))' }}>
-        {/* Mobile: 2x3 grid, Desktop: single row */}
-        <div className="grid grid-cols-2 gap-4 sm:flex sm:items-end sm:gap-0">
-          {/* Total Tasks + Sparkline */}
-          <div className="col-span-2 flex items-end gap-5 sm:pr-8 sm:flex-1">
+        {/* Mobile: horizontal scroll pills, Desktop: single row */}
+        {/* Desktop */}
+        <div className="hidden sm:flex items-end gap-0">
+          <div className="flex items-end gap-5 pr-8 flex-1">
             <div className="flex-shrink-0">
               <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Total Tasks:</div>
               <NumberFlow value={totalTasks} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
             </div>
             <div className="flex-1"><Sparkline data={[3, 5, 4, 7, 6, 8, 12, 10, 11, 9, 12]} width={200} /></div>
           </div>
-
-          {/* In Progress */}
-          <div className="sm:px-8 sm:border-l sm:border-[var(--color-border)]">
+          <div className="px-8 border-l border-[var(--color-border)]">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">In Progress</div>
             <NumberFlow value={inProgress} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
           </div>
-
-          {/* Needs Review */}
-          <div className="sm:px-8 sm:border-l sm:border-[var(--color-border)]">
+          <div className="px-8 border-l border-[var(--color-border)]">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Needs Review</div>
             <NumberFlow value={needsReview} className="text-[28px] font-bold leading-none tabular-nums text-amber-500" style={{ fontFamily: 'var(--font-display)' }} />
           </div>
-
-          {/* Completed (24h) */}
-          <div className="sm:px-8 sm:border-l sm:border-[var(--color-border)]">
+          <div className="px-8 border-l border-[var(--color-border)]">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Completed (24h)</div>
             <NumberFlow value={completed} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
           </div>
-
-          {/* Team */}
-          <div className="flex items-end gap-3 sm:pl-8 sm:border-l sm:border-[var(--color-border)]">
+          <div className="flex items-end gap-3 pl-8 border-l border-[var(--color-border)]">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Team</div>
               <NumberFlow value={AGENTS.length} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
@@ -360,6 +353,21 @@ function OverviewTab({ startup }) {
               ))}
             </div>
           </div>
+        </div>
+        {/* Mobile */}
+        <div className="flex sm:hidden gap-2 overflow-x-auto -mx-6 px-6 pb-1" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+          {[
+            { label: 'Tasks', value: totalTasks },
+            { label: 'In Progress', value: inProgress },
+            { label: 'Review', value: needsReview, amber: true },
+            { label: 'Done (24h)', value: completed },
+            { label: 'Team', value: AGENTS.length },
+          ].map((stat, i) => (
+            <div key={i} className="flex-shrink-0 rounded-xl bg-[var(--color-bg)] px-4 py-3 min-w-[90px]">
+              <div className="text-[9px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">{stat.label}</div>
+              <NumberFlow value={stat.value} className={`text-[20px] font-bold leading-none tabular-nums ${stat.amber ? 'text-amber-500' : ''}`} style={{ fontFamily: 'var(--font-display)' }} />
+            </div>
+          ))}
         </div>
       </div>
 
