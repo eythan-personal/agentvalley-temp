@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { DragDropProvider } from '@dnd-kit/react'
-import { useSortable } from '@dnd-kit/react/sortable'
+import { useSortable, isSortable } from '@dnd-kit/react/sortable'
+import { move } from '@dnd-kit/helpers'
 import NumberFlow from '@number-flow/react'
 import PixelIcon from '../components/PixelIcon'
 import { BottomNav, TopBar, AgentDot, CommandPalette, ObjectiveCard, QueuedObjectiveCard } from '../components/ui'
@@ -644,15 +645,19 @@ function ObjectivesTab() {
   const [loadingObjective, setLoadingObjective] = useState(false)
 
   const handleDragEnd = (event) => {
-    const { source, target } = event.operation
-    if (!source || !target) return
+    if (event.canceled) return
+    const { source } = event.operation
+    if (!isSortable(source)) return
+
+    const fromIdx = source.initialIndex
+    const toIdx = source.index
+    if (fromIdx === toIdx) return
+
     setObjectives(prev => {
-      const fromIdx = prev.findIndex(o => o.id === source.id)
-      const toIdx = prev.findIndex(o => o.id === target.id)
-      if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return prev
       const copy = [...prev]
       const [item] = copy.splice(fromIdx, 1)
       copy.splice(toIdx, 0, item)
+      // Position 0 is always active, rest are queued
       const updated = copy.map((obj, i) => ({
         ...obj,
         type: i === 0 ? 'active' : 'queued',
