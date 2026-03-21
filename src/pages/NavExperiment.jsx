@@ -319,9 +319,10 @@ function OverviewTab({ startup }) {
 
       {/* Stats shelf — tucked under the objective card */}
       <div className="relative -mt-4 rounded-b-2xl px-6 pt-7 pb-5 mb-8" style={{ backgroundColor: 'color-mix(in srgb, var(--color-bg-alt) 50%, var(--color-bg))' }}>
-        <div className="flex items-end gap-0">
+        {/* Mobile: 2x3 grid, Desktop: single row */}
+        <div className="grid grid-cols-2 gap-4 sm:flex sm:items-end sm:gap-0">
           {/* Total Tasks + Sparkline */}
-          <div className="flex items-end gap-5 pr-8 flex-1">
+          <div className="col-span-2 flex items-end gap-5 sm:pr-8 sm:flex-1">
             <div className="flex-shrink-0">
               <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Total Tasks:</div>
               <NumberFlow value={totalTasks} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
@@ -330,25 +331,25 @@ function OverviewTab({ startup }) {
           </div>
 
           {/* In Progress */}
-          <div className="px-8 border-l border-[var(--color-border)]">
+          <div className="sm:px-8 sm:border-l sm:border-[var(--color-border)]">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">In Progress</div>
             <NumberFlow value={inProgress} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
           </div>
 
           {/* Needs Review */}
-          <div className="px-8 border-l border-[var(--color-border)]">
+          <div className="sm:px-8 sm:border-l sm:border-[var(--color-border)]">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Needs Review</div>
             <NumberFlow value={needsReview} className="text-[28px] font-bold leading-none tabular-nums text-amber-500" style={{ fontFamily: 'var(--font-display)' }} />
           </div>
 
           {/* Completed (24h) */}
-          <div className="px-8 border-l border-[var(--color-border)]">
+          <div className="sm:px-8 sm:border-l sm:border-[var(--color-border)]">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Completed (24h)</div>
             <NumberFlow value={completed} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
           </div>
 
           {/* Team */}
-          <div className="flex items-end gap-3 pl-8 border-l border-[var(--color-border)]">
+          <div className="flex items-end gap-3 sm:pl-8 sm:border-l sm:border-[var(--color-border)]">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Team</div>
               <NumberFlow value={AGENTS.length} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
