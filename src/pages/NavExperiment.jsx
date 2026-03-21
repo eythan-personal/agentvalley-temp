@@ -840,37 +840,47 @@ function ObjectivesTab() {
     <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-24 sm:pt-[20vh] pb-32">
       {/* Breadcrumbs + controls */}
       <div className="flex items-center justify-between gap-3 mb-5">
-        <nav className="flex items-center gap-2 text-[12px] font-mono min-w-0">
-          <button
-            type="button"
-            onClick={() => { setSelectedObjective(null); setSelectedTask(null) }}
-            className={`cursor-pointer transition-colors whitespace-nowrap ${!selectedObjective ? 'text-[var(--color-heading)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-heading)]'}`}
-          >
-            Objectives
-          </button>
-          {selectedObjective && (
-            <>
-              <span className="text-[var(--color-border)]">/</span>
-              <button
-                type="button"
-                onClick={() => setSelectedTask(null)}
-                className={`cursor-pointer transition-colors truncate max-w-[250px] ${!selectedTask ? 'text-[var(--color-heading)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-heading)]'}`}
-              >
-                {selectedObjective.title}
-              </button>
-            </>
-          )}
-          {selectedTask && (
-            <>
-              <span className="text-[var(--color-border)]">/</span>
-              <span className="text-[var(--color-heading)] font-semibold whitespace-nowrap">{selectedTask.id}</span>
-            </>
-          )}
-        </nav>
+        {!selectedObjective ? (
+          <div>
+            <h1 className="text-[18px] font-bold leading-tight text-balance" style={{ fontFamily: 'var(--font-display)' }}>Objectives</h1>
+            <div className="text-[12px] text-[var(--color-muted)] mt-0.5">{objectives.length} objectives</div>
+          </div>
+        ) : (
+          <nav className="flex items-center gap-2 text-[12px] font-mono min-w-0">
+            <button
+              type="button"
+              onClick={() => { if (selectedTask) { setSelectedTask(null) } else { setSelectedObjective(null) } }}
+              className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96] flex-shrink-0 mr-1"
+            >
+              <PixelIcon name="arrow-left" size={14} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => { setSelectedObjective(null); setSelectedTask(null) }}
+              className="cursor-pointer transition-colors whitespace-nowrap text-[var(--color-muted)] hover:text-[var(--color-heading)]"
+            >
+              Objectives
+            </button>
+            <span className="text-[var(--color-border)]">/</span>
+            <button
+              type="button"
+              onClick={() => setSelectedTask(null)}
+              className={`cursor-pointer transition-colors truncate max-w-[250px] ${!selectedTask ? 'text-[var(--color-heading)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-heading)]'}`}
+            >
+              {selectedObjective.title}
+            </button>
+            {selectedTask && (
+              <>
+                <span className="text-[var(--color-border)]">/</span>
+                <span className="text-[var(--color-heading)] font-semibold whitespace-nowrap">{selectedTask.id}</span>
+              </>
+            )}
+          </nav>
+        )}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             type="button"
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-medium cursor-pointer transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.96] bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)]"
+            className="flex items-center gap-1.5 h-10 px-4 rounded-xl text-[12px] font-medium cursor-pointer transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.96] bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)]"
           >
             <PixelIcon name="clock" size={13} aria-hidden="true" />
             Pause
