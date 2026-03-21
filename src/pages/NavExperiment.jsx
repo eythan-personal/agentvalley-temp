@@ -247,7 +247,7 @@ function OverviewTab({ startup, onTabChange }) {
       {/* Greeting + controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
-          <h1 className="text-[18px] font-bold leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+          <h1 className="text-[18px] font-bold leading-tight text-balance" style={{ fontFamily: 'var(--font-display)' }}>
             {(() => {
               const h = new Date().getHours()
               return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
@@ -273,7 +273,7 @@ function OverviewTab({ startup, onTabChange }) {
           <button
             type="button"
             aria-label="Settings"
-            className="flex items-center justify-center w-9 h-9 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
           >
             <PixelIcon name="settings" size={14} aria-hidden="true" />
           </button>
@@ -396,7 +396,7 @@ function OverviewTab({ startup, onTabChange }) {
                 className="absolute top-full right-0 mt-2 z-50"
                 onMouseDown={e => e.stopPropagation()}
               >
-                <div className="rounded-[16px] bg-[var(--color-nav)] py-2 px-2 w-44" role="menu" style={{ boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }}>
+                <div className="rounded-[20px] bg-[var(--color-nav)] py-2 px-2 w-44" role="menu" style={{ boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }}>
                   <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-white/40">Filter by</div>
                   {[
                     { id: 'all', label: 'All activity' },
@@ -683,11 +683,16 @@ function LoadingObjectiveCard({ title }) {
 }
 
 function SortableObjective({ obj, idx, queuePosition, loading, analyzing, onClick }) {
-  const { ref, isDragging } = useSortable({ id: obj.id, index: idx })
+  const isActive = obj.type === 'active'
+  const { ref, isDragging } = useSortable({
+    id: obj.id,
+    index: idx,
+    transition: { duration: 350, easing: 'cubic-bezier(0.25, 1, 0.5, 1)' },
+  })
 
   return (
-    <div ref={ref} onClick={() => !isDragging && onClick?.(obj)} style={{ opacity: isDragging ? 0.5 : 1, cursor: 'pointer' }} className="hover:opacity-90 transition-opacity">
-      {obj.type === 'active' ? (
+    <div ref={ref} onClick={() => !isDragging && onClick?.(obj)} className="rounded-2xl transition-[opacity,filter] duration-200 hover:brightness-[0.97]" style={{ opacity: isDragging ? 0.4 : 1, cursor: 'pointer' }}>
+      {isActive ? (
         loading ? (
           <LoadingObjectiveCard title={obj.title} />
         ) : (
@@ -750,11 +755,24 @@ function ObjectivesTab() {
         type: i === 0 ? 'active' : 'queued',
       }))
 
-      // If a new objective moved to position 0, show loading state
-      if (toIdx === 0 && fromIdx !== 0) {
+      // If position 0 has a different objective than before, show loading state
+      if (updated[0].id !== prev[0].id) {
         setLoadingObjective(true)
         setTimeout(() => {
           setLoadingObjective(false)
+          // If the new active objective has no stats, generate them
+          setObjectives(prev => {
+            const active = prev[0]
+            if (!active.progress && active.progress !== 0) {
+              const total = active.taskCount || 8
+              const completed = Math.floor(Math.random() * 2)
+              const inProg = 2
+              const rev = Math.floor(Math.random() * 2)
+              const pend = total - completed - inProg - rev
+              return [{ ...active, progress: Math.round(((completed + inProg * 0.5) / total) * 100), completed, inProgress: inProg, review: rev, pending: Math.max(pend, 0), total, agents: ['Scout', 'Forge'] }, ...prev.slice(1)]
+            }
+            return prev
+          })
           setAnalyzingObjective(true)
           setTimeout(() => setAnalyzingObjective(false), 3000)
         }, 5500)
@@ -769,7 +787,7 @@ function ObjectivesTab() {
       {/* Greeting + controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
-          <h1 className="text-[18px] font-bold leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+          <h1 className="text-[18px] font-bold leading-tight text-balance" style={{ fontFamily: 'var(--font-display)' }}>
             {(() => {
               const h = new Date().getHours()
               return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
@@ -790,7 +808,7 @@ function ObjectivesTab() {
           <button
             type="button"
             aria-label="Settings"
-            className="flex items-center justify-center w-9 h-9 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96]"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96]"
           >
             <PixelIcon name="settings" size={14} aria-hidden="true" />
           </button>
@@ -813,6 +831,22 @@ function ObjectivesTab() {
 
       {selectedObjective ? (
         <>
+          {/* Compact active objective */}
+          {selectedObjective.type === 'active' && (
+            <ObjectiveCard
+              title={selectedObjective.title}
+              percent={selectedObjective.progress || 0}
+              completed={selectedObjective.completed || 0}
+              inProgress={selectedObjective.inProgress || 0}
+              review={selectedObjective.review || 0}
+              pending={selectedObjective.pending || 0}
+              total={selectedObjective.total || 0}
+              agents={selectedObjective.agents || ['Scout', 'Forge']}
+              compact={true}
+              className="mb-6"
+            />
+          )}
+
           {/* Queued objective detail */}
           {selectedObjective.type !== 'active' && (
             <QueuedObjectiveCard
@@ -1303,7 +1337,7 @@ function AgentsTab() {
             key={name}
             type="button"
             onClick={() => officeTransition === 'idle' && setSelectedAgent(selectedAgent === name ? null : name)}
-            className={`flex flex-col-reverse items-center gap-2 cursor-pointer group transition-all duration-300 ease-out ${
+            className={`flex flex-col-reverse items-center gap-2 cursor-pointer group transition-[opacity,transform,filter] duration-300 ease-out ${
               selectedAgent && selectedAgent !== name ? 'opacity-30' : ''
             } ${hasTeleported ? 'opacity-0 -translate-y-20 blur-sm' : ''}`}
             style={{ transitionDuration: hasTeleported ? '400ms' : '150ms' }}
@@ -1318,7 +1352,7 @@ function AgentsTab() {
               <img
                 src={AGENT_CHARS[name]}
                 alt={name}
-                className={`h-28 w-auto transition-[scale,filter] duration-150 ease-out group-hover:scale-110 group-active:scale-95 ${
+                className={`h-28 w-auto transition-[scale,filter] duration-150 ease-out group-hover:scale-110 group-active:scale-[0.96] ${
                   selectedAgent === name ? 'scale-110' : ''
                 } ${jumpingAgent === name ? 'animate-[agentJump_0.5s_ease-out]' : ''} ${wavingAgent === name ? 'animate-[agentWave_0.4s_ease-in-out_infinite]' : ''}`}
                 style={{ imageRendering: 'pixelated' }}
@@ -1397,7 +1431,7 @@ function AgentsTab() {
                 className="absolute top-full right-0 mt-2 z-50"
                 onMouseDown={e => e.stopPropagation()}
               >
-                <div className="rounded-[16px] bg-[var(--color-nav)] py-2 px-2 w-44" role="menu" style={{ boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }}>
+                <div className="rounded-[20px] bg-[var(--color-nav)] py-2 px-2 w-44" role="menu" style={{ boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)' }}>
                   <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-white/40">Filter by</div>
                   {[
                     { id: 'all', label: 'All activity' },

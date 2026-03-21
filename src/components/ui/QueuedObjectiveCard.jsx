@@ -19,7 +19,7 @@ export function QueuedObjectiveCard({
   className = '',
 }) {
   return (
-    <div className={`rounded-2xl bg-[var(--color-surface)] ${className}`} style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
+    <div className={`rounded-2xl bg-[var(--color-surface)] transition-[transform,box-shadow] duration-200 ease-out hover:shadow-lg hover:shadow-black/5 group/card ${className}`} style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
       <div className="px-6 py-5 flex gap-4">
         {/* Content */}
         <div className="flex-1 min-w-0">
@@ -47,7 +47,7 @@ export function QueuedObjectiveCard({
         </div>
 
         {/* Drag handle */}
-        <div className="flex items-center flex-shrink-0 cursor-grab active:cursor-grabbing text-[var(--color-border)] hover:text-[var(--color-muted)] transition-colors">
+        <div className="flex items-center flex-shrink-0 cursor-grab active:cursor-grabbing text-[var(--color-border)] group-hover/card:text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors duration-200">
           <div className="flex flex-col gap-[2px]">
             {Array.from({ length: 8 }, (_, i) => (
               <div key={i} className="flex gap-[2px]">
