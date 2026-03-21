@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import NumberFlow from '@number-flow/react'
 import PixelIcon from '../components/PixelIcon'
-import { BottomNav, TopBar, AgentDot, CommandPalette } from '../components/ui'
+import { BottomNav, TopBar, AgentDot, CommandPalette, ObjectiveCard, QueuedObjectiveCard } from '../components/ui'
 import char1 from '../assets/characters/character_1.webp'
 import char2 from '../assets/characters/character_2.webp'
 import char3 from '../assets/characters/character_3.webp'
@@ -278,125 +278,20 @@ function OverviewTab({ startup, onTabChange }) {
       </div>
 
       {/* Objective card */}
-      <div className="relative z-10 rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5" style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
-        {/* Current objective */}
-        <div className="px-6 py-5">
-          <div className="flex items-start justify-between gap-6 mb-4">
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Current Objective</div>
-              <h2 className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
-                Scrape competitor pricing &amp; generate weekly analysis report
-              </h2>
-            </div>
-            <NumberFlow value={objPercent} suffix="%" className="hidden sm:block text-[32px] font-bold leading-none tabular-nums text-[var(--color-heading)] flex-shrink-0 -mt-1" style={{ fontFamily: 'var(--font-display)' }} />
-          </div>
-
-          {/* Task progress */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-medium text-[var(--color-body)] flex items-center gap-2">
-              Task Progress
-              <NumberFlow value={objPercent} suffix="%" className="sm:hidden text-[13px] font-bold tabular-nums text-[var(--color-heading)]" />
-            </span>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] hidden sm:block">Started 2h ago · ETA 45min</span>
-          </div>
-          <div
-            className="flex h-2.5 rounded-full overflow-hidden bg-[var(--color-border)] mb-3"
-            role="progressbar"
-            aria-valuenow={objPercent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Objective progress"
-          >
-            <div className="bg-[var(--color-accent)] rounded-l-full" style={{ width: mounted ? objCompletedPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s' }} />
-            <div className="bg-[oklch(0.77_0.12_253.03)]" style={{ width: mounted ? objInProgressPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.35s' }} />
-            <div className="bg-[oklch(0.82_0.18_80)]" style={{ width: mounted ? objReviewPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s' }} />
-          </div>
-          <div className="flex items-center gap-5 flex-wrap">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" aria-hidden="true" />
-              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objCompleted} className="text-[11px] tabular-nums" /> completed</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.77_0.12_253.03)]" aria-hidden="true" />
-              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objInProgress} className="text-[11px] tabular-nums" /> in progress</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'oklch(0.82 0.18 80)' }} aria-hidden="true" />
-              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objReview} className="text-[11px] tabular-nums" /> needs review</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)]" aria-hidden="true" />
-              <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objPending} className="text-[11px] tabular-nums" /> pending</span>
-            </div>
-          </div>
-
-          {/* Active agents */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--color-border)]">
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-1.5">
-                <AgentDot name="Scout" size={24} className="ring-2 ring-[var(--color-surface)]" />
-                <AgentDot name="Forge" size={24} className="ring-2 ring-[var(--color-surface)]" />
-              </div>
-              <span className="text-[11px] text-[var(--color-muted)]">Scout &amp; Forge are working on this</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--color-body)]">
-                {paused ? (
-                  <>
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'oklch(0.82 0.18 80)' }} aria-hidden="true" />
-                    <span className="text-[oklch(0.82_0.18_80)]">Paused</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] flex-shrink-0 animate-pulse" aria-hidden="true" />
-                    Active
-                  </>
-                )}
-              </span>
-              <button
-                type="button"
-                onClick={() => onTabChange?.('objectives')}
-                className="px-3 py-1.5 text-[11px] font-medium rounded-lg cursor-pointer transition-[background-color,color,scale] duration-150 ease-out hover:bg-[var(--color-bg-alt)] active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
-                style={{ backgroundColor: 'var(--color-surface)', outline: '1px solid var(--color-border)' }}
-              >
-                View Objective →
-              </button>
-            </div>
-          </div>
-
-          {/* Review banner */}
-          {objReview > 0 && !reviewDismissed && (
-            <div
-              className="mt-4 px-4 py-3 rounded-xl flex items-center justify-between gap-4"
-              style={{ backgroundColor: 'color-mix(in srgb, oklch(0.82 0.18 80) 12%, var(--color-surface))' }}
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'oklch(0.82 0.18 80)' }} aria-hidden="true" />
-                <span className="text-[12px] text-[var(--color-body)]">
-                  {objReview} {objReview === 1 ? 'agent is' : 'agents are'} waiting for review of their work
-                </span>
-              </div>
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setReviewDismissed(true)}
-                  className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 rounded"
-                >
-                  Dismiss
-                </button>
-                <button
-                  type="button"
-                  className="px-3.5 py-1.5 text-[12px] font-semibold rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
-                  style={{ backgroundColor: 'color-mix(in srgb, oklch(0.82 0.18 80) 25%, var(--color-surface))', color: 'var(--color-heading)' }}
-                >
-                  Review
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-      </div>
+      <ObjectiveCard
+        title="Scrape competitor pricing & generate weekly analysis report"
+        percent={objPercent}
+        completed={objCompleted}
+        inProgress={objInProgress}
+        review={objReview}
+        pending={objPending}
+        total={objTotal}
+        agents={['Scout', 'Forge']}
+        paused={paused}
+        animate={mounted}
+        onViewObjective={() => onTabChange?.('objectives')}
+        className="relative z-10"
+      />
 
       {/* Stats shelf — tucked under the objective card */}
       <div className="relative -mt-4 rounded-b-2xl px-6 pt-7 pb-5 mb-4" style={{ backgroundColor: 'color-mix(in srgb, var(--color-surface) 30%, var(--color-bg-alt))' }}>
@@ -671,193 +566,164 @@ const TASKS = [
 ]
 
 function ObjectivesTab() {
-  const [statusFilter, setStatusFilter] = useState('in_progress')
+  const [objectives, setObjectives] = useState([
+    { id: 'obj-1', type: 'active', ...OBJECTIVE },
+    { id: 'obj-2', type: 'queued', title: 'Build investor dashboard with real-time metrics', taskCount: 8, estDuration: '2-3 days' },
+    { id: 'obj-3', type: 'queued', title: 'Automate weekly email digest for stakeholders', taskCount: 5, estDuration: '1-2 days' },
+    { id: 'obj-4', type: 'queued', title: 'Set up CI/CD pipeline for staging deployments', taskCount: 6, estDuration: '1 day' },
+    { id: 'obj-5', type: 'queued', title: 'Migrate user auth to passkey-based login', taskCount: 12, estDuration: '4-5 days' },
+    { id: 'obj-6', type: 'queued', title: 'Create API documentation with interactive examples', taskCount: 7, estDuration: '2 days' },
+  ])
+  const [dragIdx, setDragIdx] = useState(null)
+  const [dragOverIdx, setDragOverIdx] = useState(null)
+  const cardRefs = useRef([])
 
-  const workingTasks = TASKS.filter(t => t.status === 'working')
-  const pendingTasks = TASKS.filter(t => t.status === 'pending')
-  const completedTasks = TASKS.filter(t => t.status === 'completed')
+  // Pointer-based drag — no native drag ghost
+  const handlePointerDown = (e, idx) => {
+    // Only drag from the card itself, not buttons inside
+    if (e.target.closest('button')) return
+    e.preventDefault()
+    setDragIdx(idx)
 
-  const statusTabs = [
-    { id: 'in_progress', label: 'In Progress', count: workingTasks.length },
-    { id: 'queued', label: 'Queued', count: pendingTasks.length },
-    { id: 'completed', label: 'Completed', count: completedTasks.length },
-  ]
+    const handlePointerMove = (ev) => {
+      // Find which card we're over
+      const y = ev.clientY
+      let overIdx = null
+      cardRefs.current.forEach((el, i) => {
+        if (!el || i === idx) return
+        const rect = el.getBoundingClientRect()
+        if (y > rect.top && y < rect.bottom) overIdx = i
+      })
+      // Also check gaps between cards
+      if (overIdx === null) {
+        cardRefs.current.forEach((el, i) => {
+          if (!el || i === idx) return
+          const rect = el.getBoundingClientRect()
+          const mid = rect.top + rect.height / 2
+          if (y < mid && (overIdx === null || i < overIdx)) overIdx = i
+        })
+      }
+      setDragOverIdx(overIdx)
+    }
 
-  const obj = OBJECTIVE
-  const objCompletedPct = `${Math.round((obj.completed / obj.total) * 100)}%`
-  const objInProgressPct = `${Math.round((obj.inProgress / obj.total) * 100)}%`
-  const objReviewPct = `${Math.round((obj.review / obj.total) * 100)}%`
+    const handlePointerUp = () => {
+      document.removeEventListener('pointermove', handlePointerMove)
+      document.removeEventListener('pointerup', handlePointerUp)
+      // Perform reorder
+      setDragIdx(prev => {
+        setDragOverIdx(prevOver => {
+          if (prev !== null && prevOver !== null && prev !== prevOver) {
+            setObjectives(items => {
+              const copy = [...items]
+              const [dragged] = copy.splice(prev, 1)
+              copy.splice(prevOver, 0, dragged)
+              return copy
+            })
+          }
+          return null
+        })
+        return null
+      })
+    }
+
+    document.addEventListener('pointermove', handlePointerMove)
+    document.addEventListener('pointerup', handlePointerUp)
+  }
 
   return (
     <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-24 sm:pt-[20vh] pb-32">
-      {/* Status tabs — segmented pill switcher */}
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--color-bg-alt)] mb-6 w-fit">
-        {statusTabs.map(tab => (
+      {/* Greeting + controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        <div>
+          <h1 className="text-[18px] font-bold leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+            {(() => {
+              const h = new Date().getHours()
+              return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
+            })()}, Eythan
+          </h1>
+          <div className="text-[12px] text-[var(--color-muted)] mt-0.5">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
           <button
-            key={tab.id}
             type="button"
-            onClick={() => setStatusFilter(tab.id)}
-            className={`px-4 py-2 text-[13px] font-medium rounded-lg cursor-pointer transition-[background-color,color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 ${
-              statusFilter === tab.id
-                ? 'bg-[var(--color-surface)] text-[var(--color-heading)] shadow-sm'
-                : 'text-[var(--color-muted)] hover:text-[var(--color-body)]'
-            }`}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-medium cursor-pointer transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.96] bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)]"
           >
-            {tab.label} <span className="ml-1 text-[11px] tabular-nums opacity-60">{tab.count}</span>
+            <PixelIcon name="clock" size={13} aria-hidden="true" />
+            Pause
           </button>
-        ))}
-      </div>
-
-      {/* Current Objective label */}
-      <div className="flex items-center gap-2 mb-3">
-        <PixelIcon name="lightning" size={14} className="text-[var(--color-accent)]" aria-hidden="true" />
-        <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Current Objective</span>
-      </div>
-
-      {/* Objective card */}
-      <div className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5 p-6 mb-6" style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex items-center gap-2.5">
-            <span
-              className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full"
-              style={{ backgroundColor: 'color-mix(in srgb, oklch(0.77 0.12 253.03) 15%, var(--color-surface))', color: 'oklch(0.77 0.12 253.03)' }}
-            >
-              In Progress
-            </span>
-          </div>
-          <span className="text-[28px] font-bold leading-none tabular-nums text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
-            {obj.progress}%
-          </span>
-        </div>
-
-        <h2 className="text-[16px] font-bold text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>
-          {obj.title}
-        </h2>
-
-        {/* Progress bar */}
-        <div className="flex h-2.5 rounded-full overflow-hidden bg-[var(--color-border)] mb-3" role="progressbar" aria-valuenow={obj.progress} aria-valuemin={0} aria-valuemax={100}>
-          <div className="bg-[var(--color-accent)] rounded-l-full" style={{ width: objCompletedPct, transition: 'width 0.6s ease-out' }} />
-          <div className="bg-[oklch(0.77_0.12_253.03)]" style={{ width: objInProgressPct, transition: 'width 0.6s ease-out' }} />
-          <div className="bg-[oklch(0.82_0.18_80)]" style={{ width: objReviewPct, transition: 'width 0.6s ease-out' }} />
-        </div>
-
-        {/* Legend */}
-        <div className="flex items-center gap-5 flex-wrap mb-4">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" aria-hidden="true" />
-            <span className="text-[11px] text-[var(--color-muted)]">{obj.completed} completed</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.77_0.12_253.03)]" aria-hidden="true" />
-            <span className="text-[11px] text-[var(--color-muted)]">{obj.inProgress} in progress</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'oklch(0.82 0.18 80)' }} aria-hidden="true" />
-            <span className="text-[11px] text-[var(--color-muted)]">{obj.review} needs review</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)]" aria-hidden="true" />
-            <span className="text-[11px] text-[var(--color-muted)]">{obj.pending} pending</span>
-          </div>
-        </div>
-
-        {/* Agent list */}
-        <div className="flex items-center gap-3 pt-4 border-t border-[var(--color-border)]">
-          <div className="flex -space-x-1.5">
-            {obj.agents.map(name => (
-              <AgentDot key={name} name={name} size={24} className="ring-2 ring-[var(--color-surface)]" />
-            ))}
-          </div>
-          <span className="text-[11px] text-[var(--color-muted)]">
-            {obj.agents.join(' & ')} {obj.agents.length === 1 ? 'is' : 'are'} working on active tasks
-          </span>
+          <button
+            type="button"
+            aria-label="Settings"
+            className="flex items-center justify-center w-9 h-9 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96]"
+          >
+            <PixelIcon name="settings" size={14} aria-hidden="true" />
+          </button>
         </div>
       </div>
 
-      {/* Task sections */}
-      {statusFilter === 'in_progress' && (
-        <>
-          {/* Working */}
-          {workingTasks.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-[13px] font-semibold text-[var(--color-heading)] mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.77_0.12_253.03)] animate-pulse" aria-hidden="true" />
-                Working
-              </h3>
-              <div className="space-y-3">
-                {workingTasks.map(task => (
-                  <div key={task.id} className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[11px] font-mono text-[var(--color-muted)]">{task.id}</span>
-                      <span className="text-[13px] font-semibold text-[var(--color-heading)]">{task.title}</span>
-                    </div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <AgentDot name={task.agent} size={20} />
-                      <span className="text-[11px] text-[var(--color-muted)]">{task.agent}</span>
-                    </div>
-                    {task.detail && (
-                      <p className="text-[13px] text-[var(--color-body)] leading-relaxed mb-3">{task.detail}</p>
-                    )}
-                    {/* Footer — thumbs up/down/comment */}
-                    <div className="flex items-center gap-4 pt-3 border-t border-[var(--color-border)]">
-                      <button type="button" className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer bg-transparent border-none p-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded">
-                        <PixelIcon name="arrow-up" size={12} aria-hidden="true" />
-                        <span className="tabular-nums">{task.votes.up}</span>
-                      </button>
-                      <button type="button" className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer bg-transparent border-none p-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded">
-                        <PixelIcon name="arrow-down" size={12} aria-hidden="true" />
-                        <span className="tabular-nums">{task.votes.down}</span>
-                      </button>
-                      <button type="button" className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer bg-transparent border-none p-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded">
-                        <PixelIcon name="message" size={12} aria-hidden="true" />
-                        <span className="tabular-nums">{task.comments}</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+      {/* Draggable objectives list */}
+      <div className="mb-6">
+        {objectives.map((obj, idx) => {
+          const queuePosition = objectives.slice(0, idx + 1).filter(o => o.type === 'queued').length
+          const isDragging = dragIdx === idx
+          const isTarget = dragOverIdx === idx && dragIdx !== null && dragIdx !== idx
+
+          return (
+            <div key={obj.id} className="pb-3">
+              {/* Drop zone — shows above this card when dragging over it */}
+              <div
+                className="overflow-hidden transition-[max-height,opacity] duration-300 ease-out"
+                style={{
+                  maxHeight: isTarget ? 80 : 0,
+                  opacity: isTarget ? 1 : 0,
+                }}
+              >
+                <div className="mb-3 rounded-2xl border-2 border-dashed border-[var(--color-accent)]/30 bg-[var(--color-accent)]/5 flex items-center justify-center"
+                  style={{ height: 72 }}
+                >
+                  <span className="text-[12px] text-[var(--color-accent)]/60 font-medium">Drop here</span>
+                </div>
+              </div>
+
+              {/* Card */}
+              <div
+                ref={el => cardRefs.current[idx] = el}
+                onPointerDown={(e) => handlePointerDown(e, idx)}
+                className="transition-[opacity,transform] duration-200 ease-out select-none"
+                style={{
+                  cursor: isDragging ? 'grabbing' : 'grab',
+                  opacity: isDragging ? 0.25 : 1,
+                  transform: isDragging ? 'scale(0.97)' : 'scale(1)',
+                  touchAction: 'none',
+                }}
+              >
+                {obj.type === 'active' ? (
+                  <ObjectiveCard
+                    title={obj.title}
+                    percent={obj.progress}
+                    completed={obj.completed}
+                    inProgress={obj.inProgress}
+                    review={obj.review}
+                    pending={obj.pending}
+                    total={obj.total}
+                    agents={obj.agents}
+                  />
+                ) : (
+                  <QueuedObjectiveCard
+                    title={obj.title}
+                    taskCount={obj.taskCount}
+                    estDuration={obj.estDuration}
+                    position={queuePosition}
+                  />
+                )}
               </div>
             </div>
-          )}
+          )
+        })}
+      </div>
 
-          {/* Tasks Up Next */}
-          {pendingTasks.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-[13px] font-semibold text-[var(--color-heading)] mb-3">Tasks Up Next</h3>
-              <div className="space-y-2">
-                {pendingTasks.map(task => (
-                  <div key={task.id} className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 flex items-center gap-3">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] flex-shrink-0" aria-hidden="true" />
-                    <span className="text-[11px] font-mono text-[var(--color-muted)]">{task.id}</span>
-                    <span className="text-[13px] text-[var(--color-body)]">{task.title}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {statusFilter === 'queued' && (
-        <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-8 text-center">
-          <div className="text-[13px] text-[var(--color-muted)]">No queued tasks</div>
-        </div>
-      )}
-
-      {statusFilter === 'completed' && completedTasks.length > 0 && (
-        <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
-          {completedTasks.map((task, i) => (
-            <div key={task.id} className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}>
-              <PixelIcon name="check" size={12} className="text-[var(--color-accent)] flex-shrink-0" aria-hidden="true" />
-              <span className="text-[11px] font-mono text-[var(--color-muted)]">{task.id}</span>
-              <span className="text-[13px] text-[var(--color-body)] flex-1">{task.title}</span>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <AgentDot name={task.agent} size={18} />
-                <span className="text-[11px] text-[var(--color-muted)]">{task.completedAt}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
