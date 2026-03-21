@@ -576,59 +576,61 @@ function ObjectivesTab() {
   ])
   const [dragIdx, setDragIdx] = useState(null)
   const [dragOverIdx, setDragOverIdx] = useState(null)
-  const cardRefs = useRef([])
+  const cardRefs = useRef({})
+  const draggingRef = useRef(false)
 
-  // Pointer-based drag — no native drag ghost
-  const handlePointerDown = (e, idx) => {
-    // Only drag from the card itself, not buttons inside
-    if (e.target.closest('button')) return
-    e.preventDefault()
-    setDragIdx(idx)
+  const handleGrab = useCallback((startIdx) => {
+    if (draggingRef.current) return
+    draggingRef.current = true
+    setDragIdx(startIdx)
 
-    const handlePointerMove = (ev) => {
-      // Find which card we're over
-      const y = ev.clientY
-      let overIdx = null
-      cardRefs.current.forEach((el, i) => {
-        if (!el || i === idx) return
+    const onMove = (e) => {
+      const y = e.clientY || (e.touches && e.touches[0]?.clientY)
+      if (y == null) return
+
+      let closest = null
+      let closestDist = Infinity
+      Object.entries(cardRefs.current).forEach(([i, el]) => {
+        if (!el) return
+        const idx = parseInt(i)
+        if (idx === startIdx) return
         const rect = el.getBoundingClientRect()
-        if (y > rect.top && y < rect.bottom) overIdx = i
+        const mid = rect.top + rect.height / 2
+        const dist = Math.abs(y - mid)
+        if (dist < closestDist) {
+          closestDist = dist
+          closest = idx
+        }
       })
-      // Also check gaps between cards
-      if (overIdx === null) {
-        cardRefs.current.forEach((el, i) => {
-          if (!el || i === idx) return
-          const rect = el.getBoundingClientRect()
-          const mid = rect.top + rect.height / 2
-          if (y < mid && (overIdx === null || i < overIdx)) overIdx = i
-        })
-      }
-      setDragOverIdx(overIdx)
+      setDragOverIdx(closest)
     }
 
-    const handlePointerUp = () => {
-      document.removeEventListener('pointermove', handlePointerMove)
-      document.removeEventListener('pointerup', handlePointerUp)
-      // Perform reorder
-      setDragIdx(prev => {
-        setDragOverIdx(prevOver => {
-          if (prev !== null && prevOver !== null && prev !== prevOver) {
-            setObjectives(items => {
-              const copy = [...items]
-              const [dragged] = copy.splice(prev, 1)
-              copy.splice(prevOver, 0, dragged)
-              return copy
-            })
-          }
-          return null
-        })
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onUp)
+
+      setDragOverIdx(overIdx => {
+        if (overIdx !== null && overIdx !== startIdx) {
+          setObjectives(prev => {
+            const copy = [...prev]
+            const [item] = copy.splice(startIdx, 1)
+            copy.splice(overIdx, 0, item)
+            return copy
+          })
+        }
         return null
       })
+      setDragIdx(null)
+      draggingRef.current = false
     }
 
-    document.addEventListener('pointermove', handlePointerMove)
-    document.addEventListener('pointerup', handlePointerUp)
-  }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onUp)
+  }, [])
 
   return (
     <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-24 sm:pt-[20vh] pb-32">
@@ -690,13 +692,14 @@ function ObjectivesTab() {
               {/* Card */}
               <div
                 ref={el => cardRefs.current[idx] = el}
-                onPointerDown={(e) => handlePointerDown(e, idx)}
+                onMouseDown={(e) => { if (!e.target.closest('button')) { e.preventDefault(); handleGrab(idx) } }}
+                onTouchStart={(e) => { if (!e.target.closest('button')) { handleGrab(idx) } }}
+                onDragStart={(e) => e.preventDefault()}
                 className="transition-[opacity,transform] duration-200 ease-out select-none"
                 style={{
-                  cursor: isDragging ? 'grabbing' : 'grab',
+                  cursor: isDragging ? 'grabbing' : dragIdx !== null ? 'default' : 'grab',
                   opacity: isDragging ? 0.25 : 1,
                   transform: isDragging ? 'scale(0.97)' : 'scale(1)',
-                  touchAction: 'none',
                 }}
               >
                 {obj.type === 'active' ? (
@@ -1311,7 +1314,15 @@ function PlaceholderTab({ tab }) {
 }
 
 export default function NavExperiment() {
-  const [activeTab, setActiveTab] = useState('dashboard')
+  const [activeTab, setActiveTab] = useState(() => {
+    const hash = window.location.hash.replace('#', '')
+    return ['dashboard', 'objectives', 'agents', 'files', 'chat'].includes(hash) ? hash : 'dashboard'
+  })
+
+  // Persist tab in URL hash
+  useEffect(() => {
+    window.location.hash = activeTab
+  }, [activeTab])
   const [currentSlug, setCurrentSlug] = useState('acme-ai-labs')
   const [searchOpen, setSearchOpen] = useState(false)
 
