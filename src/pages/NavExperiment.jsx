@@ -568,33 +568,92 @@ const TASKS = [
   { id: 'TSK-032', title: 'Configure monitoring alerts', status: 'completed', agent: 'Beacon', completedAt: '1 day ago' },
 ]
 
+const LOADING_STEPS = [
+  'Reading objective...',
+  'Breaking down tasks...',
+  'Assigning agents...',
+  'Getting ready to start...',
+]
+
 function LoadingObjectiveCard({ title }) {
+  const [step, setStep] = useState(0)
+  const [dotTick, setDotTick] = useState(0)
+
+  useEffect(() => {
+    const stepInterval = setInterval(() => {
+      setStep(s => Math.min(s + 1, LOADING_STEPS.length - 1))
+    }, 500)
+    const dotInterval = setInterval(() => setDotTick(t => t + 1), 120)
+    return () => { clearInterval(stepInterval); clearInterval(dotInterval) }
+  }, [])
+
+  // Mini dot matrix (3x4)
+  const dotCols = 4
+  const dotRows = 3
+  const totalDots = dotCols * dotRows
+
   return (
     <div className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5" style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
       <div className="px-6 py-5">
         <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Current Objective</div>
         <h2 className="text-[16px] font-bold text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>{title}</h2>
 
-        <div className="flex items-center justify-between mb-2">
-          <div className="h-3 w-24 rounded bg-[var(--color-border)] animate-pulse" />
-          <div className="h-6 w-12 rounded bg-[var(--color-border)] animate-pulse" />
+        {/* Loading step text */}
+        <div className="flex items-center gap-2 mb-3">
+          <svg className="w-4 h-4 flex-shrink-0 animate-spin" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="8" stroke="var(--color-border)" strokeWidth="2" />
+            <path d="M10 2a8 8 0 0 1 8 8" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <span className="text-[13px] text-[var(--color-body)]">{LOADING_STEPS[step]}</span>
         </div>
+
+        {/* Shimmer progress bar */}
         <div className="h-2.5 rounded-full bg-[var(--color-border)] mb-3 overflow-hidden">
-          <div className="h-full w-full animate-[shimmer_1.5s_infinite]" style={{
-            background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-alt) 50%, transparent 100%)',
+          <div className="h-full animate-[shimmer_1.5s_infinite]" style={{
+            width: `${((step + 1) / LOADING_STEPS.length) * 100}%`,
+            background: 'linear-gradient(90deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 50%, transparent) 50%, var(--color-accent) 100%)',
             backgroundSize: '200% 100%',
+            transition: 'width 0.5s ease-out',
           }} />
         </div>
+
+        {/* Skeleton stats */}
         <div className="flex items-center gap-5 mb-4">
           <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
           <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
           <div className="h-3 w-20 rounded bg-[var(--color-border)] animate-pulse" />
         </div>
 
-        <div className="border-t border-[var(--color-border)] pt-4 flex items-center gap-3">
-          <div className="w-6 h-6 rounded-full bg-[var(--color-border)] animate-pulse" />
-          <div className="w-6 h-6 rounded-full bg-[var(--color-border)] animate-pulse -ml-3" />
-          <div className="h-3 w-40 rounded bg-[var(--color-border)] animate-pulse" />
+        {/* Bottom row — "Thinking" with dot matrix */}
+        <div className="border-t border-[var(--color-border)] pt-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-full bg-[var(--color-border)] animate-pulse" />
+            <div className="w-6 h-6 rounded-full bg-[var(--color-border)] animate-pulse -ml-3" />
+            <div className="h-3 w-32 rounded bg-[var(--color-border)] animate-pulse" />
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Dot matrix loader */}
+            <div className="grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${dotCols}, 1fr)` }}>
+              {Array.from({ length: totalDots }, (_, i) => {
+                const col = i % dotCols
+                const wave = ((dotTick - col) % (dotCols + 3) + dotCols + 3) % (dotCols + 3)
+                const lit = wave >= 0 && wave < 2
+                return (
+                  <span
+                    key={i}
+                    className="rounded-[1px]"
+                    style={{
+                      width: 3,
+                      height: 3,
+                      backgroundColor: lit ? 'var(--color-accent)' : 'var(--color-border)',
+                      transition: 'background-color 0.1s',
+                    }}
+                  />
+                )
+              })}
+            </div>
+            <span className="text-[11px] font-medium text-[var(--color-muted)]">Thinking</span>
+          </div>
         </div>
       </div>
     </div>
@@ -666,7 +725,7 @@ function ObjectivesTab() {
       // If a new objective moved to position 0, show loading state
       if (toIdx === 0 && fromIdx !== 0) {
         setLoadingObjective(true)
-        setTimeout(() => setLoadingObjective(false), 2000)
+        setTimeout(() => setLoadingObjective(false), 2500)
       }
 
       return updated
