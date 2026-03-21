@@ -560,13 +560,66 @@ const OBJECTIVE = {
 }
 
 const TASKS = [
-  { id: 'TSK-041', title: 'Scrape pricing data from CompetitorA', status: 'working', agent: 'Scout', detail: 'Crawling 47 product pages, extracting price + SKU. 32/47 done so far.', votes: { up: 2, down: 0 }, comments: 1 },
-  { id: 'TSK-042', title: 'Normalize scraped data into unified schema', status: 'working', agent: 'Forge', detail: 'Mapping 6 different price formats into a single CSV schema with currency conversion.', votes: { up: 3, down: 1 }, comments: 4 },
-  { id: 'TSK-043', title: 'Build comparison dashboard template', status: 'pending', agent: null },
-  { id: 'TSK-044', title: 'Set up weekly cron trigger', status: 'pending', agent: null },
-  { id: 'TSK-045', title: 'Generate sample report for review', status: 'pending', agent: null },
-  { id: 'TSK-035', title: 'Fix auth token refresh logic', status: 'completed', agent: 'Forge', completedAt: '2 hours ago' },
-  { id: 'TSK-032', title: 'Configure monitoring alerts', status: 'completed', agent: 'Beacon', completedAt: '1 day ago' },
+  {
+    id: 'TSK-041', title: 'Scrape pricing data from CompetitorA', status: 'working', agent: 'Scout',
+    detail: 'Crawling 47 product pages, extracting price + SKU. 32/47 done so far.',
+    description: 'Use headless browser to crawl all product pages on CompetitorA\'s pricing section. Extract product name, SKU, price, currency, and availability. Handle pagination and rate limiting. Output as structured JSON.',
+    votes: { up: 2, down: 0 }, comments: 1,
+    created: 'Mar 21, 2:58 PM', assigned: 'Mar 21, 3:23 PM', pickedUp: 'Mar 21, 3:24 PM',
+    duration: '~45min',
+    files: [
+      { name: 'competitorA_raw.json', size: '2.4 MB', status: 'in-progress' },
+    ],
+    updates: [
+      { agent: 'Scout', time: '3:45 PM', text: 'Started crawling. Found 47 product pages across 4 categories.' },
+      { agent: 'Scout', time: '4:02 PM', text: '32/47 pages scraped. Hit a rate limit on category 3, backing off 30s.' },
+    ],
+  },
+  {
+    id: 'TSK-042', title: 'Normalize scraped data into unified schema', status: 'working', agent: 'Forge',
+    detail: 'Mapping 6 different price formats into a single CSV schema with currency conversion.',
+    description: 'Take raw scraped data from all competitors and normalize into a unified schema: product_name, sku, price_usd, original_currency, availability, last_updated. Handle currency conversion using live rates. Validate data integrity.',
+    votes: { up: 3, down: 1 }, comments: 4,
+    created: 'Mar 21, 2:58 PM', assigned: 'Mar 21, 3:23 PM', pickedUp: 'Mar 21, 3:25 PM',
+    duration: '~30min',
+    files: [
+      { name: 'unified_schema.csv', size: '1.1 MB', status: 'in-progress' },
+      { name: 'currency_rates.json', size: '4 KB', status: 'complete' },
+    ],
+    updates: [
+      { agent: 'Forge', time: '3:30 PM', text: 'Schema defined. Processing CompetitorA data first.' },
+      { agent: 'Forge', time: '3:50 PM', text: 'Found 6 different price formats. Building parsers for each.' },
+      { agent: 'Forge', time: '4:10 PM', text: 'Currency conversion applied. 3/5 competitors normalized.' },
+    ],
+  },
+  { id: 'TSK-043', title: 'Build comparison dashboard template', status: 'pending', agent: null, description: 'Create an interactive HTML dashboard with charts comparing pricing across all competitors. Include filters by category, date range, and price delta highlights.' },
+  { id: 'TSK-044', title: 'Set up weekly cron trigger', status: 'pending', agent: null, description: 'Configure a scheduled job to run the full scraping pipeline every Monday at 6 AM UTC. Include error notifications and retry logic.' },
+  { id: 'TSK-045', title: 'Generate sample report for review', status: 'pending', agent: null, description: 'Compile all data into a PDF report with executive summary, charts, and recommendations. Submit for human review before finalizing.' },
+  {
+    id: 'TSK-035', title: 'Fix auth token refresh logic', status: 'completed', agent: 'Forge', completedAt: '2 hours ago',
+    description: 'Tokens were expiring mid-request. Implemented auto-renewal 5 minutes before expiry with retry on 401.',
+    duration: '25min',
+    files: [
+      { name: 'auth_refresh.patch', size: '3.2 KB', status: 'complete' },
+      { name: 'test_results.log', size: '12 KB', status: 'complete' },
+    ],
+    updates: [
+      { agent: 'Forge', time: '1:30 PM', text: 'Identified the race condition in token refresh. Implementing mutex.' },
+      { agent: 'Forge', time: '1:55 PM', text: 'Fixed and tested across all OAuth providers. All green.' },
+    ],
+  },
+  {
+    id: 'TSK-032', title: 'Configure monitoring alerts', status: 'completed', agent: 'Beacon', completedAt: '1 day ago',
+    description: 'Set up Datadog monitors for all production API endpoints. Alert on p99 latency > 500ms and error rate > 1%.',
+    duration: '40min',
+    files: [
+      { name: 'monitors_config.yaml', size: '8 KB', status: 'complete' },
+    ],
+    updates: [
+      { agent: 'Beacon', time: 'Yesterday 2:00 PM', text: 'Monitors configured for 12 endpoints. Testing alert routing.' },
+      { agent: 'Beacon', time: 'Yesterday 2:40 PM', text: 'All monitors verified. Slack channel receiving alerts correctly.' },
+    ],
+  },
 ]
 
 const LOADING_STEPS = [
@@ -735,6 +788,7 @@ function ObjectivesTab() {
   const [loadingObjective, setLoadingObjective] = useState(false)
   const [analyzingObjective, setAnalyzingObjective] = useState(false)
   const [selectedObjective, setSelectedObjective] = useState(null)
+  const [selectedTask, setSelectedTask] = useState(null)
 
   const handleDragEnd = (event) => {
     if (event.canceled) return
@@ -860,7 +914,126 @@ function ObjectivesTab() {
           )}
 
           {/* Tasks */}
-          {selectedObjective.type === 'active' ? (
+          {selectedTask ? (
+            <>
+              {/* Task detail view */}
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={() => setSelectedTask(null)}
+                  className="flex items-center gap-2 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer"
+                >
+                  <PixelIcon name="arrow-left" size={14} aria-hidden="true" />
+                  Back to tasks
+                </button>
+              </div>
+
+              <div className="rounded-2xl bg-[var(--color-surface)] p-6 mb-6" style={{ outline: '1px solid var(--color-border)' }}>
+                {/* Header meta */}
+                <div className="grid grid-cols-3 gap-4 mb-6 text-[12px]">
+                  <div>
+                    <span className="text-[var(--color-muted)]">Status: </span>
+                    <span className="font-medium text-[var(--color-heading)] capitalize">{selectedTask.status}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--color-muted)]">Objective: </span>
+                    <span className="text-[var(--color-body)]">{OBJECTIVE.title}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--color-muted)]">Agent: </span>
+                    <span className="text-[var(--color-body)]">{selectedTask.agent || 'Unassigned'}</span>
+                  </div>
+                  {selectedTask.created && (
+                    <div>
+                      <span className="text-[var(--color-muted)]">Created: </span>
+                      <span className="text-[var(--color-body)]">{selectedTask.created}</span>
+                    </div>
+                  )}
+                  {selectedTask.assigned && (
+                    <div>
+                      <span className="text-[var(--color-muted)]">Assigned: </span>
+                      <span className="text-[var(--color-body)]">{selectedTask.assigned}</span>
+                    </div>
+                  )}
+                  {selectedTask.pickedUp && (
+                    <div>
+                      <span className="text-[var(--color-muted)]">Picked Up: </span>
+                      <span className="text-[var(--color-body)]">{selectedTask.pickedUp}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Description */}
+                <div className="rounded-xl bg-[var(--color-bg-alt)] p-4 mb-6">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2">Description</div>
+                  <p className="text-[13px] text-[var(--color-body)] leading-relaxed">{selectedTask.description || selectedTask.detail || 'No description provided.'}</p>
+                </div>
+
+                {/* Status updates */}
+                <div className="rounded-xl bg-[var(--color-bg-alt)] p-4 mb-6">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-3">
+                    Status Updates ({selectedTask.updates?.length || 0})
+                  </div>
+                  {selectedTask.updates?.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedTask.updates.map((update, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <AgentDot name={update.agent} size={24} />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[12px] font-semibold text-[var(--color-heading)]">{update.agent}</span>
+                              <span className="text-[11px] text-[var(--color-muted)]">{update.time}</span>
+                            </div>
+                            <p className="text-[12px] text-[var(--color-body)] mt-0.5">{update.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-[12px] text-[var(--color-muted)]">No status updates yet.</span>
+                  )}
+                </div>
+
+                {/* Files */}
+                <div className="rounded-xl bg-[var(--color-bg-alt)] p-4">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-3">
+                    Files ({selectedTask.files?.length || 0})
+                  </div>
+                  {selectedTask.files?.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedTask.files.map((file, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-[var(--color-surface)]" style={{ outline: '1px solid var(--color-border)' }}>
+                          <div className="flex items-center gap-3">
+                            <PixelIcon name="folder" size={16} className="text-[var(--color-muted)]" aria-hidden="true" />
+                            <div>
+                              <div className="text-[13px] font-medium text-[var(--color-heading)]">{file.name}</div>
+                              <div className="text-[11px] text-[var(--color-muted)]">{file.size}</div>
+                            </div>
+                          </div>
+                          {file.status === 'complete' ? (
+                            <button type="button" className="text-[11px] font-medium text-[var(--color-muted)] hover:text-[var(--color-heading)] bg-[var(--color-bg-alt)] hover:bg-[var(--color-border)] px-3 py-1.5 rounded-lg transition-[background-color,color] duration-150 cursor-pointer flex items-center gap-1.5">
+                              <PixelIcon name="arrow-right" size={10} className="rotate-90" aria-hidden="true" />
+                              Download
+                            </button>
+                          ) : (
+                            <span className="text-[11px] text-[var(--color-muted)] flex items-center gap-1.5">
+                              <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="6" stroke="var(--color-border)" strokeWidth="2" />
+                                <path d="M8 2a6 6 0 0 1 6 6" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
+                              </svg>
+                              In progress
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-[12px] text-[var(--color-muted)]">No files attached.</span>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : selectedObjective.type === 'active' ? (
             <div className="space-y-6">
               {/* Working */}
               {TASKS.filter(t => t.status === 'working').length > 0 && (
@@ -873,7 +1046,7 @@ function ObjectivesTab() {
                   </div>
                   <div className="space-y-3">
                     {TASKS.filter(t => t.status === 'working').map(task => (
-                      <div key={task.id} className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ outline: '1px solid var(--color-border)' }}>
+                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] p-5 cursor-pointer hover:brightness-[0.97] transition-[filter] duration-200" style={{ outline: '1px solid var(--color-border)' }}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-[10px] font-mono text-[var(--color-muted)]">{task.id}</span>
                           <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded-md" style={{ backgroundColor: 'color-mix(in srgb, oklch(0.77 0.12 253.03) 12%, var(--color-surface))', color: 'oklch(0.77 0.12 253.03)' }}>Working</span>
@@ -914,7 +1087,7 @@ function ObjectivesTab() {
                   </div>
                   <div className="space-y-3">
                     {TASKS.filter(t => t.status === 'pending').map(task => (
-                      <div key={task.id} className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ outline: '1px solid var(--color-border)' }}>
+                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] p-5 cursor-pointer hover:brightness-[0.97] transition-[filter] duration-200" style={{ outline: '1px solid var(--color-border)' }}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-[10px] font-mono text-[var(--color-muted)]">{task.id}</span>
                           <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded-md bg-[var(--color-bg-alt)] text-[var(--color-muted)]">Pending</span>
@@ -940,7 +1113,7 @@ function ObjectivesTab() {
                   </div>
                   <div className="rounded-2xl bg-[var(--color-surface)] divide-y divide-[var(--color-border)]" style={{ outline: '1px solid var(--color-border)' }}>
                     {TASKS.filter(t => t.status === 'completed').map(task => (
-                      <div key={task.id} className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-[var(--color-bg-alt)] transition-colors">
+                      <div key={task.id} onClick={() => setSelectedTask(task)} className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-[var(--color-bg-alt)] transition-colors">
                         <PixelIcon name="check" size={16} className="text-[var(--color-accent)] flex-shrink-0" aria-hidden="true" />
                         <div className="flex-1 min-w-0">
                           <h3 className="text-[13px] font-semibold text-[var(--color-heading)]">{task.title}</h3>
