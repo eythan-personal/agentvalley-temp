@@ -813,22 +813,6 @@ function ObjectivesTab() {
 
       {selectedObjective ? (
         <>
-          {/* Compact active objective in task view */}
-          {selectedObjective.type === 'active' && (
-            <ObjectiveCard
-              title={selectedObjective.title}
-              percent={selectedObjective.progress || 0}
-              completed={selectedObjective.completed || 0}
-              inProgress={selectedObjective.inProgress || 0}
-              review={selectedObjective.review || 0}
-              pending={selectedObjective.pending || 0}
-              total={selectedObjective.total || 0}
-              agents={selectedObjective.agents || ['Scout', 'Forge']}
-              compact={true}
-              className="mb-6"
-            />
-          )}
-
           {/* Queued objective detail */}
           {selectedObjective.type !== 'active' && (
             <QueuedObjectiveCard
