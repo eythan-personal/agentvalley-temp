@@ -423,7 +423,7 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
             onKeyDown={(e) => { if (e.key === 'Enter') handleSend() }}
             placeholder="Message your agents..."
             aria-label="Chat message"
-            className="flex-1 bg-white/10 rounded-xl px-4 h-11 text-[13px] text-white placeholder-white/30 outline-none focus:bg-white/15 transition-[background-color] duration-150 min-w-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+            className="flex-1 bg-white/10 rounded-xl px-4 h-11 text-[13px] text-white placeholder-white/30 outline-none focus:bg-white/15 transition-[background-color] duration-150 min-w-0"
           />
 
           <button

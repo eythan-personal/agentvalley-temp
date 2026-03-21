@@ -166,7 +166,7 @@ const LIVE_EVENTS = [
   }),
 ]
 
-function OverviewTab({ startup }) {
+function OverviewTab({ startup, onTabChange }) {
   const [showAll, setShowAll] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterBy, setFilterBy] = useState('all')
@@ -302,8 +302,8 @@ function OverviewTab({ startup }) {
             aria-label="Objective progress"
           >
             <div className="bg-[var(--color-accent)] rounded-l-full" style={{ width: mounted ? objCompletedPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s' }} />
-            <div className="bg-[#60A5FA]" style={{ width: mounted ? objInProgressPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.35s' }} />
-            <div className="bg-amber-400" style={{ width: mounted ? objReviewPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s' }} />
+            <div className="bg-[oklch(0.77_0.12_253.03)]" style={{ width: mounted ? objInProgressPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.35s' }} />
+            <div className="bg-[oklch(0.82_0.18_80)]" style={{ width: mounted ? objReviewPct : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s' }} />
           </div>
           <div className="flex items-center gap-5 flex-wrap">
             <div className="flex items-center gap-1.5">
@@ -311,11 +311,11 @@ function OverviewTab({ startup }) {
               <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objCompleted} className="text-[11px] tabular-nums" /> completed</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#60A5FA]" aria-hidden="true" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.77_0.12_253.03)]" aria-hidden="true" />
               <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objInProgress} className="text-[11px] tabular-nums" /> in progress</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" aria-hidden="true" />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'oklch(0.82 0.18 80)' }} aria-hidden="true" />
               <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={objReview} className="text-[11px] tabular-nums" /> needs review</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -333,17 +333,40 @@ function OverviewTab({ startup }) {
               </div>
               <span className="text-[11px] text-[var(--color-muted)]">Scout &amp; Forge are working on this</span>
             </div>
-            <span className={`text-[11px] font-medium ${paused ? 'text-amber-500' : 'text-[var(--color-accent)]'}`}>
-              {paused ? 'Paused' : 'Active'}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--color-body)]">
+                {paused ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'oklch(0.82 0.18 80)' }} aria-hidden="true" />
+                    <span className="text-[oklch(0.82_0.18_80)]">Paused</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] flex-shrink-0 animate-pulse" aria-hidden="true" />
+                    Active
+                  </>
+                )}
+              </span>
+              <button
+                type="button"
+                onClick={() => onTabChange?.('objectives')}
+                className="px-3 py-1.5 text-[11px] font-medium rounded-lg cursor-pointer transition-[background-color,color,scale] duration-150 ease-out hover:bg-[var(--color-bg-alt)] active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+                style={{ backgroundColor: 'var(--color-surface)', outline: '1px solid var(--color-border)' }}
+              >
+                View Objective →
+              </button>
+            </div>
           </div>
 
           {/* Review banner */}
           {objReview > 0 && !reviewDismissed && (
-            <div className="mt-4 -mx-6 -mb-5 px-5 py-3.5 bg-amber-50 rounded-b-2xl border-t border-amber-200/60 flex items-center justify-between gap-4">
+            <div
+              className="mt-4 px-4 py-3 rounded-xl flex items-center justify-between gap-4"
+              style={{ backgroundColor: 'color-mix(in srgb, oklch(0.82 0.18 80) 12%, var(--color-surface))' }}
+            >
               <div className="flex items-center gap-2.5 min-w-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" aria-hidden="true" />
-                <span className="text-[12px] text-amber-800">
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'oklch(0.82 0.18 80)' }} aria-hidden="true" />
+                <span className="text-[12px] text-[var(--color-body)]">
                   {objReview} {objReview === 1 ? 'agent is' : 'agents are'} waiting for review of their work
                 </span>
               </div>
@@ -351,13 +374,14 @@ function OverviewTab({ startup }) {
                 <button
                   type="button"
                   onClick={() => setReviewDismissed(true)}
-                  className="text-[11px] text-amber-600/70 hover:text-amber-800 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 rounded"
+                  className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 rounded"
                 >
                   Dismiss
                 </button>
                 <button
                   type="button"
-                  className="px-3.5 py-1.5 text-[12px] font-semibold text-amber-800 bg-amber-200/60 rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out hover:bg-amber-200 active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+                  className="px-3.5 py-1.5 text-[12px] font-semibold rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+                  style={{ backgroundColor: 'color-mix(in srgb, oklch(0.82 0.18 80) 25%, var(--color-surface))', color: 'var(--color-heading)' }}
                 >
                   Review
                 </button>
@@ -369,7 +393,7 @@ function OverviewTab({ startup }) {
       </div>
 
       {/* Stats shelf — tucked under the objective card */}
-      <div className="relative -mt-4 rounded-b-2xl px-6 pt-7 pb-5 mb-8" style={{ backgroundColor: 'color-mix(in srgb, var(--color-bg-alt) 50%, var(--color-bg))' }}>
+      <div className="relative -mt-4 rounded-b-2xl px-6 pt-7 pb-5 mb-4" style={{ backgroundColor: 'color-mix(in srgb, var(--color-surface) 30%, var(--color-bg-alt))' }}>
         {/* Desktop */}
         <div className="hidden sm:flex items-end gap-0">
           <div className="flex items-end gap-5 pr-8 flex-1">
@@ -377,7 +401,7 @@ function OverviewTab({ startup }) {
               <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Total Tasks:</div>
               <NumberFlow value={totalTasks} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
             </div>
-            <div className="flex-1"><Sparkline data={[3, 5, 4, 7, 6, 8, 12, 10, 11, 9, 12]} width={200} /></div>
+            <div className="flex-1 mb-2"><Sparkline data={[3, 5, 4, 7, 6, 8, 12, 10, 11, 9, 12]} width={200} /></div>
           </div>
           <div className="px-8 border-l border-[var(--color-border)]">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">In Progress</div>
@@ -399,7 +423,7 @@ function OverviewTab({ startup }) {
               <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Team</div>
               <NumberFlow value={AGENTS.length} className="text-[28px] font-bold leading-none tabular-nums" style={{ fontFamily: 'var(--font-display)' }} />
             </div>
-            <div className="flex -space-x-1.5 pb-1">
+            <div className="flex -space-x-1.5 pb-1 mb-2">
               {AGENTS.map(name => (
                 <AgentDot key={name} name={name} size={24} className="ring-2 ring-[var(--color-bg-alt)]" />
               ))}
@@ -427,7 +451,7 @@ function OverviewTab({ startup }) {
       </div>
 
       {/* Activity feed with timeline connector */}
-      <div className="mt-6">
+      <div className="-mt-2 px-6">
         {/* Feed header */}
         <div className="flex items-center justify-between py-4 border-b border-[var(--color-border)] mb-2">
           <h2 className="text-[16px] font-bold" style={{ fontFamily: 'var(--font-display)' }}>Activity Log</h2>
@@ -494,7 +518,7 @@ function OverviewTab({ startup }) {
           </div>
         </div>
       </div>
-      <div>
+      <div className="px-6">
         {filteredFeed.map((item, i) => {
           const isLast = i === filteredFeed.length - 1
 
@@ -572,7 +596,8 @@ function OverviewTab({ startup }) {
                     {item.needsReview && (
                       <button
                         type="button"
-                        className="px-4 py-1.5 text-[12px] font-semibold text-amber-800 bg-amber-100 rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out hover:bg-amber-200 active:scale-[0.96] flex-shrink-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+                        className="px-4 py-1.5 text-[12px] font-semibold rounded-lg cursor-pointer transition-[background-color,scale] duration-150 ease-out active:scale-[0.96] flex-shrink-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+                        style={{ backgroundColor: 'color-mix(in srgb, oklch(0.82 0.18 80) 25%, var(--color-surface))', color: 'var(--color-heading)' }}
                       >
                         Review
                       </button>
@@ -610,6 +635,223 @@ function OverviewTab({ startup }) {
           )
         })}
       </div>
+    </div>
+  )
+}
+
+// ─── Objectives Tab ─────────────────────────────────────────────────────────
+
+const OBJECTIVE = {
+  id: 'OBJ-001',
+  title: 'Scrape competitor pricing & generate weekly analysis report',
+  status: 'in_progress',
+  progress: 45,
+  completed: 3,
+  inProgress: 2,
+  review: 2,
+  pending: 3,
+  total: 10,
+  agents: ['Scout', 'Forge'],
+}
+
+const TASKS = [
+  { id: 'TSK-041', title: 'Scrape pricing data from CompetitorA', status: 'working', agent: 'Scout', detail: 'Crawling 47 product pages, extracting price + SKU. 32/47 done so far.', votes: { up: 2, down: 0 }, comments: 1 },
+  { id: 'TSK-042', title: 'Normalize scraped data into unified schema', status: 'working', agent: 'Forge', detail: 'Mapping 6 different price formats into a single CSV schema with currency conversion.', votes: { up: 3, down: 1 }, comments: 4 },
+  { id: 'TSK-043', title: 'Build comparison dashboard template', status: 'pending', agent: null },
+  { id: 'TSK-044', title: 'Set up weekly cron trigger', status: 'pending', agent: null },
+  { id: 'TSK-045', title: 'Generate sample report for review', status: 'pending', agent: null },
+  { id: 'TSK-035', title: 'Fix auth token refresh logic', status: 'completed', agent: 'Forge', completedAt: '2 hours ago' },
+  { id: 'TSK-032', title: 'Configure monitoring alerts', status: 'completed', agent: 'Beacon', completedAt: '1 day ago' },
+]
+
+function ObjectivesTab() {
+  const [statusFilter, setStatusFilter] = useState('in_progress')
+
+  const workingTasks = TASKS.filter(t => t.status === 'working')
+  const pendingTasks = TASKS.filter(t => t.status === 'pending')
+  const completedTasks = TASKS.filter(t => t.status === 'completed')
+
+  const statusTabs = [
+    { id: 'in_progress', label: 'In Progress', count: workingTasks.length },
+    { id: 'queued', label: 'Queued', count: pendingTasks.length },
+    { id: 'completed', label: 'Completed', count: completedTasks.length },
+  ]
+
+  const obj = OBJECTIVE
+  const objCompletedPct = `${Math.round((obj.completed / obj.total) * 100)}%`
+  const objInProgressPct = `${Math.round((obj.inProgress / obj.total) * 100)}%`
+  const objReviewPct = `${Math.round((obj.review / obj.total) * 100)}%`
+
+  return (
+    <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-24 sm:pt-[20vh] pb-32">
+      {/* Status tabs — segmented pill switcher */}
+      <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--color-bg-alt)] mb-6 w-fit">
+        {statusTabs.map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setStatusFilter(tab.id)}
+            className={`px-4 py-2 text-[13px] font-medium rounded-lg cursor-pointer transition-[background-color,color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 ${
+              statusFilter === tab.id
+                ? 'bg-[var(--color-surface)] text-[var(--color-heading)] shadow-sm'
+                : 'text-[var(--color-muted)] hover:text-[var(--color-body)]'
+            }`}
+          >
+            {tab.label} <span className="ml-1 text-[11px] tabular-nums opacity-60">{tab.count}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Current Objective label */}
+      <div className="flex items-center gap-2 mb-3">
+        <PixelIcon name="lightning" size={14} className="text-[var(--color-accent)]" aria-hidden="true" />
+        <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Current Objective</span>
+      </div>
+
+      {/* Objective card */}
+      <div className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5 p-6 mb-6" style={{ outline: '1px solid rgba(0,0,0,0.08)', outlineOffset: '0px' }}>
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-center gap-2.5">
+            <span
+              className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full"
+              style={{ backgroundColor: 'color-mix(in srgb, oklch(0.77 0.12 253.03) 15%, var(--color-surface))', color: 'oklch(0.77 0.12 253.03)' }}
+            >
+              In Progress
+            </span>
+          </div>
+          <span className="text-[28px] font-bold leading-none tabular-nums text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
+            {obj.progress}%
+          </span>
+        </div>
+
+        <h2 className="text-[16px] font-bold text-[var(--color-heading)] mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+          {obj.title}
+        </h2>
+
+        {/* Progress bar */}
+        <div className="flex h-2.5 rounded-full overflow-hidden bg-[var(--color-border)] mb-3" role="progressbar" aria-valuenow={obj.progress} aria-valuemin={0} aria-valuemax={100}>
+          <div className="bg-[var(--color-accent)] rounded-l-full" style={{ width: objCompletedPct, transition: 'width 0.6s ease-out' }} />
+          <div className="bg-[oklch(0.77_0.12_253.03)]" style={{ width: objInProgressPct, transition: 'width 0.6s ease-out' }} />
+          <div className="bg-[oklch(0.82_0.18_80)]" style={{ width: objReviewPct, transition: 'width 0.6s ease-out' }} />
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-5 flex-wrap mb-4">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" aria-hidden="true" />
+            <span className="text-[11px] text-[var(--color-muted)]">{obj.completed} completed</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.77_0.12_253.03)]" aria-hidden="true" />
+            <span className="text-[11px] text-[var(--color-muted)]">{obj.inProgress} in progress</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'oklch(0.82 0.18 80)' }} aria-hidden="true" />
+            <span className="text-[11px] text-[var(--color-muted)]">{obj.review} needs review</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)]" aria-hidden="true" />
+            <span className="text-[11px] text-[var(--color-muted)]">{obj.pending} pending</span>
+          </div>
+        </div>
+
+        {/* Agent list */}
+        <div className="flex items-center gap-3 pt-4 border-t border-[var(--color-border)]">
+          <div className="flex -space-x-1.5">
+            {obj.agents.map(name => (
+              <AgentDot key={name} name={name} size={24} className="ring-2 ring-[var(--color-surface)]" />
+            ))}
+          </div>
+          <span className="text-[11px] text-[var(--color-muted)]">
+            {obj.agents.join(' & ')} {obj.agents.length === 1 ? 'is' : 'are'} working on active tasks
+          </span>
+        </div>
+      </div>
+
+      {/* Task sections */}
+      {statusFilter === 'in_progress' && (
+        <>
+          {/* Working */}
+          {workingTasks.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-[13px] font-semibold text-[var(--color-heading)] mb-3 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.77_0.12_253.03)] animate-pulse" aria-hidden="true" />
+                Working
+              </h3>
+              <div className="space-y-3">
+                {workingTasks.map(task => (
+                  <div key={task.id} className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[11px] font-mono text-[var(--color-muted)]">{task.id}</span>
+                      <span className="text-[13px] font-semibold text-[var(--color-heading)]">{task.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <AgentDot name={task.agent} size={20} />
+                      <span className="text-[11px] text-[var(--color-muted)]">{task.agent}</span>
+                    </div>
+                    {task.detail && (
+                      <p className="text-[13px] text-[var(--color-body)] leading-relaxed mb-3">{task.detail}</p>
+                    )}
+                    {/* Footer — thumbs up/down/comment */}
+                    <div className="flex items-center gap-4 pt-3 border-t border-[var(--color-border)]">
+                      <button type="button" className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer bg-transparent border-none p-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded">
+                        <PixelIcon name="arrow-up" size={12} aria-hidden="true" />
+                        <span className="tabular-nums">{task.votes.up}</span>
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer bg-transparent border-none p-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded">
+                        <PixelIcon name="arrow-down" size={12} aria-hidden="true" />
+                        <span className="tabular-nums">{task.votes.down}</span>
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer bg-transparent border-none p-0 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded">
+                        <PixelIcon name="message" size={12} aria-hidden="true" />
+                        <span className="tabular-nums">{task.comments}</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tasks Up Next */}
+          {pendingTasks.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-[13px] font-semibold text-[var(--color-heading)] mb-3">Tasks Up Next</h3>
+              <div className="space-y-2">
+                {pendingTasks.map(task => (
+                  <div key={task.id} className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-muted)] flex-shrink-0" aria-hidden="true" />
+                    <span className="text-[11px] font-mono text-[var(--color-muted)]">{task.id}</span>
+                    <span className="text-[13px] text-[var(--color-body)]">{task.title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {statusFilter === 'queued' && (
+        <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-8 text-center">
+          <div className="text-[13px] text-[var(--color-muted)]">No queued tasks</div>
+        </div>
+      )}
+
+      {statusFilter === 'completed' && completedTasks.length > 0 && (
+        <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
+          {completedTasks.map((task, i) => (
+            <div key={task.id} className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? 'border-t border-[var(--color-border)]' : ''}`}>
+              <PixelIcon name="check" size={12} className="text-[var(--color-accent)] flex-shrink-0" aria-hidden="true" />
+              <span className="text-[11px] font-mono text-[var(--color-muted)]">{task.id}</span>
+              <span className="text-[13px] text-[var(--color-body)] flex-1">{task.title}</span>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <AgentDot name={task.agent} size={18} />
+                <span className="text-[11px] text-[var(--color-muted)]">{task.completedAt}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -655,9 +897,9 @@ export default function NavExperiment() {
 
   const addItems = [
     { label: 'New Objective', icon: 'bullseye-arrow', iconColor: 'text-[var(--color-accent)]', onAction: () => console.log('New Objective') },
-    { label: 'Upload File', icon: 'upload', iconColor: 'text-[#60A5FA]', onAction: () => console.log('Upload File') },
-    { label: 'Invite Agent', icon: 'robot', iconColor: 'text-blue-500', onAction: () => console.log('Invite Agent') },
-    { label: 'Post a Role', icon: 'target', iconColor: 'text-amber-500', onAction: () => console.log('Post Role') },
+    { label: 'Upload File', icon: 'upload', iconColor: 'text-[oklch(0.77_0.12_253.03)]', onAction: () => console.log('Upload File') },
+    { label: 'Invite Agent', icon: 'robot', iconColor: 'text-[oklch(0.77_0.12_253.03)]', onAction: () => console.log('Invite Agent') },
+    { label: 'Post a Role', icon: 'target', iconColor: 'text-[oklch(0.82_0.18_80)]', onAction: () => console.log('Post Role') },
   ]
 
   const activeTabData = TABS.find(t => t.id === activeTab)
@@ -686,8 +928,10 @@ export default function NavExperiment() {
       />
 
       <main>
-        {activeTab === 'dashboard' ? (
-          <OverviewTab startup={currentStartup} />
+        {activeTab === 'objectives' ? (
+          <ObjectivesTab />
+        ) : activeTab === 'dashboard' ? (
+          <OverviewTab startup={currentStartup} onTabChange={setActiveTab} />
         ) : (
           <PlaceholderTab tab={activeTabData} />
         )}
