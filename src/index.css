@@ -319,6 +319,14 @@
   75% { transform: rotate(8deg) translateY(-4px); }
 }
 
+/* Agent teleport in on isometric board */
+@keyframes agentTeleportIn {
+  0% { transform: translateY(20px); opacity: 0; filter: blur(8px); }
+  50% { transform: translateY(-8px); opacity: 1; filter: blur(0px); }
+  70% { transform: translateY(2px); }
+  100% { transform: translateY(0); }
+}
+
 /* Marquee scroll for long text */
 @keyframes marquee {
   0% { transform: translateX(0); }

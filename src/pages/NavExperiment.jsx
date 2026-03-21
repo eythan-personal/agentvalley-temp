@@ -880,7 +880,10 @@ function AgentsTab() {
   const [wavingAgent, setWavingAgent] = useState(null)
   const [animKey, setAnimKey] = useState(0)
   const [officeMode, setOfficeMode] = useState(false)
-  const [officeTransition, setOfficeTransition] = useState('idle') // idle, exiting, entering, active
+  const [officeTransition, setOfficeTransition] = useState('idle')
+  // idle → feedExit → charsCenter → charsTeleport → boardEnter → active
+  const [teleportedOut, setTeleportedOut] = useState([]) // agents that have teleported out
+  const [teleportedIn, setTeleportedIn] = useState([])   // agents that have appeared on board
   const canvasRef = useRef(null)
   const agentsRef = useRef(null)
 
@@ -920,16 +923,44 @@ function AgentsTab() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [filterOpen])
 
-  // Office mode transition
+  // Office mode transition — multi-phase animation
   const toggleOffice = () => {
     if (officeMode) {
+      // Reverse: board out → chars appear back
       setOfficeTransition('exiting')
       agentsRef.current = null
+      setTeleportedOut([])
+      setTeleportedIn([])
       setTimeout(() => { setOfficeMode(false); setOfficeTransition('idle') }, 600)
     } else {
-      setOfficeTransition('exiting')
-      setTimeout(() => { setOfficeMode(true); setOfficeTransition('entering') }, 500)
-      setTimeout(() => setOfficeTransition('active'), 1200)
+      // Phase 1: Feed slides down and out
+      setOfficeTransition('feedExit')
+
+      // Phase 2: Characters move to center (after feed exits)
+      setTimeout(() => setOfficeTransition('charsCenter'), 400)
+
+      // Phase 3: Characters teleport out one by one (random order)
+      const shuffled = [...AGENTS].sort(() => Math.random() - 0.5)
+      setTimeout(() => {
+        setOfficeTransition('charsTeleport')
+        shuffled.forEach((name, i) => {
+          setTimeout(() => {
+            setTeleportedOut(prev => [...prev, name])
+          }, i * 300)
+        })
+      }, 900)
+
+      // Phase 4: Board enters after all chars have teleported
+      const totalTeleportTime = 900 + shuffled.length * 300 + 200
+      setTimeout(() => {
+        setOfficeMode(true)
+        setOfficeTransition('boardEnter')
+      }, totalTeleportTime)
+
+      // Phase 5: Active — chars spawn on board
+      setTimeout(() => {
+        setOfficeTransition('active')
+      }, totalTeleportTime + 400)
     }
   }
 
@@ -970,14 +1001,18 @@ function AgentsTab() {
       img.onload = () => { charImgs[name] = img; resolve() }
     }))
 
-    const desks = [{ gx: 3, gy: 3 }, { gx: 6, gy: 3 }, { gx: 3, gy: 6 }, { gx: 6, gy: 6 }, { gx: 5, gy: 5 }]
+    // Spawn positions spread across the board
+    const spawnSpots = [
+      { gx: 2, gy: 4 }, { gx: 5, gy: 2 }, { gx: 7, gy: 5 }, { gx: 4, gy: 7 }, { gx: 6, gy: 3 },
+    ]
 
     if (!agentsRef.current) {
-      agentsRef.current = AGENTS.map((name, i) => ({
-        name, gx: desks[i].gx, gy: desks[i].gy,
-        tx: desks[i].gx, ty: desks[i].gy,
+      const shuffled = [...AGENTS].sort(() => Math.random() - 0.5)
+      agentsRef.current = shuffled.map((name, i) => ({
+        name, gx: spawnSpots[i].gx, gy: spawnSpots[i].gy,
+        tx: spawnSpots[i].gx, ty: spawnSpots[i].gy,
         timer: Math.random() * 200 + 100,
-        spawned: false, spawnDelay: i * 15, spawnTick: 0, spawnScale: 0,
+        spawned: false, spawnDelay: i * 25, spawnTick: 0, spawnScale: 0, spawnOffsetY: -60,
       }))
     }
 
@@ -996,11 +1031,12 @@ function AgentsTab() {
             }
             return
           }
-          if (a.spawnScale < 1) a.spawnScale = Math.min(a.spawnScale + 0.08, 1)
+          if (a.spawnScale < 1) a.spawnScale = Math.min(a.spawnScale + 0.06, 1)
+          if (a.spawnOffsetY < 0) a.spawnOffsetY = Math.min(a.spawnOffsetY + 4, 0)
           a.timer--
           if (a.timer <= 0) {
-            a.tx = 1 + Math.floor(Math.random() * (GRID - 2))
-            a.ty = 1 + Math.floor(Math.random() * (GRID - 2))
+            a.tx = 3 + Math.floor(Math.random() * (GRID - 5))
+            a.ty = 3 + Math.floor(Math.random() * (GRID - 5))
             a.timer = Math.random() * 250 + 100
           }
           const speed = 0.02
@@ -1026,35 +1062,69 @@ function AgentsTab() {
             ctx.stroke()
           }
         }
-        desks.forEach(d => {
-          const { x, y } = toIso(d.gx, d.gy)
-          const ds = TW / 4
-          ctx.fillStyle = '#A0907A'
-          ctx.fillRect(x - ds * 2.5, y - ds * 1.5, ds * 5, ds)
-          ctx.fillStyle = '#333'
-          ctx.fillRect(x - ds, y - ds * 3.2, ds * 2, ds * 1.8)
-          ctx.fillStyle = '#5588CC'
-          ctx.fillRect(x - ds * 0.9, y - ds * 3.1, ds * 1.8, ds * 1.4)
-        })
         const agents = [...(agentsRef.current || [])].sort((a, b) => (a.gx + a.gy) - (b.gx + b.gy))
         agents.forEach(a => {
-          if (!a.spawned || a.spawnScale <= 0) return
+          if (!a.spawned) return
           const { x, y } = toIso(a.gx, a.gy)
           const img = charImgs[a.name]
           if (!img) return
-          const s = a.spawnScale
-          const charH = TW * 0.7 * s
+          const s = Math.min(a.spawnScale, 1)
+          const oy2 = a.spawnOffsetY || 0
+          const charH = TW * 0.45
           const charW = (img.width / img.height) * charH
+          const dy = y + oy2
           ctx.globalAlpha = s
+          // Blur effect during spawn via shadow trick
+          if (s < 1) {
+            ctx.filter = `blur(${Math.round((1 - s) * 6)}px)`
+          }
           ctx.fillStyle = 'rgba(0,0,0,0.06)'
           ctx.beginPath()
-          ctx.ellipse(x, y + charH * 0.15, TW * 0.15 * s, TH * 0.15 * s, 0, 0, Math.PI * 2)
+          ctx.ellipse(x, dy + charH * 0.15, TW * 0.15 * s, TH * 0.15 * s, 0, 0, Math.PI * 2)
           ctx.fill()
-          ctx.drawImage(img, x - charW / 2, y - charH + charH * 0.15, charW, charH)
-          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-heading').trim() || '#171717'
-          ctx.font = `600 ${Math.max(10, TW * 0.1) * s}px sans-serif`
-          ctx.textAlign = 'center'
-          ctx.fillText(a.name, x, y - charH - 2)
+          ctx.drawImage(img, x - charW / 2, dy - charH + charH * 0.15, charW, charH)
+          ctx.filter = 'none'
+          if (s >= 0.5) {
+            const fontSize = Math.max(8, TW * 0.06)
+            ctx.font = `600 ${fontSize}px sans-serif`
+            ctx.textAlign = 'center'
+            const textW = ctx.measureText(a.name).width
+            const padX = 6, padY = 3
+            const bgX = x - textW / 2 - padX
+            const bgY = dy - charH - fontSize - padY - 2
+            const bgW = textW + padX * 2
+            const bgH = fontSize + padY * 2
+            const r = 4
+            // Rounded rect background
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-surface').trim() || '#fff'
+            ctx.beginPath()
+            ctx.moveTo(bgX + r, bgY)
+            ctx.lineTo(bgX + bgW - r, bgY)
+            ctx.quadraticCurveTo(bgX + bgW, bgY, bgX + bgW, bgY + r)
+            ctx.lineTo(bgX + bgW, bgY + bgH - r)
+            ctx.quadraticCurveTo(bgX + bgW, bgY + bgH, bgX + bgW - r, bgY + bgH)
+            ctx.lineTo(bgX + r, bgY + bgH)
+            ctx.quadraticCurveTo(bgX, bgY + bgH, bgX, bgY + bgH - r)
+            ctx.lineTo(bgX, bgY + r)
+            ctx.quadraticCurveTo(bgX, bgY, bgX + r, bgY)
+            ctx.closePath()
+            ctx.fill()
+            // Border
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-border').trim() || '#E8E8E8'
+            ctx.lineWidth = 1
+            ctx.stroke()
+            // Shadow (subtle)
+            ctx.shadowColor = 'rgba(0,0,0,0.06)'
+            ctx.shadowBlur = 4
+            ctx.shadowOffsetY = 2
+            ctx.fill()
+            ctx.shadowColor = 'transparent'
+            ctx.shadowBlur = 0
+            ctx.shadowOffsetY = 0
+            // Text
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-heading').trim() || '#171717'
+            ctx.fillText(a.name, x, bgY + padY + fontSize - 1)
+          }
           ctx.globalAlpha = 1
         })
       }
@@ -1096,8 +1166,9 @@ function AgentsTab() {
         <div
           className="fixed inset-0 z-30 flex items-center justify-center"
           style={{
-            opacity: officeTransition === 'active' ? 1 : 0,
-            transition: 'opacity 0.4s ease-out 0.1s',
+            opacity: (officeTransition === 'boardEnter' || officeTransition === 'active') ? 1 : 0,
+            scale: (officeTransition === 'boardEnter' || officeTransition === 'active') ? '1' : '0.95',
+            transition: 'opacity 0.5s ease-out, scale 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
             pointerEvents: officeTransition === 'active' ? 'auto' : 'none',
             top: 60,
           }}
@@ -1109,26 +1180,49 @@ function AgentsTab() {
         </div>
       )}
 
-      {/* Characters — hidden in office mode */}
+      {/* Characters with office background */}
+      <div style={{ height: 'calc(35vh - 180px)' }} />
+      <div className="relative mb-8 transition-opacity duration-500" style={{
+        width: '100vw',
+        marginLeft: 'calc(-50vw + 50%)',
+        opacity: (officeMode && officeTransition === 'active') ? 0 : 1,
+        display: officeMode && officeTransition === 'active' ? 'none' : undefined,
+      }}>
+        {/* Background art — tiled horizontally */}
+        <div
+          className="absolute bottom-0 left-0 w-full pointer-events-none transition-opacity duration-500"
+          style={{
+            height: 300,
+            backgroundImage: 'url(/bg_art.png)',
+            backgroundRepeat: 'repeat-x',
+            backgroundPosition: 'bottom center',
+            backgroundSize: 'auto 100%',
+            imageRendering: 'pixelated',
+            opacity: officeTransition !== 'idle' ? 0 : 0.32,
+          }}
+          aria-hidden="true"
+        />
       <div
-        className="flex items-end justify-between mb-8 px-16"
+        className="relative z-10 flex items-end justify-between pt-8 -mb-8 transition-[transform,opacity] duration-500 ease-out max-w-[1080px] mx-auto px-20"
         style={{
-          opacity: (officeTransition === 'exiting' || officeMode) ? 0 : 1,
-          transform: (officeTransition === 'exiting' || officeMode) ? 'translateY(-40px)' : 'translateY(0)',
-          transition: 'opacity 0.3s ease-in, transform 0.3s ease-in',
+          transform: 'translateY(0)',
+          opacity: officeMode ? 0 : 1,
           pointerEvents: officeMode ? 'none' : 'auto',
-          position: officeMode ? 'absolute' : 'relative',
-          left: officeMode ? '-9999px' : undefined,
+          position: officeMode && officeTransition === 'active' ? 'absolute' : 'relative',
+          left: officeMode && officeTransition === 'active' ? '-9999px' : undefined,
         }}
       >
-        {AGENTS.map(name => (
+        {AGENTS.map(name => {
+          const hasTeleported = teleportedOut.includes(name)
+          return (
           <button
             key={name}
             type="button"
-            onClick={() => setSelectedAgent(selectedAgent === name ? null : name)}
-            className={`flex flex-col items-center gap-2 cursor-pointer group transition-[opacity] duration-150 ${
+            onClick={() => officeTransition === 'idle' && setSelectedAgent(selectedAgent === name ? null : name)}
+            className={`flex flex-col-reverse items-center gap-2 cursor-pointer group transition-all duration-300 ease-out ${
               selectedAgent && selectedAgent !== name ? 'opacity-30' : ''
-            }`}
+            } ${hasTeleported ? 'opacity-0 -translate-y-20 blur-sm' : ''}`}
+            style={{ transitionDuration: hasTeleported ? '400ms' : '150ms' }}
           >
             <div className="relative" key={`${name}-${(jumpingAgent === name || wavingAgent === name) ? animKey : 0}`}>
               {wavingAgent === name && (
@@ -1146,21 +1240,19 @@ function AgentsTab() {
                 style={{ imageRendering: 'pixelated' }}
               />
             </div>
-            {/* Isometric floor tile */}
-            <svg width="64" height="32" viewBox="0 0 64 32" className="-mt-2">
-              <path d="M32 0 L64 16 L32 32 L0 16 Z" fill="var(--color-bg-alt)" stroke="var(--color-border)" strokeWidth="1" />
-            </svg>
-            <span className={`text-[13px] font-medium -mt-1 ${selectedAgent === name ? 'text-[var(--color-accent)]' : 'text-[var(--color-heading)]'}`}>{name}</span>
+            <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-[var(--color-surface)] shadow-sm ${selectedAgent === name ? 'text-[var(--color-accent)]' : 'text-[var(--color-heading)]'}`} style={{ outline: '1px solid var(--color-border)' }}>{name}</span>
           </button>
-        ))}
+          )
+        })}
+      </div>
       </div>
 
       {/* Activity section — hidden in office mode */}
       <div style={{
-        opacity: (officeTransition === 'exiting' || officeMode) ? 0 : 1,
-        transform: (officeTransition === 'exiting' || officeMode) ? 'translateY(40px)' : 'translateY(0)',
-        transition: 'opacity 0.3s ease-in 0.1s, transform 0.3s ease-in 0.1s',
-        pointerEvents: officeMode ? 'none' : 'auto',
+        opacity: (officeTransition !== 'idle') ? 0 : 1,
+        transform: (officeTransition !== 'idle') ? 'translateY(40px)' : 'translateY(0)',
+        transition: 'opacity 0.3s ease-in, transform 0.3s ease-in',
+        pointerEvents: (officeTransition !== 'idle') ? 'none' : 'auto',
         display: officeMode && officeTransition === 'active' ? 'none' : undefined,
       }}>
 
