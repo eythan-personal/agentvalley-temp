@@ -10,6 +10,7 @@ import char2 from '../assets/characters/character_2.webp'
 import char3 from '../assets/characters/character_3.webp'
 import char4 from '../assets/characters/character_4.webp'
 import char5 from '../assets/characters/character_5.webp'
+import objectiveCompleteSfx from '../assets/objective-complete.mp3'
 
 const TABS = [
   { id: 'dashboard', label: 'Startup Overview', icon: 'home' },
@@ -73,6 +74,17 @@ const FEED = [
     detail: 'Monitoring alerts are now configured for all production endpoints. @team please review the threshold values before the next deploy.',
     mention: true,
     thread: { count: 6, agents: ['Forge', 'Relay'] },
+  },
+  {
+    type: 'objective-complete',
+    icon: 'check',
+    iconColor: 'text-[#0d2000]',
+    iconBg: 'bg-[var(--color-accent)]',
+    agent: 'Forge',
+    time: '1 day ago',
+    content: <><span className="font-semibold">Objective completed</span> — <span className="font-semibold">Set up CI/CD pipeline & deploy staging</span></>,
+    detail: 'All 8 tasks finished. Pipeline deploys on merge to main, staging auto-updates from develop. Total time: 3 days 4 hours.',
+    objective: { title: 'Set up CI/CD pipeline & deploy staging', tasksCompleted: 8, agents: ['Forge', 'Relay', 'Cipher'], duration: '3d 4h' },
   },
   {
     type: 'assign',
@@ -182,6 +194,7 @@ function OverviewTab({ startup, onTabChange }) {
   const [liveEvents, setLiveEvents] = useState([])
   const [paused, setPaused] = useState(false)
   const [reviewDismissed, setReviewDismissed] = useState(true)
+  const [objCelebration, setObjCelebration] = useState(null)
   const taskCountRef = useRef(42)
 
   // Add a new event every 30 seconds
@@ -244,28 +257,25 @@ function OverviewTab({ startup, onTabChange }) {
 
   return (
     <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-24 sm:pt-[20vh] pb-32">
-      {/* Greeting + controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <div>
-          <h1 className="text-[18px] font-bold leading-tight text-balance" style={{ fontFamily: 'var(--font-display)' }}>
-            {(() => {
-              const h = new Date().getHours()
-              return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
-            })()}, Eythan
-          </h1>
-          <div className="text-[12px] text-[var(--color-muted)] mt-0.5">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+      {/* Header bar + controls */}
+      <div className="flex items-center gap-2 mb-5">
+        {/* Title bar */}
+        <div className="flex-1 min-w-0 rounded-xl bg-[var(--color-bg-alt)] px-4 h-10 flex items-center">
+          <div className="flex items-center justify-between w-full">
+            <h1 className="text-[13px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>Overview</h1>
+            <span className="text-[11px] text-[var(--color-muted)] tabular-nums">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Controls */}
+        <div className="flex items-center gap-2 flex-shrink-0 h-10">
           <button
             type="button"
             onClick={() => setPaused(prev => !prev)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-medium cursor-pointer transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 ${
-              paused
-                ? 'bg-[var(--color-accent)] text-[#0d2000] hover:bg-[var(--color-accent)]/90'
-                : 'bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)]'
-            }`}
+            className="flex items-center gap-1.5 h-10 px-4 rounded-xl text-[12px] font-medium cursor-pointer transition-[color,scale] duration-150 ease-out active:scale-[0.96] text-[var(--color-muted)] hover:text-[var(--color-heading)]"
+            style={{ outline: '1px solid var(--color-border)', outlineOffset: '-1px' }}
           >
             <PixelIcon name={paused ? 'power' : 'clock'} size={13} aria-hidden="true" />
             {paused ? 'Resume' : 'Pause'}
@@ -273,7 +283,8 @@ function OverviewTab({ startup, onTabChange }) {
           <button
             type="button"
             aria-label="Settings"
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+            className="flex items-center justify-center w-10 h-10 rounded-xl text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-[color,scale] duration-150 cursor-pointer active:scale-[0.96]"
+            style={{ outline: '1px solid var(--color-border)', outlineOffset: '-1px' }}
           >
             <PixelIcon name="settings" size={14} aria-hidden="true" />
           </button>
@@ -493,8 +504,39 @@ function OverviewTab({ startup, onTabChange }) {
                   )}
                 </div>
 
-                {/* Detail card */}
-                {item.detail && (
+                {/* Detail card — special treatment for completed objectives */}
+                {item.detail && item.type === 'objective-complete' ? (
+                  <div
+                    className="mt-2.5 ml-8 rounded-xl border border-[var(--color-accent)]/30 p-4 cursor-pointer transition-[box-shadow,transform] duration-200 hover:shadow-lg hover:shadow-[var(--color-accent)]/10 active:scale-[0.99]"
+                    style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 6%, var(--color-surface))' }}
+                    onClick={() => setObjCelebration(item.objective)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setObjCelebration(item.objective) } }}
+                  >
+                    <p className="text-[13px] text-[var(--color-body)] leading-relaxed">{item.detail}</p>
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--color-accent)]/15">
+                      <div className="flex items-center gap-3">
+                        <div className="flex -space-x-1.5">
+                          {item.objective.agents.map(name => (
+                            <AgentDot key={name} name={name} size={20} className="ring-2 ring-[var(--color-surface)]" />
+                          ))}
+                        </div>
+                        <span className="text-[11px] text-[var(--color-muted)]">{item.objective.agents.join(', ')}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-[11px] text-[var(--color-muted)]">
+                        <span className="flex items-center gap-1">
+                          <PixelIcon name="clipboard" size={11} aria-hidden="true" />
+                          {item.objective.tasksCompleted}/{item.objective.tasksCompleted}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <PixelIcon name="clock" size={11} aria-hidden="true" />
+                          {item.objective.duration}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : item.detail && (
                   <div className={`mt-2.5 ml-8 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4 ${item.needsReview || item.mention ? 'flex items-start gap-4' : ''}`}>
                     <p className="text-[13px] text-[var(--color-body)] leading-relaxed flex-1">{item.detail}</p>
                     {item.needsReview && (
@@ -538,6 +580,240 @@ function OverviewTab({ startup, onTabChange }) {
             </div>
           )
         })}
+      </div>
+
+      {/* Dev trigger */}
+      <button
+        type="button"
+        onClick={() => setObjCelebration({ title: 'Set up CI/CD pipeline & deploy staging', tasksCompleted: 8, agents: ['Forge', 'Relay', 'Cipher'], duration: '3d 4h' })}
+        className="fixed bottom-20 left-4 z-50 w-8 h-8 rounded-lg bg-[var(--color-accent)] text-[#0d2000] flex items-center justify-center cursor-pointer hover:brightness-110 active:scale-95 transition-transform shadow-lg shadow-black/20"
+        title="Trigger celebration"
+      >
+        <PixelIcon name="check" size={14} aria-hidden="true" />
+      </button>
+
+      {/* ── Objective Complete Celebration Overlay ── */}
+      {objCelebration && <ObjectiveCelebration objective={objCelebration} onClose={() => setObjCelebration(null)} />}
+    </div>
+  )
+}
+
+const CONFETTI_COLORS = ['#9fe870', '#7ed957', '#b8f089', '#5cb83a', '#c5f5a0', '#6fcf45', '#a3e86e', '#2d5a1a', '#1a3d0f', '#3a7a28', '#244d15', '#1f4210']
+
+function ConfettiCanvas({ active, originRef }) {
+  const canvasRef = useRef(null)
+  const particles = useRef(null)
+  const raf = useRef(null)
+
+  useEffect(() => {
+    if (!active) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    const dpr = window.devicePixelRatio || 1
+    const w = canvas.offsetWidth
+    const h = canvas.offsetHeight
+    canvas.width = w * dpr
+    canvas.height = h * dpr
+    ctx.scale(dpr, dpr)
+
+    // Burst from the checkmark position
+    let cx = w / 2
+    let cy = h / 2
+    if (originRef?.current) {
+      const rect = originRef.current.getBoundingClientRect()
+      cx = rect.left + rect.width / 2
+      cy = rect.top + rect.height / 2
+    }
+    particles.current = Array.from({ length: 120 }, (_, i) => {
+      const angle = Math.random() * Math.PI * 2
+      const speed = 8 + Math.random() * 18
+      const size = 3 + Math.random() * 14
+      return {
+        x: cx,
+        y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - (6 + Math.random() * 10), // strong upward bias
+        w: size,
+        h: size * (0.2 + Math.random() * 0.8),
+        r: Math.random() * 360,
+        rv: (Math.random() - 0.5) * 15,
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        opacity: 1,
+        gravity: 0.18 + Math.random() * 0.12,
+        drag: 0.985 + Math.random() * 0.01,
+      }
+    })
+
+    let startTime = performance.now()
+    const animate = (now) => {
+      const elapsed = now - startTime
+      ctx.clearRect(0, 0, w, h)
+
+      let alive = false
+      for (const p of particles.current) {
+        if (p.opacity <= 0) continue
+        alive = true
+
+        p.vx *= p.drag
+        p.vy *= p.drag
+        p.vy += p.gravity
+        p.x += p.vx
+        p.y += p.vy
+        p.r += p.rv
+
+        // Fade out after 1.5s
+        if (elapsed > 1500) {
+          p.opacity -= 0.03
+        }
+
+        ctx.save()
+        ctx.translate(p.x, p.y)
+        ctx.rotate((p.r * Math.PI) / 180)
+        ctx.globalAlpha = Math.max(0, p.opacity)
+        ctx.fillStyle = p.color
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
+        ctx.restore()
+      }
+
+      if (alive) {
+        raf.current = requestAnimationFrame(animate)
+      }
+    }
+
+    // Small delay so it syncs with the check icon appearing
+    const timer = setTimeout(() => {
+      raf.current = requestAnimationFrame(animate)
+    }, 280)
+
+    return () => {
+      clearTimeout(timer)
+      if (raf.current) cancelAnimationFrame(raf.current)
+    }
+  }, [active])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      aria-hidden="true"
+    />
+  )
+}
+
+function ObjectiveCelebration({ objective, onClose }) {
+  const [phase, setPhase] = useState(0) // 0=enter, 1=visible, 2=exit
+  const overlayRef = useRef(null)
+  const checkRef = useRef(null)
+
+  useEffect(() => {
+    // Trigger enter animation
+    requestAnimationFrame(() => requestAnimationFrame(() => setPhase(1)))
+    // Play sound
+    const audio = new Audio(objectiveCompleteSfx)
+    audio.volume = 0.5
+    audio.play().catch(() => {})
+    // Lock scroll
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  const handleClose = () => {
+    setPhase(2)
+    setTimeout(onClose, 400)
+  }
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') handleClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [])
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center"
+      onClick={handleClose}
+      style={{
+        opacity: phase === 1 ? 1 : 0,
+        transition: 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Objective completed"
+    >
+      {/* Dark overlay with blur */}
+      <div className="absolute inset-0 bg-black/70" style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }} aria-hidden="true" />
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(to top, oklch(0.35 0.15 145 / 0.6) 0%, oklch(0.3 0.12 145 / 0.25) 35%, transparent 65%)',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Confetti — full screen, origin from checkmark */}
+      <ConfettiCanvas active={phase === 1} originRef={checkRef} />
+
+      {/* Content card */}
+      <div
+        className="relative z-10 w-full max-w-md mx-4 sm:mx-0"
+        style={{
+          transform: phase === 1 ? 'scale(1)' : phase === 0 ? 'scale(0.3)' : 'scale(0.9)',
+          opacity: phase === 1 ? 1 : 0,
+          filter: phase === 1 ? 'blur(0px)' : 'blur(8px)',
+          transition: phase === 2
+            ? 'transform 0.25s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease-in, filter 0.25s ease-in'
+            : 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s, opacity 0.3s ease-out 0.05s, filter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s',
+        }}
+      >
+        <div className="rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          {/* Header */}
+          <div className="px-6 pt-8 pb-6 text-center">
+            {/* Check icon */}
+            <div ref={checkRef} className="relative w-16 h-16 mx-auto mb-5">
+              <div
+                className="absolute inset-0 rounded-full bg-[var(--color-accent)] flex items-center justify-center"
+                style={{
+                  boxShadow: '0 0 40px oklch(0.7 0.2 145 / 0.4), 0 0 80px oklch(0.6 0.15 145 / 0.2)',
+                  transform: phase === 1 ? 'scale(1)' : 'scale(0.5)',
+                  transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s',
+                }}
+              >
+                <PixelIcon name="check" size={28} className="text-[#0d2000]" aria-hidden="true" />
+              </div>
+            </div>
+
+            <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--color-accent)] mb-2">Objective Complete</div>
+            <h2 className="text-[20px] font-bold text-white leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+              {objective.title}
+            </h2>
+            <p className="text-[13px] text-white/50 mt-2 leading-relaxed">All tasks finished successfully. Pipeline deploys on merge to main, staging auto-updates from develop.</p>
+          </div>
+
+          {/* Action */}
+          <div className="px-6 pb-6 flex justify-center">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="text-[13px] text-white/60 hover:text-white/90 bg-white/10 hover:bg-white/15 px-5 py-2 rounded-xl cursor-pointer transition-[background-color,color] duration-150"
+            >
+              View Files
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Tap to close */}
+      <div
+        className="absolute bottom-8 left-0 right-0 text-center text-[12px] text-white/40 z-10 pointer-events-none"
+        style={{
+          opacity: phase === 1 ? 1 : 0,
+          transition: 'opacity 0.4s ease-out 0.5s',
+        }}
+      >
+        tap to close
       </div>
     </div>
   )
@@ -838,49 +1114,64 @@ function ObjectivesTab() {
 
   return (
     <div className="max-w-[1080px] mx-auto px-4 sm:px-6 pt-24 sm:pt-[20vh] pb-32">
-      {/* Breadcrumbs + controls */}
-      <div className="flex items-center justify-between gap-3 mb-5">
-        {!selectedObjective ? (
-          <div>
-            <h1 className="text-[18px] font-bold leading-tight text-balance" style={{ fontFamily: 'var(--font-display)' }}>Objectives</h1>
-            <div className="text-[12px] text-[var(--color-muted)] mt-0.5">{objectives.length} objectives</div>
-          </div>
-        ) : (
-          <nav className="flex items-center gap-2 text-[12px] font-mono min-w-0">
-            <button
-              type="button"
-              onClick={() => { if (selectedTask) { setSelectedTask(null) } else { setSelectedObjective(null) } }}
-              className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96] flex-shrink-0 mr-1"
-            >
-              <PixelIcon name="arrow-left" size={14} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={() => { setSelectedObjective(null); setSelectedTask(null) }}
-              className="cursor-pointer transition-colors whitespace-nowrap text-[var(--color-muted)] hover:text-[var(--color-heading)]"
-            >
-              Objectives
-            </button>
-            <span className="text-[var(--color-border)]">/</span>
-            <button
-              type="button"
-              onClick={() => setSelectedTask(null)}
-              className={`cursor-pointer transition-colors truncate max-w-[250px] ${!selectedTask ? 'text-[var(--color-heading)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-heading)]'}`}
-            >
-              {selectedObjective.title}
-            </button>
-            {selectedTask && (
-              <>
-                <span className="text-[var(--color-border)]">/</span>
-                <span className="text-[var(--color-heading)] font-semibold whitespace-nowrap">{selectedTask.id}</span>
-              </>
-            )}
-          </nav>
-        )}
-        <div className="flex items-center gap-2 flex-shrink-0">
+      {/* Page header */}
+      <div className="flex items-center gap-2 mb-5">
+        {/* Back button — outside the bar */}
+        {selectedObjective && (
           <button
             type="button"
-            className="flex items-center gap-1.5 h-10 px-4 rounded-xl text-[12px] font-medium cursor-pointer transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.96] bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)]"
+            onClick={() => { if (selectedTask) { setSelectedTask(null) } else { setSelectedObjective(null) } }}
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96] flex-shrink-0"
+          >
+            <PixelIcon name="arrow-left" size={14} aria-hidden="true" />
+          </button>
+        )}
+
+        {/* Title / breadcrumb bar */}
+        <div className="flex-1 min-w-0 rounded-xl bg-[var(--color-bg-alt)] px-4 h-10 flex items-center">
+          {!selectedObjective ? (
+            <div className="flex items-center justify-between w-full">
+              <h1 className="text-[13px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>Objectives</h1>
+              <span className="text-[11px] text-[var(--color-muted)] tabular-nums">{objectives.length} total</span>
+            </div>
+          ) : (
+            <nav className="flex items-center gap-2 text-[12px] min-w-0" style={{ fontFamily: 'var(--font-display)' }}>
+              <button
+                type="button"
+                onClick={() => { setSelectedObjective(null); setSelectedTask(null) }}
+                className="cursor-pointer transition-colors whitespace-nowrap text-[var(--color-muted)] hover:text-[var(--color-heading)]"
+              >
+                Objectives
+              </button>
+              <span className="text-[var(--color-muted)]">/</span>
+              <button
+                type="button"
+                onClick={() => setSelectedTask(null)}
+                className={`cursor-pointer transition-colors truncate max-w-[250px] ${!selectedTask ? 'text-[var(--color-heading)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-heading)]'}`}
+              >
+                {selectedObjective.title}
+              </button>
+              {selectedTask && (
+                <>
+                  <span className="text-[var(--color-muted)]">/</span>
+                  <span className="text-[var(--color-heading)] font-semibold whitespace-nowrap">{selectedTask.id}</span>
+                </>
+              )}
+              {/* Task count at end of bar */}
+              {selectedObjective && !selectedTask && (
+                <span className="ml-auto text-[11px] text-[var(--color-muted)] tabular-nums whitespace-nowrap">{TASKS.length} tasks</span>
+              )}
+            </nav>
+          )}
+        </div>
+
+        {/* Controls — only on top level */}
+        {!selectedObjective && (
+        <div className="flex items-center gap-2 flex-shrink-0 h-10">
+          <button
+            type="button"
+            className="flex items-center gap-1.5 h-10 px-4 rounded-xl text-[12px] font-medium cursor-pointer transition-[color,scale] duration-150 ease-out active:scale-[0.96] text-[var(--color-muted)] hover:text-[var(--color-heading)]"
+            style={{ outline: '1px solid var(--color-border)', outlineOffset: '-1px' }}
           >
             <PixelIcon name="clock" size={13} aria-hidden="true" />
             Pause
@@ -888,11 +1179,13 @@ function ObjectivesTab() {
           <button
             type="button"
             aria-label="Settings"
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-border)] transition-[background-color,color,scale] duration-150 cursor-pointer active:scale-[0.96]"
+            className="flex items-center justify-center w-10 h-10 rounded-xl text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-[color,scale] duration-150 cursor-pointer active:scale-[0.96]"
+            style={{ outline: '1px solid var(--color-border)', outlineOffset: '-1px' }}
           >
             <PixelIcon name="settings" size={14} aria-hidden="true" />
           </button>
         </div>
+        )}
       </div>
 
       {selectedObjective ? (
@@ -912,108 +1205,129 @@ function ObjectivesTab() {
           {/* Tasks */}
           {selectedTask ? (
             <>
-              <div className="rounded-2xl bg-[var(--color-surface)] p-6 mb-6" style={{ outline: '1px solid var(--color-border)' }}>
-                {/* Header meta */}
-                <div className="grid grid-cols-3 gap-4 mb-6 text-[12px]">
+              {/* Task header card */}
+              <div className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5 p-6 mb-4" style={{ outline: '1px solid var(--color-border)' }}>
+                {/* Title + status */}
+                <div className="flex items-start justify-between gap-4 mb-4">
                   <div>
-                    <span className="text-[var(--color-muted)]">Status: </span>
-                    <span className="font-medium text-[var(--color-heading)] capitalize">{selectedTask.status}</span>
-                  </div>
-                  <div>
-                    <span className="text-[var(--color-muted)]">Objective: </span>
-                    <span className="text-[var(--color-body)]">{OBJECTIVE.title}</span>
-                  </div>
-                  <div>
-                    <span className="text-[var(--color-muted)]">Agent: </span>
-                    <span className="text-[var(--color-body)]">{selectedTask.agent || 'Unassigned'}</span>
-                  </div>
-                  {selectedTask.created && (
-                    <div>
-                      <span className="text-[var(--color-muted)]">Created: </span>
-                      <span className="text-[var(--color-body)]">{selectedTask.created}</span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-mono text-[var(--color-muted)]">{selectedTask.id}</span>
+                      <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded-md" style={{
+                        backgroundColor: selectedTask.status === 'working' ? 'color-mix(in srgb, oklch(0.77 0.12 253.03) 12%, var(--color-surface))' : selectedTask.status === 'completed' ? 'color-mix(in srgb, var(--color-accent) 12%, var(--color-surface))' : 'var(--color-bg-alt)',
+                        color: selectedTask.status === 'working' ? 'oklch(0.77 0.12 253.03)' : selectedTask.status === 'completed' ? 'var(--color-accent)' : 'var(--color-muted)',
+                      }}>{selectedTask.status === 'working' ? 'Working' : selectedTask.status === 'completed' ? 'Completed' : 'Pending'}</span>
+                      {selectedTask.duration && <span className="text-[10px] text-[var(--color-muted)]">· {selectedTask.duration}</span>}
                     </div>
-                  )}
-                  {selectedTask.assigned && (
-                    <div>
-                      <span className="text-[var(--color-muted)]">Assigned: </span>
-                      <span className="text-[var(--color-body)]">{selectedTask.assigned}</span>
-                    </div>
-                  )}
-                  {selectedTask.pickedUp && (
-                    <div>
-                      <span className="text-[var(--color-muted)]">Picked Up: </span>
-                      <span className="text-[var(--color-body)]">{selectedTask.pickedUp}</span>
+                    <h2 className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>{selectedTask.title}</h2>
+                  </div>
+                  {selectedTask.agent && (
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <AgentDot name={selectedTask.agent} size={28} thinking={selectedTask.status === 'working'} />
+                      <div>
+                        <div className="text-[12px] font-semibold text-[var(--color-heading)]">{selectedTask.agent}</div>
+                        <div className="text-[10px] text-[var(--color-muted)]">{selectedTask.status === 'working' ? 'Working' : 'Assigned'}</div>
+                      </div>
                     </div>
                   )}
                 </div>
 
                 {/* Description */}
-                <div className="rounded-xl bg-[var(--color-bg-alt)] p-4 mb-6">
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2">Description</div>
-                  <p className="text-[13px] text-[var(--color-body)] leading-relaxed">{selectedTask.description || selectedTask.detail || 'No description provided.'}</p>
-                </div>
+                <p className="text-[13px] text-[var(--color-body)] leading-relaxed mb-4">{selectedTask.description || selectedTask.detail || 'No description provided.'}</p>
 
+                {/* Meta row + feedback */}
+                <div className="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
+                  <div className="flex items-center gap-4 text-[11px] text-[var(--color-muted)]">
+                    {selectedTask.created && <span>Created {selectedTask.created}</span>}
+                    {selectedTask.assigned && <span>· Assigned {selectedTask.assigned}</span>}
+                    {selectedTask.pickedUp && <span>· Started {selectedTask.pickedUp}</span>}
+                  </div>
+                  {selectedTask.votes && (
+                    <div className="flex items-center gap-2">
+                      <button type="button" className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer" style={{ outline: '1px solid var(--color-border)', outlineOffset: '-1px' }}>
+                        <PixelIcon name="thumbs-up" size={13} aria-hidden="true" /> {selectedTask.votes.up}
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer" style={{ outline: '1px solid var(--color-border)', outlineOffset: '-1px' }}>
+                        <PixelIcon name="thumbs-down" size={13} aria-hidden="true" /> {selectedTask.votes.down}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Two column layout — updates + files */}
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_300px] gap-4">
                 {/* Status updates */}
-                <div className="rounded-xl bg-[var(--color-bg-alt)] p-4 mb-6">
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-3">
+                <div className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ outline: '1px solid var(--color-border)' }}>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4">
                     Status Updates ({selectedTask.updates?.length || 0})
                   </div>
                   {selectedTask.updates?.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {selectedTask.updates.map((update, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <AgentDot name={update.agent} size={24} />
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[12px] font-semibold text-[var(--color-heading)]">{update.agent}</span>
+                        <div key={i} className="flex gap-3">
+                          <div className="flex flex-col items-center flex-shrink-0">
+                            <AgentDot name={update.agent} size={28} />
+                            {i < selectedTask.updates.length - 1 && <div className="w-px flex-1 bg-[var(--color-border)] mt-2" />}
+                          </div>
+                          <div className="pb-4">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="text-[13px] font-semibold text-[var(--color-heading)]">{update.agent}</span>
                               <span className="text-[11px] text-[var(--color-muted)]">{update.time}</span>
                             </div>
-                            <p className="text-[12px] text-[var(--color-body)] mt-0.5">{update.text}</p>
+                            <p className="text-[13px] text-[var(--color-body)] leading-relaxed">{update.text}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-[12px] text-[var(--color-muted)]">No status updates yet.</span>
+                    <div className="text-center py-6">
+                      <PixelIcon name="message" size={20} className="text-[var(--color-border)] mx-auto mb-2" aria-hidden="true" />
+                      <span className="text-[12px] text-[var(--color-muted)]">No status updates yet</span>
+                    </div>
                   )}
                 </div>
 
-                {/* Files */}
-                <div className="rounded-xl bg-[var(--color-bg-alt)] p-4">
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-3">
+                {/* Files sidebar */}
+                <div className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ outline: '1px solid var(--color-border)' }}>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4">
                     Files ({selectedTask.files?.length || 0})
                   </div>
                   {selectedTask.files?.length > 0 ? (
                     <div className="space-y-2">
                       {selectedTask.files.map((file, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-[var(--color-surface)]" style={{ outline: '1px solid var(--color-border)' }}>
-                          <div className="flex items-center gap-3">
-                            <PixelIcon name="folder" size={16} className="text-[var(--color-muted)]" aria-hidden="true" />
-                            <div>
-                              <div className="text-[13px] font-medium text-[var(--color-heading)]">{file.name}</div>
-                              <div className="text-[11px] text-[var(--color-muted)]">{file.size}</div>
+                        <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-bg-alt)] group cursor-pointer hover:bg-[var(--color-border)] transition-[background-color] duration-150">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-lg bg-[var(--color-surface)] flex items-center justify-center flex-shrink-0">
+                              <PixelIcon name="folder" size={14} className="text-[var(--color-muted)]" aria-hidden="true" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-[12px] font-medium text-[var(--color-heading)] truncate">{file.name}</div>
+                              <div className="text-[10px] text-[var(--color-muted)]">{file.size}</div>
                             </div>
                           </div>
                           {file.status === 'complete' ? (
-                            <button type="button" className="text-[11px] font-medium text-[var(--color-muted)] hover:text-[var(--color-heading)] bg-[var(--color-bg-alt)] hover:bg-[var(--color-border)] px-3 py-1.5 rounded-lg transition-[background-color,color] duration-150 cursor-pointer flex items-center gap-1.5">
-                              <PixelIcon name="arrow-right" size={10} className="rotate-90" aria-hidden="true" />
+                            <button type="button" className="text-[10px] font-medium px-2.5 py-1 rounded-md cursor-pointer transition-[color] duration-150 text-[var(--color-muted)] hover:text-[var(--color-heading)]" style={{ outline: '1px solid var(--color-border)', outlineOffset: '-1px' }}>
                               Download
                             </button>
                           ) : (
-                            <span className="text-[11px] text-[var(--color-muted)] flex items-center gap-1.5">
-                              <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 16 16" fill="none">
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <svg className="w-3 h-3 animate-spin" viewBox="0 0 16 16" fill="none">
                                 <circle cx="8" cy="8" r="6" stroke="var(--color-border)" strokeWidth="2" />
                                 <path d="M8 2a6 6 0 0 1 6 6" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
                               </svg>
-                              In progress
-                            </span>
+                              <span className="text-[10px] text-[var(--color-muted)]">In progress</span>
+                            </div>
                           )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-[12px] text-[var(--color-muted)]">No files attached.</span>
+                    <div className="text-center py-6">
+                      <PixelIcon name="folder" size={20} className="text-[var(--color-border)] mx-auto mb-2" aria-hidden="true" />
+                      <span className="text-[12px] text-[var(--color-muted)]">No files yet</span>
+                    </div>
                   )}
+
                 </div>
               </div>
             </>
@@ -1030,7 +1344,7 @@ function ObjectivesTab() {
                   </div>
                   <div className="space-y-3">
                     {TASKS.filter(t => t.status === 'working').map(task => (
-                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] p-5 cursor-pointer hover:brightness-[0.97] transition-[filter] duration-200" style={{ outline: '1px solid var(--color-border)' }}>
+                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5 p-5 cursor-pointer hover:brightness-[0.97] transition-[filter] duration-200" style={{ outline: '1px solid var(--color-border)' }}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-[10px] font-mono text-[var(--color-muted)]">{task.id}</span>
                           <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded-md" style={{ backgroundColor: 'color-mix(in srgb, oklch(0.77 0.12 253.03) 12%, var(--color-surface))', color: 'oklch(0.77 0.12 253.03)' }}>Working</span>
@@ -1071,7 +1385,7 @@ function ObjectivesTab() {
                   </div>
                   <div className="space-y-3">
                     {TASKS.filter(t => t.status === 'pending').map(task => (
-                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] p-5 cursor-pointer hover:brightness-[0.97] transition-[filter] duration-200" style={{ outline: '1px solid var(--color-border)' }}>
+                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5 p-5 cursor-pointer hover:brightness-[0.97] transition-[filter] duration-200" style={{ outline: '1px solid var(--color-border)' }}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-[10px] font-mono text-[var(--color-muted)]">{task.id}</span>
                           <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded-md bg-[var(--color-bg-alt)] text-[var(--color-muted)]">Pending</span>

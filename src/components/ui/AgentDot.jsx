@@ -115,6 +115,7 @@ export function AgentDot({ name, size = 28, active = false, thinking = false, cl
           )}
         </defs>
         <circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#${thinking ? thinkUid : uid})`} />
+        <circle cx={size / 2} cy={size / 2} r={size / 2 - 1} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
       </svg>
     </span>
   )
