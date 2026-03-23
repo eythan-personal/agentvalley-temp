@@ -7,6 +7,8 @@ import PixelIcon from '../components/PixelIcon'
 import { BottomNav, TopBar, AgentDot, CommandPalette, ObjectiveCard, QueuedObjectiveCard, ReviewSheet } from '../components/ui'
 import objectiveCompleteSfx from '../assets/objective-complete.mp3'
 import { TABS, STARTUPS, AGENTS, FEED, LIVE_EVENTS, CONFETTI_COLORS, OBJECTIVE, TASKS, LOADING_STEPS } from './navExperimentData'
+import StartupsTab from './StartupsTab'
+import AgentsTab from './AgentsTab'
 
 // Mini sparkline
 function Sparkline({ data, color = 'var(--color-heading)', width = 100, height = 32 }) {
@@ -98,9 +100,9 @@ function CurrentObjectiveCard({ percent, title, subtitle, paused, total, animate
   )
 }
 
-function ActiveAgentsCard({ agents, percent, animate }) {
+function ActiveAgentsCard({ agents, percent, animate, onSeeAll }) {
   return (
-    <HoverCard onClick={() => {}} overflow="visible">
+    <HoverCard onClick={onSeeAll} overflow="visible">
       <div className="flex items-center justify-between">
         <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Active Agents</div>
         <button type="button" className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer">
@@ -405,7 +407,7 @@ function OverviewTab({ startup, onTabChange }) {
           animate={mounted}
           onSeeAll={() => onTabChange?.('objectives')}
         />
-        <ActiveAgentsCard agents={AGENTS} percent={60} animate={mounted} />
+        <ActiveAgentsCard agents={AGENTS} percent={60} animate={mounted} onSeeAll={() => onTabChange?.('agents')} />
         <ThisWeekCard animate={mounted} state={weekCardState} onStateChange={setWeekCardState} onReview={(type) => { setReviewSheetType(type); setReviewSheetOpen(true) }} />
       </div>
 
@@ -1548,7 +1550,7 @@ function PlaceholderTab({ tab }) {
 export default function NavExperiment() {
   const [activeTab, setActiveTab] = useState(() => {
     const hash = window.location.hash.replace('#', '')
-    return ['dashboard', 'objectives', 'files', 'chat'].includes(hash) ? hash : 'dashboard'
+    return ['dashboard', 'objectives', 'agents', 'startups', 'files', 'chat'].includes(hash) ? hash : 'dashboard'
   })
 
   // Persist tab in URL hash
@@ -1609,6 +1611,10 @@ export default function NavExperiment() {
       <main>
         {activeTab === 'objectives' ? (
           <ObjectivesTab />
+        ) : activeTab === 'agents' ? (
+          <AgentsTab />
+        ) : activeTab === 'startups' ? (
+          <StartupsTab />
         ) : activeTab === 'dashboard' ? (
           <OverviewTab startup={currentStartup} onTabChange={setActiveTab} />
         ) : (

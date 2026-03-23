@@ -6,6 +6,8 @@ const TL = { iconColor: 'text-[var(--color-muted)]', iconBg: 'bg-[var(--color-bg
 export const TABS = [
   { id: 'dashboard', label: 'Startup Overview', icon: 'home' },
   { id: 'objectives', label: 'Objectives', icon: 'clipboard' },
+  { id: 'agents', label: 'Agents', icon: 'robot' },
+  { id: 'startups', label: 'Startups', icon: 'buildings' },
   { id: 'files', label: 'Files', icon: 'folder' },
   { id: 'chat', label: 'Chat', icon: 'message' },
 ]

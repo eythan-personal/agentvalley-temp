@@ -31,7 +31,7 @@ export function ObjectiveCard({
 
   if (minimal) {
     return (
-      <div className={`rounded-2xl bg-[var(--color-surface)] ${className}`} style={{ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }}>
+      <div className={`rounded-2xl bg-[var(--color-surface)] ${className}`} style={{ boxShadow: '0 2px 4px -1px rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.03)' }}>
         <div className="px-6 py-5">
           {/* Header with big percentage */}
           <div className="flex items-start justify-between gap-6 mb-4">
@@ -89,7 +89,7 @@ export function ObjectiveCard({
   }
 
   return (
-    <div className={`rounded-2xl bg-[var(--color-surface)] transition-all duration-500 ease-out ${className}`} style={{ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }}>
+    <div className={`rounded-2xl bg-[var(--color-surface)] transition-all duration-500 ease-out ${className}`} style={{ boxShadow: '0 2px 4px -1px rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.03)' }}>
       <div className={`px-6 transition-[padding] duration-500 ease-out ${compact ? 'py-4' : 'py-5'}`}>
         {/* Header — always visible */}
         <div className={`flex items-start justify-between gap-6 transition-[margin] duration-500 ease-out ${compact ? 'mb-0' : 'mb-4'}`}>
