@@ -20,15 +20,76 @@ export function ObjectiveCard({
   animate = true,
   analyzing = false,
   compact = false,
+  minimal = false,
   onViewObjective,
   className = '',
 }) {
   const completedPct = total ? `${Math.round((completed / total) * 100)}%` : '0%'
   const inProgressPct = total ? `${Math.round((inProgress / total) * 100)}%` : '0%'
   const reviewPct = total ? `${Math.round((review / total) * 100)}%` : '0%'
+  const overallPct = animate ? `${percent}%` : '0%'
+
+  if (minimal) {
+    return (
+      <div className={`rounded-2xl bg-[var(--color-surface)] ${className}`} style={{ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }}>
+        <div className="px-6 py-5">
+          {/* Header with big percentage */}
+          <div className="flex items-start justify-between gap-6 mb-4">
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-1">Current Objective</div>
+              <h2 className="text-[16px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>
+                {title}
+              </h2>
+            </div>
+            <NumberFlow value={percent} suffix="%" className="hidden sm:block text-[32px] font-bold leading-none tabular-nums text-[var(--color-heading)] flex-shrink-0 -mt-1" style={{ fontFamily: 'var(--font-display)' }} />
+          </div>
+          {/* Single-color progress bar */}
+          <div
+            className="h-2.5 rounded-full overflow-hidden bg-[var(--color-border)] mb-4"
+            role="progressbar"
+            aria-valuenow={percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Objective progress"
+          >
+            <div className="h-full bg-[var(--color-accent)] rounded-full" style={{ width: overallPct, transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s' }} />
+          </div>
+          {/* Agents + status + ETA */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--color-border)]">
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-1.5">
+                {agents.map(name => (
+                  <AgentDot key={name} name={name} size={24} thinking={analyzing} className="ring-2 ring-[var(--color-surface)]" />
+                ))}
+              </div>
+              <span className="text-[11px] text-[var(--color-muted)]">
+                {analyzing ? `${agents.join(' & ')} analyzing` : agents.join(' & ')}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--color-body)]">
+                {paused ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'oklch(0.82 0.18 80)' }} aria-hidden="true" />
+                    <span className="text-[oklch(0.82_0.18_80)]">Paused</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] flex-shrink-0 animate-pulse" aria-hidden="true" />
+                    Active
+                  </>
+                )}
+              </span>
+              <span className="text-[11px] text-[var(--color-muted)]">ETA 45min</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className={`rounded-2xl bg-[var(--color-surface)] transition-all duration-500 ease-out ${className}`} style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }}>
+    <div className={`rounded-2xl bg-[var(--color-surface)] transition-all duration-500 ease-out ${className}`} style={{ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }}>
       <div className={`px-6 transition-[padding] duration-500 ease-out ${compact ? 'py-4' : 'py-5'}`}>
         {/* Header — always visible */}
         <div className={`flex items-start justify-between gap-6 transition-[margin] duration-500 ease-out ${compact ? 'mb-0' : 'mb-4'}`}>

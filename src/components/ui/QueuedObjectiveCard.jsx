@@ -19,7 +19,7 @@ export function QueuedObjectiveCard({
   className = '',
 }) {
   return (
-    <div className={`rounded-2xl bg-[var(--color-surface)] transition-[transform,box-shadow] duration-200 ease-out hover:shadow-lg hover:shadow-black/5 group/card ${className}`} style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
+    <div className={`rounded-2xl bg-[var(--color-surface)] transition-[transform,box-shadow] duration-200 ease-out group/card ${className}`} style={{ boxShadow: '0 2px 4px -1px rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.03)' }}>
       <div className="px-6 py-5 flex gap-4">
         {/* Content */}
         <div className="flex-1 min-w-0">

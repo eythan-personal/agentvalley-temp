@@ -64,7 +64,7 @@ function getAgentGradient(name) {
   }
 }
 
-export function AgentDot({ name, size = 28, active = false, thinking = false, className = '', style = {} }) {
+export function AgentDot({ name, size = 28, active = false, thinking = false, inactive = false, className = '', style = {} }) {
   const hash = hashName(name)
   const gradient = getAgentGradient(name)
   // Use name directly for unique SVG IDs (no collisions)
@@ -79,11 +79,14 @@ export function AgentDot({ name, size = 28, active = false, thinking = false, cl
 
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full shrink-0 overflow-hidden ${active ? 'agent-active-ring' : ''} ${className}`}
-      style={{ width: size, height: size, ...style }}
-      title={name}
+      className={`relative inline-flex items-center justify-center rounded-full shrink-0 group/dot ${active ? 'agent-active-ring' : ''} ${className}`}
+      style={{ width: size, height: size, ...(inactive ? { opacity: 0.35, filter: 'grayscale(1)' } : {}), ...style }}
     >
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-[var(--color-nav)] text-white text-[10px] font-medium whitespace-nowrap opacity-0 scale-90 pointer-events-none group-hover/dot:opacity-100 group-hover/dot:scale-100 transition-[opacity,transform] duration-150 z-50">
+        {name}{inactive ? ' (idle)' : ''}
+        <span className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-r-[4px] border-t-[4px] border-transparent border-t-[var(--color-nav)]" />
+      </span>
+      <svg className="overflow-hidden rounded-full" width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <defs>
           {thinking ? (
             <radialGradient id={thinkUid} cx="50%" cy="50%" r="60%">

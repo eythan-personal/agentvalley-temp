@@ -4,7 +4,7 @@ import { useSortable, isSortable } from '@dnd-kit/react/sortable'
 import { move } from '@dnd-kit/helpers'
 import NumberFlow from '@number-flow/react'
 import PixelIcon from '../components/PixelIcon'
-import { BottomNav, TopBar, AgentDot, CommandPalette, ObjectiveCard, QueuedObjectiveCard } from '../components/ui'
+import { BottomNav, TopBar, AgentDot, CommandPalette, ObjectiveCard, QueuedObjectiveCard, ReviewSheet } from '../components/ui'
 import objectiveCompleteSfx from '../assets/objective-complete.mp3'
 import { TABS, STARTUPS, AGENTS, FEED, LIVE_EVENTS, CONFETTI_COLORS, OBJECTIVE, TASKS, LOADING_STEPS } from './navExperimentData'
 
@@ -40,6 +40,230 @@ function ActionIcon({ icon, iconColor, iconBg }) {
   )
 }
 
+const CARD_SHADOW = '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)'
+const CARD_SHADOW_HOVER = '0 14px 20px -4px rgba(0,0,0,0.18), 0 6px 8px -5px rgba(0,0,0,0.15)'
+
+function HoverCard({ children, className = '', onClick, overflow, style: extraStyle }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      className={`rounded-2xl bg-[var(--color-surface)] p-5 flex flex-col ${onClick ? 'cursor-pointer' : ''} ${overflow === 'visible' ? 'overflow-visible' : ''} ${className}`}
+      style={{
+        boxShadow: hovered ? CARD_SHADOW_HOVER : CARD_SHADOW,
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+        transition: 'box-shadow 0.2s ease-out, transform 0.2s ease-out',
+        ...extraStyle,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  )
+}
+
+function CurrentObjectiveCard({ percent, title, subtitle, paused, total, animate, onSeeAll }) {
+  return (
+    <HoverCard onClick={onSeeAll}>
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Current Objective</div>
+        <button type="button" className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer" onClick={onSeeAll}>
+          See All &rsaquo;
+        </button>
+      </div>
+      <div className="flex items-baseline gap-1 mt-3">
+        <NumberFlow value={percent} className="text-[48px] font-bold leading-none tabular-nums text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }} />
+        <span className="text-[20px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>%</span>
+      </div>
+      <div className="mt-auto">
+        <div className="mb-4 min-w-0">
+          <div className="text-[13px] font-semibold text-[var(--color-heading)] truncate">{title}</div>
+          <div className="text-[11px] text-[var(--color-muted)]">{subtitle}</div>
+        </div>
+        <div className="mb-3">
+          <div className="h-2 rounded-full overflow-hidden bg-[var(--color-border)]">
+            <div className="h-full bg-[var(--color-accent)] rounded-full" style={{ width: animate ? `${percent}%` : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s' }} />
+          </div>
+        </div>
+        <div className="flex items-center justify-between text-[11px] text-[var(--color-muted)]">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] animate-pulse" aria-hidden="true" />
+            {paused ? 'Paused' : 'Running'}
+          </span>
+          <span>{total} tasks · ETA 45min</span>
+        </div>
+      </div>
+    </HoverCard>
+  )
+}
+
+function ActiveAgentsCard({ agents, percent, animate }) {
+  return (
+    <HoverCard onClick={() => {}} overflow="visible">
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">Active Agents</div>
+        <button type="button" className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] hover:text-[var(--color-heading)] transition-colors cursor-pointer">
+          See All &rsaquo;
+        </button>
+      </div>
+      <div className="flex items-baseline gap-1 mt-3">
+        <NumberFlow value={animate ? percent : 0} className="text-[48px] font-bold leading-none tabular-nums text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }} />
+        <span className="text-[20px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>%</span>
+      </div>
+      <div className="mt-auto">
+        <div className="flex items-center gap-3 mb-4">
+          {agents.map((name, i) => (
+            <AgentDot key={name} name={name} size={28} inactive={i >= 3} />
+          ))}
+        </div>
+        <div className="space-y-1.5 text-[11px] text-[var(--color-muted)]">
+          <div className="flex justify-between"><span>Avg. Task Time</span><span className="text-[var(--color-heading)] font-medium tabular-nums">14 min</span></div>
+          <div className="flex justify-between"><span>Avg. Tasks Completed</span><span className="text-[var(--color-heading)] font-medium tabular-nums">8.4</span></div>
+        </div>
+      </div>
+    </HoverCard>
+  )
+}
+
+const REVIEW_ITEMS = [
+  { id: 1, task: 'TSK-038', title: 'Payment service security review', description: 'Pull request #127 touches the payment service and needs a security review before merging. 3 files changed, 47 additions.', agent: 'Cipher', type: 'code' },
+  { id: 2, task: 'TSK-045', title: 'Weekly competitor pricing analysis', description: 'Generated the first weekly analysis report. Need human sign-off on data accuracy and recommendations before automating.', agent: 'Scout', type: 'markdown' },
+]
+
+const COMPLETED_ITEMS = [
+  { id: 1, title: 'Set up CI/CD pipeline & deploy staging', agents: ['Forge', 'Relay', 'Cipher'], duration: '3d 4h' },
+]
+
+function ThisWeekCard({ animate, state = 'default', onStateChange, onReview }) {
+  const [reviewItems, setReviewItems] = useState(REVIEW_ITEMS)
+  const [reviewIndex, setReviewIndex] = useState(0)
+  const [completedItems, setCompletedItems] = useState(COMPLETED_ITEMS)
+
+  const currentReview = reviewItems[reviewIndex]
+  const currentCompleted = completedItems[0]
+
+  const dismissReview = () => {
+    const next = reviewItems.filter((_, i) => i !== reviewIndex)
+    if (next.length === 0) {
+      setReviewItems(REVIEW_ITEMS)
+      setReviewIndex(0)
+      onStateChange?.('default')
+    } else {
+      setReviewItems(next)
+      setReviewIndex(Math.min(reviewIndex, next.length - 1))
+    }
+  }
+
+  const dismissCompleted = () => {
+    const next = completedItems.slice(1)
+    if (next.length === 0) {
+      setCompletedItems(COMPLETED_ITEMS)
+      onStateChange?.('default')
+    } else {
+      setCompletedItems(next)
+    }
+  }
+
+  if (state === 'review' && currentReview) {
+    return (
+      <HoverCard style={{ background: 'radial-gradient(100% 59.71% at 100% 0%, rgba(240, 185, 11, 0.18) 0%, rgba(227, 27, 70, 0.00) 100%), #FFF' }}>
+        {/* Header badge */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(240, 185, 11, 0.2)' }}>
+              <PixelIcon name="alert" size={14} style={{ color: 'oklch(0.72 0.18 80)' }} aria-hidden="true" />
+            </div>
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold px-2 py-0.5 rounded-md" style={{ backgroundColor: 'rgba(240, 185, 11, 0.15)', color: 'oklch(0.55 0.15 80)' }}>
+              Needs Review
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            {reviewItems.length > 1 && (
+              <>
+                <button type="button" onClick={() => setReviewIndex((reviewIndex - 1 + reviewItems.length) % reviewItems.length)} className="w-6 h-6 flex items-center justify-center rounded-md text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer">
+                  <PixelIcon name="chevron-left" size={12} aria-hidden="true" />
+                </button>
+                <span className="text-[10px] font-mono tabular-nums text-[var(--color-muted)]">{reviewIndex + 1}/{reviewItems.length}</span>
+                <button type="button" onClick={() => setReviewIndex((reviewIndex + 1) % reviewItems.length)} className="w-6 h-6 flex items-center justify-center rounded-md text-[var(--color-muted)] hover:text-[var(--color-heading)] hover:bg-[var(--color-bg-alt)] transition-colors cursor-pointer">
+                  <PixelIcon name="chevron-right" size={12} aria-hidden="true" />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+        {/* Description */}
+        <div className="mb-2">
+          <div className="text-[14px] font-semibold text-[var(--color-heading)] leading-snug mb-2" style={{ fontFamily: 'var(--font-display)' }}>{currentReview.title}</div>
+          <p className="text-[13px] text-[var(--color-body)] leading-relaxed">{currentReview.description}</p>
+        </div>
+        {/* Actions */}
+        <div className="mt-auto pt-4 flex items-center gap-2">
+          <button type="button" onClick={dismissReview} className="flex-1 h-10 rounded-xl text-[12px] font-medium text-[var(--color-muted)] hover:text-[var(--color-heading)] cursor-pointer transition-[color,scale] duration-150 ease-out active:scale-[0.96]" style={{ outline: '1px solid var(--color-border)', outlineOffset: '-1px' }}>
+            Dismiss
+          </button>
+          <button type="button" onClick={() => onReview?.(currentReview.type || 'code')} className="flex-1 h-10 rounded-xl text-[12px] font-semibold text-[var(--color-heading)] cursor-pointer transition-[background-color,scale] duration-150 ease-out active:scale-[0.96]" style={{ backgroundColor: 'color-mix(in srgb, oklch(0.82 0.18 80) 25%, var(--color-surface))' }}>
+            Review Now
+          </button>
+        </div>
+      </HoverCard>
+    )
+  }
+
+  if (state === 'completed' && currentCompleted) {
+    return (
+      <HoverCard>
+        <div className="flex items-center justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-accent)]">Objective Complete</div>
+        </div>
+        <div className="mt-3">
+          <div className="text-[13px] font-semibold text-[var(--color-heading)] mb-2">{currentCompleted.title}</div>
+          <div className="flex items-center gap-2 text-[11px] text-[var(--color-muted)]">
+            <span>{currentCompleted.agents.join(', ')}</span>
+            <span>·</span>
+            <span>{currentCompleted.duration}</span>
+          </div>
+        </div>
+        <div className="mt-auto pt-4 flex items-center gap-2">
+          <button type="button" className="flex-1 h-8 rounded-lg text-[12px] font-semibold bg-[var(--color-accent)] text-[#0d2000] cursor-pointer transition-[background-color,scale] duration-150 active:scale-[0.96] hover:brightness-110">
+            View Output
+          </button>
+          <button type="button" onClick={dismissCompleted} className="h-8 px-3 rounded-lg text-[12px] text-[var(--color-muted)] hover:text-[var(--color-heading)] cursor-pointer transition-colors" style={{ outline: '1px solid var(--color-border)', outlineOffset: '-1px' }}>
+            Dismiss
+          </button>
+        </div>
+      </HoverCard>
+    )
+  }
+
+  // Default: This Week
+  return (
+    <HoverCard>
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">This Week</div>
+      </div>
+      <div className="mt-auto">
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-medium text-[var(--color-heading)]">Objectives Completed</span>
+              <span className="text-[11px] font-semibold tabular-nums text-[var(--color-heading)]"><NumberFlow value={animate ? 3 : 0} /></span>
+            </div>
+            <p className="text-[11px] text-[var(--color-muted)] leading-relaxed">CI/CD pipeline, monitoring alerts, and auth token refresh shipped this week</p>
+          </div>
+          <div className="border-t border-[var(--color-border)] pt-4">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-medium text-[var(--color-heading)]">Tasks Shipped</span>
+              <span className="text-[11px] font-semibold tabular-nums text-[var(--color-heading)]"><NumberFlow value={animate ? 28 : 0} /></span>
+            </div>
+            <p className="text-[11px] text-[var(--color-muted)] leading-relaxed">Across 3 objectives with an average completion time of 14 minutes per task</p>
+          </div>
+        </div>
+      </div>
+    </HoverCard>
+  )
+}
+
 function OverviewTab({ startup, onTabChange }) {
   const [showAll, setShowAll] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
@@ -48,6 +272,10 @@ function OverviewTab({ startup, onTabChange }) {
   const [paused, setPaused] = useState(false)
   const [reviewDismissed, setReviewDismissed] = useState(true)
   const [objCelebration, setObjCelebration] = useState(null)
+  const [weekCardState, setWeekCardState] = useState('default') // 'default' | 'review' | 'completed'
+  const [devOpen, setDevOpen] = useState(false)
+  const [reviewSheetOpen, setReviewSheetOpen] = useState(false)
+  const [reviewSheetType, setReviewSheetType] = useState('code') // 'code' | 'markdown'
   const taskCountRef = useRef(42)
 
   // Add a new event every 30 seconds
@@ -113,13 +341,8 @@ function OverviewTab({ startup, onTabChange }) {
       {/* Header bar + controls */}
       <div className="flex items-center gap-2 mb-5">
         {/* Title bar */}
-        <div className="flex-1 min-w-0 rounded-xl bg-[var(--color-bg-alt)] px-4 h-10 flex items-center">
-          <div className="flex items-center justify-between w-full">
-            <h1 className="text-[13px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>Overview</h1>
-            <span className="text-[11px] text-[var(--color-muted)] tabular-nums">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            </span>
-          </div>
+        <div className="flex-1 min-w-0 px-0 h-10 flex items-center">
+          <h1 className="text-[22px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>Overview</h1>
         </div>
 
         {/* Controls */}
@@ -144,24 +367,50 @@ function OverviewTab({ startup, onTabChange }) {
         </div>
       </div>
 
-      {/* Objective card */}
-      <ObjectiveCard
-        title="Scrape competitor pricing & generate weekly analysis report"
-        percent={objPercent}
-        completed={objCompleted}
-        inProgress={objInProgress}
-        review={objReview}
-        pending={objPending}
-        total={objTotal}
-        agents={['Scout', 'Forge']}
-        paused={paused}
-        animate={mounted}
-        onViewObjective={() => onTabChange?.('objectives')}
-        className="relative z-10"
-      />
+      {/* Objective + Completed cards — side by side */}
+      <div className="hidden flex-col sm:flex-row gap-3 relative z-10 mb-3">
+        <ObjectiveCard
+          title="Scrape competitor pricing & generate weekly analysis report"
+          percent={objPercent}
+          completed={objCompleted}
+          inProgress={objInProgress}
+          review={objReview}
+          pending={objPending}
+          total={objTotal}
+          agents={['Scout', 'Forge']}
+          paused={paused}
+          animate={mounted}
+          onViewObjective={() => onTabChange?.('objectives')}
+          className="sm:flex-[3]"
+        />
+        {/* Completed objectives summary */}
+        <div className="sm:flex-[1] rounded-2xl bg-[var(--color-surface)] px-6 py-5 flex flex-col items-center justify-center text-center" style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }}>
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2">Completed</div>
+          <NumberFlow value={mounted ? 3 : 0} className="text-[42px] font-bold leading-none tabular-nums text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }} />
+          <span className="text-[11px] text-[var(--color-muted)] mt-1">this week</span>
+          <div className="mt-auto pt-3 border-t border-[var(--color-border)] w-full text-center">
+            <span className="text-[11px] text-[var(--color-muted)]"><NumberFlow value={mounted ? 2 : 0} className="text-[11px] tabular-nums" /> queued</span>
+          </div>
+        </div>
+      </div>
 
-      {/* Stats shelf — tucked under the objective card */}
-      <div className="relative -mt-4 rounded-b-2xl px-6 pt-7 pb-5 mb-4" style={{ backgroundColor: 'color-mix(in srgb, var(--color-surface) 30%, var(--color-bg-alt))' }}>
+      {/* Three info cards row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-[5]">
+        <CurrentObjectiveCard
+          percent={objPercent}
+          title="Scrape competitor pricing"
+          subtitle="generate weekly analysis report"
+          paused={paused}
+          total={objTotal}
+          animate={mounted}
+          onSeeAll={() => onTabChange?.('objectives')}
+        />
+        <ActiveAgentsCard agents={AGENTS} percent={60} animate={mounted} />
+        <ThisWeekCard animate={mounted} state={weekCardState} onStateChange={setWeekCardState} onReview={(type) => { setReviewSheetType(type); setReviewSheetOpen(true) }} />
+      </div>
+
+      {/* Stats shelf — hidden for now */}
+      <div className="hidden relative -mt-4 rounded-b-2xl px-6 pt-7 pb-5 mb-4 z-[1]" style={{ backgroundColor: 'color-mix(in srgb, var(--color-surface) 30%, var(--color-bg-alt))' }}>
         {/* Desktop */}
         <div className="hidden sm:flex items-end gap-0">
           <div className="flex items-end gap-5 pr-8 flex-1">
@@ -219,7 +468,7 @@ function OverviewTab({ startup, onTabChange }) {
       </div>
 
       {/* Activity feed with timeline connector */}
-      <div className="-mt-2 px-6">
+      <div className="mt-6 px-6">
         {/* Feed header */}
         <div className="flex items-center justify-between py-4 border-b border-[var(--color-border)] mb-2">
           <h2 className="text-[16px] font-bold" style={{ fontFamily: 'var(--font-display)' }}>Activity Log</h2>
@@ -360,8 +609,8 @@ function OverviewTab({ startup, onTabChange }) {
                 {/* Detail card — special treatment for completed objectives */}
                 {item.detail && item.type === 'objective-complete' ? (
                   <div
-                    className="mt-2.5 ml-8 rounded-xl border border-[var(--color-accent)]/30 p-4 cursor-pointer transition-[box-shadow,transform] duration-200 hover:shadow-lg hover:shadow-[var(--color-accent)]/10 active:scale-[0.99]"
-                    style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 6%, var(--color-surface))' }}
+                    className="mt-2.5 ml-8 rounded-xl p-4 cursor-pointer transition-[box-shadow,transform] duration-200 active:scale-[0.99]"
+                    style={{ background: 'radial-gradient(100% 59.71% at 100% 0%, rgba(159, 232, 112, 0.18) 0%, rgba(159, 232, 112, 0.00) 100%), #FFF', boxShadow: '0 2px 4px -1px rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.03)' }}
                     onClick={() => setObjCelebration(item.objective)}
                     role="button"
                     tabIndex={0}
@@ -390,7 +639,7 @@ function OverviewTab({ startup, onTabChange }) {
                     </div>
                   </div>
                 ) : item.detail && (
-                  <div className={`mt-2.5 ml-8 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4 ${item.needsReview || item.mention ? 'flex items-start gap-4' : ''}`}>
+                  <div className={`mt-2.5 ml-8 rounded-xl bg-[var(--color-surface)] p-4 ${item.needsReview || item.mention ? 'flex items-start gap-4' : ''}`} style={{ boxShadow: '0 2px 4px -1px rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.03)' }}>
                     <p className="text-[13px] text-[var(--color-body)] leading-relaxed flex-1">{item.detail}</p>
                     {item.needsReview && (
                       <button
@@ -435,15 +684,74 @@ function OverviewTab({ startup, onTabChange }) {
         })}
       </div>
 
-      {/* Dev trigger */}
-      <button
-        type="button"
-        onClick={() => setObjCelebration({ title: 'Set up CI/CD pipeline & deploy staging', tasksCompleted: 8, agents: ['Forge', 'Relay', 'Cipher'], duration: '3d 4h' })}
-        className="fixed bottom-20 left-4 z-50 w-8 h-8 rounded-lg bg-[var(--color-accent)] text-[#0d2000] flex items-center justify-center cursor-pointer hover:brightness-110 active:scale-95 transition-transform shadow-lg shadow-black/20"
-        title="Trigger celebration"
-      >
-        <PixelIcon name="check" size={14} aria-hidden="true" />
-      </button>
+      {/* Dev controls flyout */}
+      <div className="fixed bottom-20 left-4 z-50">
+        <button
+          type="button"
+          onClick={() => setDevOpen(prev => !prev)}
+          className="w-8 h-8 rounded-lg bg-[var(--color-nav)] text-white flex items-center justify-center cursor-pointer hover:brightness-110 active:scale-95 transition-[transform,filter] duration-150"
+          style={{ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.3), 0 4px 6px -4px rgba(0,0,0,0.3)' }}
+          title="Dev controls"
+        >
+          <PixelIcon name="settings" size={14} aria-hidden="true" />
+        </button>
+        <div
+          className="absolute bottom-full left-0 mb-2"
+          style={{
+            opacity: devOpen ? 1 : 0,
+            scale: devOpen ? '1' : '0.9',
+            filter: devOpen ? 'blur(0px)' : 'blur(4px)',
+            transformOrigin: 'bottom left',
+            transition: devOpen
+              ? 'opacity 0.2s ease-out, scale 0.25s cubic-bezier(0.34, 1.3, 0.64, 1), filter 0.2s ease-out'
+              : 'opacity 0.1s ease-in, scale 0.1s ease-in, filter 0.1s ease-in',
+            pointerEvents: devOpen ? 'auto' : 'none',
+          }}
+        >
+          <div className="rounded-2xl bg-[var(--color-nav)] p-4 w-56" style={{ boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3), 0 8px 10px -6px rgba(0,0,0,0.2)' }}>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-white/40 mb-3">Dev Controls</div>
+            <div className="space-y-2">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-white/30 mt-2">Week Card State</div>
+              {['default', 'review', 'completed'].map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setWeekCardState(s)}
+                  className={`w-full text-left px-3 py-2 text-[12px] rounded-xl transition-colors cursor-pointer ${weekCardState === s ? 'bg-white/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                >
+                  {s === 'default' ? 'This Week' : s === 'review' ? 'Needs Review' : 'Completed Objective'}
+                </button>
+              ))}
+              <div className="border-t border-white/10 pt-2 mt-2 space-y-1">
+                <button
+                  type="button"
+                  onClick={() => { setReviewSheetType('code'); setReviewSheetOpen(true) }}
+                  className="w-full text-left px-3 py-2 text-[12px] rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  Review: Code
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setReviewSheetType('markdown'); setReviewSheetOpen(true) }}
+                  className="w-full text-left px-3 py-2 text-[12px] rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  Review: Markdown
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setObjCelebration({ title: 'Set up CI/CD pipeline & deploy staging', tasksCompleted: 8, agents: ['Forge', 'Relay', 'Cipher'], duration: '3d 4h' })}
+                  className="w-full text-left px-3 py-2 text-[12px] rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  Trigger Celebration
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Review bottom sheet */}
+      <ReviewSheet open={reviewSheetOpen} onClose={() => setReviewSheetOpen(false)} type={reviewSheetType} />
 
       {/* ── Objective Complete Celebration Overlay ── */}
       {objCelebration && <ObjectiveCelebration objective={objCelebration} onClose={() => setObjCelebration(null)} />}
@@ -689,7 +997,7 @@ function LoadingObjectiveCard({ title }) {
   const totalDots = dotCols * dotRows
 
   return (
-    <div className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5" style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
+    <div className="rounded-2xl bg-[var(--color-surface)] " style={{ boxShadow: CARD_SHADOW }}>
       <div className="px-6 py-5">
         {/* Match ObjectiveCard header */}
         <div className="flex items-start justify-between gap-6 mb-4">
@@ -778,6 +1086,7 @@ function LoadingObjectiveCard({ title }) {
 function SortableObjective({ obj, idx, queuePosition, loading, analyzing, onClick }) {
   const isActive = obj.type === 'active'
   const [mounted, setMounted] = useState(false)
+  const [hovered, setHovered] = useState(false)
   useEffect(() => { requestAnimationFrame(() => setMounted(true)) }, [])
   const { ref, isDragging } = useSortable({
     id: obj.id,
@@ -786,7 +1095,7 @@ function SortableObjective({ obj, idx, queuePosition, loading, analyzing, onClic
   })
 
   return (
-    <div ref={ref} onClick={() => !isDragging && onClick?.(obj)} className="rounded-2xl transition-[opacity,filter] duration-200 hover:brightness-[0.97]" style={{ opacity: isDragging ? 0.4 : 1, cursor: 'pointer' }}>
+    <div ref={ref} onClick={() => !isDragging && onClick?.(obj)} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} className="rounded-2xl" style={{ opacity: isDragging ? 0.4 : 1, cursor: 'pointer', boxShadow: hovered ? CARD_SHADOW_HOVER : (isActive ? CARD_SHADOW : '0 2px 4px -1px rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.03)'), transform: hovered ? 'translateY(-2px)' : 'translateY(0)', transition: 'box-shadow 0.2s ease-out, transform 0.2s ease-out, opacity 0.2s ease-out' }}>
       {isActive ? (
         loading ? (
           <LoadingObjectiveCard title={obj.title} />
@@ -898,12 +1207,9 @@ function ObjectivesTab() {
         )}
 
         {/* Title / breadcrumb bar */}
-        <div className="flex-1 min-w-0 rounded-xl bg-[var(--color-bg-alt)] px-4 h-10 flex items-center">
+        <div className="flex-1 min-w-0 px-0 h-10 flex items-center">
           {!selectedObjective ? (
-            <div className="flex items-center justify-between w-full">
-              <h1 className="text-[13px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>Objectives</h1>
-              <span className="text-[11px] text-[var(--color-muted)] tabular-nums">{objectives.length} total</span>
-            </div>
+            <h1 className="text-[22px] font-bold text-[var(--color-heading)]" style={{ fontFamily: 'var(--font-display)' }}>Objectives</h1>
           ) : (
             <nav className="flex items-center gap-2 text-[12px] min-w-0" style={{ fontFamily: 'var(--font-display)' }}>
               <button
@@ -976,7 +1282,7 @@ function ObjectivesTab() {
           {selectedTask ? (
             <>
               {/* Task header card */}
-              <div className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5 p-6 mb-4" style={{ outline: '1px solid var(--color-border)' }}>
+              <div className="rounded-2xl bg-[var(--color-surface)] p-6 mb-4" style={{ boxShadow: CARD_SHADOW }}>
                 {/* Title + status */}
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div>
@@ -1027,7 +1333,7 @@ function ObjectivesTab() {
               {/* Two column layout — updates + files */}
               <div className="grid grid-cols-1 sm:grid-cols-[1fr_300px] gap-4">
                 {/* Status updates */}
-                <div className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ outline: '1px solid var(--color-border)' }}>
+                <div className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ boxShadow: CARD_SHADOW }}>
                   <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4">
                     Status Updates ({selectedTask.updates?.length || 0})
                   </div>
@@ -1058,7 +1364,7 @@ function ObjectivesTab() {
                 </div>
 
                 {/* Files sidebar */}
-                <div className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ outline: '1px solid var(--color-border)' }}>
+                <div className="rounded-2xl bg-[var(--color-surface)] p-5" style={{ boxShadow: CARD_SHADOW }}>
                   <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4">
                     Files ({selectedTask.files?.length || 0})
                   </div>
@@ -1114,7 +1420,7 @@ function ObjectivesTab() {
                   </div>
                   <div className="space-y-3">
                     {workingTasks.map(task => (
-                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5 p-5 cursor-pointer hover:brightness-[0.97] transition-[filter] duration-200" style={{ outline: '1px solid var(--color-border)' }}>
+                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] p-5 cursor-pointer transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5" style={{ boxShadow: CARD_SHADOW }}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-[10px] font-mono text-[var(--color-muted)]">{task.id}</span>
                           <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded-md" style={{ backgroundColor: 'color-mix(in srgb, oklch(0.77 0.12 253.03) 12%, var(--color-surface))', color: 'oklch(0.77 0.12 253.03)' }}>Working</span>
@@ -1155,7 +1461,7 @@ function ObjectivesTab() {
                   </div>
                   <div className="space-y-3">
                     {pendingTasks.map(task => (
-                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5 p-5 cursor-pointer hover:brightness-[0.97] transition-[filter] duration-200" style={{ outline: '1px solid var(--color-border)' }}>
+                      <div key={task.id} onClick={() => setSelectedTask(task)} className="rounded-2xl bg-[var(--color-surface)] p-5 cursor-pointer transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5" style={{ boxShadow: CARD_SHADOW }}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-[10px] font-mono text-[var(--color-muted)]">{task.id}</span>
                           <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded-md bg-[var(--color-bg-alt)] text-[var(--color-muted)]">Pending</span>
@@ -1179,7 +1485,7 @@ function ObjectivesTab() {
                       Completed ({completedTasks.length})
                     </span>
                   </div>
-                  <div className="rounded-2xl bg-[var(--color-surface)] divide-y divide-[var(--color-border)]" style={{ outline: '1px solid var(--color-border)' }}>
+                  <div className="rounded-2xl bg-[var(--color-surface)] divide-y divide-[var(--color-border)]" style={{ boxShadow: CARD_SHADOW }}>
                     {completedTasks.map(task => (
                       <div key={task.id} onClick={() => setSelectedTask(task)} className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-[var(--color-bg-alt)] transition-colors">
                         <PixelIcon name="check" size={16} className="text-[var(--color-accent)] flex-shrink-0" aria-hidden="true" />
@@ -1195,7 +1501,7 @@ function ObjectivesTab() {
               )}
             </div>
           ) : (
-            <div className="rounded-2xl bg-[var(--color-surface)] p-8 text-center" style={{ outline: '1px solid var(--color-border)' }}>
+            <div className="rounded-2xl bg-[var(--color-surface)] p-8 text-center" style={{ boxShadow: CARD_SHADOW }}>
               <PixelIcon name="clock" size={28} className="text-[var(--color-muted)] mx-auto mb-3" />
               <div className="text-[13px] text-[var(--color-muted)]">Tasks will be generated when this objective becomes active</div>
             </div>
