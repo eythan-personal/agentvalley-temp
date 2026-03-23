@@ -239,11 +239,12 @@ export function BottomNav({ tabs = [], activeTab, onTabChange, addItems = [], no
       {/* Single morphing bar */}
       <nav
         ref={barRef}
-        className="fixed bottom-5 left-1/2 z-50 bg-[var(--color-nav)] rounded-[20px] shadow-xl shadow-black/20"
+        className="fixed bottom-5 left-1/2 z-50 bg-[var(--color-nav)] rounded-[20px]"
         style={{
           transform: 'translateX(-50%)',
           width: navWidth ? (isChatMode ? chatWidth : navWidth) : undefined,
           transition: navWidth ? 'width 0.35s cubic-bezier(0.34, 1.3, 0.64, 1)' : undefined,
+          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)',
         }}
         aria-label="Navigation"
       >

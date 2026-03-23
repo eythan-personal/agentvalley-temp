@@ -76,11 +76,11 @@ export function TopBar({ currentStartup, startups = [], onStartupChange, avatarU
             aria-label={`Switch startup, currently ${currentStartup.name}`}
           >
             {currentStartup.avatarUrl ? (
-              <img src={currentStartup.avatarUrl} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0 shadow-lg shadow-black/10" />
+              <img src={currentStartup.avatarUrl} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" style={{ boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }} />
             ) : (
               <span
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0 shadow-lg shadow-black/10"
-                style={{ background: currentStartup.color }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0"
+                style={{ background: currentStartup.color, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }}
                 aria-hidden="true"
               >
                 {currentStartup.initials}
@@ -168,11 +168,11 @@ export function TopBar({ currentStartup, startups = [], onStartupChange, avatarU
           <button
             type="button"
             onClick={() => { setProfileMenuOpen(prev => !prev); setStartupMenuOpen(false) }}
-            className="w-10 h-10 rounded-xl overflow-hidden cursor-pointer transition-[scale,opacity] duration-150 ease-out active:scale-[0.96] hover:opacity-90 shadow-lg shadow-black/10 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+            className="w-10 h-10 rounded-xl overflow-hidden cursor-pointer transition-[scale,opacity] duration-150 ease-out active:scale-[0.96] hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
             aria-label="Profile menu"
             aria-expanded={profileMenuOpen}
             aria-haspopup="true"
-            style={{ outline: '2px solid rgba(255,255,255,0.15)', outlineOffset: '-2px' }}
+            style={{ outline: '2px solid rgba(255,255,255,0.15)', outlineOffset: '-2px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }}
           >
             <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
           </button>

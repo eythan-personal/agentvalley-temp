@@ -28,7 +28,7 @@ export function ObjectiveCard({
   const reviewPct = total ? `${Math.round((review / total) * 100)}%` : '0%'
 
   return (
-    <div className={`rounded-2xl bg-[var(--color-surface)] shadow-lg shadow-black/5 transition-all duration-500 ease-out ${className}`} style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px' }}>
+    <div className={`rounded-2xl bg-[var(--color-surface)] transition-all duration-500 ease-out ${className}`} style={{ outline: '1px solid var(--color-border)', outlineOffset: '0px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.15)' }}>
       <div className={`px-6 transition-[padding] duration-500 ease-out ${compact ? 'py-4' : 'py-5'}`}>
         {/* Header — always visible */}
         <div className={`flex items-start justify-between gap-6 transition-[margin] duration-500 ease-out ${compact ? 'mb-0' : 'mb-4'}`}>

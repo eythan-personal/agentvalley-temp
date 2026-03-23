@@ -339,6 +339,11 @@
   100% { background-position: -200% 0; }
 }
 
+@keyframes dotWave {
+  0%, 100% { background-color: var(--color-border); }
+  30%, 50% { background-color: var(--color-accent); }
+}
+
 /* Marquee scroll for long text */
 @keyframes marquee {
   0% { transform: translateX(0); }
